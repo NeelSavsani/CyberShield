@@ -3,6 +3,7 @@ const ANALYZER_API = 'http://127.0.0.1:8000';
 let history = [];
 const isGuest = () => localStorage.getItem('cs_guest') === 'true';
 const guestHistoryKey = 'cs_guest_analyses';
+const dashboardHistoryLimit = 6;
 const analysisStages = [
   'Validating URL safety', 'Checking HTTP response and redirects', 'Resolving DNS records',
   'Checking domain age and registration', 'Inspecting TLS certificate', 'Checking threat reputation',
@@ -99,14 +100,17 @@ function showResultBox(result) {
 function renderHistory() {
   const tbody = byId('history-body');
   const empty = byId('empty-state');
-  tbody.innerHTML = history.map(item => `<tr>
+  // Registered users see a compact recent list on the dashboard; their full
+  // archive remains on the History page. Guest sessions keep every entry here.
+  const displayedHistory = isGuest() ? history : history.slice(0, dashboardHistoryLimit);
+  tbody.innerHTML = displayedHistory.map(item => `<tr>
     <td><span class="type-badge type-url"><i class="fa-solid fa-link"></i> URL</span></td>
     <td title="${escapeHtml(item.content)}" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(item.content)}</td>
     <td><span class="risk-pill ${item.riskScore >= 70 ? 'risk-high' : item.riskScore >= 40 ? 'risk-medium' : 'risk-low'}">${item.riskScore}</span></td>
     <td>${escapeHtml(item.verdict)}</td><td style="color:var(--gray);font-size:12px">${formatDate(item.createdAt || item.analyzedAt)}</td>
     <td><button class="action-btn" data-analysis-id="${item.id}">View</button></td>
   </tr>`).join('');
-  empty.style.display = history.length ? 'none' : 'block';
+  empty.style.display = displayedHistory.length ? 'none' : 'block';
   tbody.querySelectorAll('[data-analysis-id]').forEach(button => button.addEventListener('click', () => viewResult(button.dataset.analysisId)));
 }
 

@@ -95,6 +95,13 @@
         <div class="panel-body">
 
           <div class="table-toolbar" style="margin-bottom:14px;">
+            <input type="text" class="search-input" id="search-input" placeholder="Search by URL, email text, or filename…" />
+            <select class="filter-select" id="type-filter">
+              <option value="">All types</option>
+              <option value="url">URL</option>
+              <option value="email">Email</option>
+              <option value="image">Image</option>
+            </select>
             <select class="filter-select" id="verdict-filter">
               <option value="">All verdicts</option>
               <option value="phishing">Phishing only</option>

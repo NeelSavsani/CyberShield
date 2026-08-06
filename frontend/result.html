@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analysis Result — CyberShield</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/result.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <svg viewBox="0 0 36 36" fill="none">
+        <path d="M18 3L4 9V19C4 26.18 10.18 32.74 18 34C25.82 32.74 32 26.18 32 19V9L18 3Z" fill="#0B1E3D" stroke="#00C8FF" stroke-width="1.5"/>
+        <path d="M13 18L16.5 21.5L23 14" stroke="#00C8FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="sidebar-logo-text">Cyber<span>Shield</span></span>
+    </a>
+    <div class="sidebar-section">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-house"></i></span>Dashboard</a>
+    <a href="history.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span>History</a>
+    <a href="reports.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span>Reports</a>
+    <div class="sidebar-section">Account</div>
+    <a href="profile.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-user"></i></span>Profile</a>
+    <a href="settings.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span>Settings</a>
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div>
+          <div class="user-name" id="user-name">User</div>
+          <div class="user-role">Free account</div>
+        </div>
+      </div>
+      <a href="login.html" class="nav-item" style="margin-top:4px"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>Log out</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Analysis Result</span>
+      <div class="topbar-right">
+        <a href="dashboard.html" class="topbar-btn btn-outline">← Back to dashboard</a>
+        <button class="topbar-btn btn-navy" onclick="downloadReport()"><i class="fa-solid fa-download"></i> Download report</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Verdict hero -->
+      <div class="verdict-card">
+        <div class="verdict-banner" id="verdict-banner">
+          <div class="verdict-left">
+            <div class="verdict-emoji" id="verdict-emoji"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <div class="verdict-text">
+              <h1 id="verdict-title">Loading…</h1>
+              <p id="verdict-subtitle">Please wait</p>
+            </div>
+          </div>
+          <div class="score-circle">
+            <span class="score-number" id="score-number">—</span>
+            <span class="score-label">RISK</span>
+          </div>
+        </div>
+
+        <!-- Score bar -->
+        <div class="score-bar-section">
+          <div class="score-bar-track">
+            <div class="score-bar-fill" id="score-bar" style="width:0%"></div>
+          </div>
+          <div class="score-bar-labels">
+            <span>0 — Safe</span><span>40 — Suspicious</span>
+            <span>70 — Phishing</span><span>100</span>
+          </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="verdict-meta">
+          <div class="meta-item"><div class="meta-label">Input type</div><div class="meta-value" id="meta-type">—</div></div>
+          <div class="meta-item"><div class="meta-label">Analyzed at</div><div class="meta-value" id="meta-time">—</div></div>
+          <div class="meta-item"><div class="meta-label">Content</div><div class="meta-value meta-content" id="meta-content">—</div></div>
+        </div>
+      </div>
+
+      <!-- Recommendation -->
+      <div class="recommendation" id="recommendation">
+        <div class="rec-icon" id="rec-icon"><i class="fa-solid fa-lightbulb"></i></div>
+        <div class="rec-content">
+          <h3 id="rec-title">Recommendation</h3>
+          <p id="rec-body">Loading…</p>
+        </div>
+      </div>
+
+      <!-- Content overview -->
+      <div class="panel content-overview" id="content-overview" hidden>
+        <div class="panel-header">
+          <span class="panel-title">Content Overview</span>
+          <span style="font-size:12px;color:var(--gray)">Captured while opening the URL</span>
+        </div>
+        <div class="panel-body">
+          <img class="content-screenshot" id="content-screenshot" alt="Screenshot of the analyzed website" />
+          <p class="content-overview-note">This preview is captured in CyberShield’s isolated browser session.</p>
+        </div>
+      </div>
+
+      <!-- Threat Indicators -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Threat Indicators</span>
+          <span id="indicator-count" style="font-size:12px;color:var(--gray)">0 found</span>
+        </div>
+        <div class="panel-body">
+          <div class="indicator-grid" id="indicator-grid">
+            <p style="color:var(--gray);font-size:14px">No indicators loaded.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Breakdown -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Feature Breakdown</span>
+          <span style="font-size:12px;color:var(--gray)">Raw values from analyzer</span>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="feature-table">
+            <thead><tr><th>Feature</th><th>Value</th><th>Risk weight</th></tr></thead>
+            <tbody id="feature-body">
+              <tr><td colspan="3" style="color:var(--gray);padding:16px">No feature data available.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-row">
+        <a href="dashboard.html" class="action-btn-lg btn-back">← Run another scan</a>
+        <button class="action-btn-lg btn-report" onclick="downloadReport()"><i class="fa-solid fa-download"></i> Download PDF report</button>
+        <button class="action-btn-lg btn-flag" onclick="flagItem()"><i class="fa-solid fa-flag"></i> Report as phishing</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/result.js"></script>
+</body>
+</html>

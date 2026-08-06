@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports — CyberShield</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <svg viewBox="0 0 36 36" fill="none">
+        <path d="M18 3L4 9V19C4 26.18 10.18 32.74 18 34C25.82 32.74 32 26.18 32 19V9L18 3Z" fill="#0B1E3D" stroke="#00C8FF" stroke-width="1.5"/>
+        <path d="M13 18L16.5 21.5L23 14" stroke="#00C8FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="sidebar-logo-text">Cyber<span>Shield</span></span>
+    </a>
+
+    <div class="sidebar-section">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-house"></i></span> Dashboard</a>
+    <a href="history.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span> History</a>
+    <a href="reports.html" class="nav-item active"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span> Reports</a>
+
+    <div class="sidebar-section">Account</div>
+    <a href="profile.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-user"></i></span> Profile</a>
+    <a href="settings.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Settings</a>
+
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Loading…</div>
+          <div class="user-role">Account</div>
+        </div>
+      </div>
+      <a href="login.html" data-logout class="nav-item" style="margin-top:4px">
+        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span> Log out
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Reports</span>
+      <div class="topbar-right">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+        <span style="font-size:13px; color:var(--gray)">Download a PDF summary for any scan</span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Threat Summary</span>
+        </div>
+        <div class="panel-body">
+          <div class="stats-row" style="margin-bottom:0;">
+            <div class="stat-card">
+              <div class="stat-label">Phishing Detected</div>
+              <div class="stat-value danger" id="sum-phishing">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Suspicious</div>
+              <div class="stat-value warning" id="sum-suspicious">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Safe</div>
+              <div class="stat-value success" id="sum-safe">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Reports Available</div>
+              <div class="stat-value" id="sum-total">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Downloadable Reports</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="table-toolbar" style="margin-bottom:14px;">
+            <select class="filter-select" id="verdict-filter">
+              <option value="">All verdicts</option>
+              <option value="phishing">Phishing only</option>
+              <option value="suspicious">Suspicious only</option>
+              <option value="safe">Safe only</option>
+            </select>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Type</th>
+                  <th>Summary</th>
+                  <th>Verdict</th>
+                  <th>Date</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody id="reports-body">
+                <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--gray);">Loading reports…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-state" id="empty-state" style="display:none;">
+            <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+            <p>No reports yet — run a scan from the Dashboard first.</p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/firebase-data.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/reports.js"></script>
+</body>
+</html>

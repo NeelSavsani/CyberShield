@@ -1,0 +1,85 @@
+/* ============================================================
+   CyberShield — Result Page Styles  (css/result.css)
+============================================================ */
+
+.verdict-card { border-radius: 16px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+.verdict-banner { padding: 32px 36px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+.verdict-banner.safe    { background: linear-gradient(135deg,#065F46,#059669); }
+.verdict-banner.warning { background: linear-gradient(135deg,#92400E,#D97706); }
+.verdict-banner.danger  { background: linear-gradient(135deg,#7F1D1D,#DC2626); }
+.verdict-left  { display: flex; align-items: center; gap: 18px; }
+.verdict-emoji { font-size: 52px; line-height: 1; }
+.verdict-text h1 { font-family: var(--font-head); font-size: 26px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.verdict-text p  { font-size: 14px; color: rgba(255,255,255,0.75); }
+.score-circle { width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+.score-number { font-family: var(--font-head); font-size: 30px; font-weight: 700; color: var(--white); line-height: 1; }
+.score-label  { font-size: 10px; color: rgba(255,255,255,0.7); letter-spacing: .05em; margin-top: 2px; }
+
+.score-bar-section { background: var(--white); padding: 16px 36px 8px; }
+.score-bar-track { height: 12px; border-radius: 6px; background: var(--off-white); border: 1px solid var(--border); overflow: hidden; }
+.score-bar-fill  { height: 100%; border-radius: 6px; transition: width 1s ease; }
+.score-bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray); margin-top: 5px; padding-bottom: 8px; }
+
+.verdict-meta { background: var(--white); padding: 16px 36px; display: flex; gap: 32px; flex-wrap: wrap; border-top: 1px solid var(--border); }
+.meta-item { }
+.meta-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--gray); margin-bottom: 3px; }
+.meta-value { font-size: 14px; font-weight: 600; color: var(--slate); }
+.meta-content { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.recommendation { border-radius: 12px; padding: 20px 22px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 14px; }
+.recommendation.safe    { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); }
+.recommendation.warning { background: rgba(245,158,11,0.07);  border: 1px solid rgba(245,158,11,0.2); }
+.recommendation.danger  { background: rgba(239,68,68,0.07);   border: 1px solid rgba(239,68,68,0.2); }
+.rec-icon { font-size: 28px; flex-shrink: 0; }
+.rec-content h3 { font-family: var(--font-head); font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+.recommendation.safe    .rec-content h3 { color: #065F46; }
+.recommendation.warning .rec-content h3 { color: #78350F; }
+.recommendation.danger  .rec-content h3 { color: #7F1D1D; }
+.rec-content p { font-size: 13px; line-height: 1.6; }
+.recommendation.safe    .rec-content p { color: #047857; }
+.recommendation.warning .rec-content p { color: #92400E; }
+.recommendation.danger  .rec-content p { color: #B91C1C; }
+
+.indicator-grid { display: flex; flex-direction: column; gap: 10px; }
+.indicator-row  { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 10px; }
+.indicator-row.red   { background: rgba(239,68,68,0.06);  border: 1px solid rgba(239,68,68,0.15); }
+.indicator-row.amber { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); }
+.indicator-row.green { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15); }
+.indicator-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.red   .indicator-dot { background: var(--danger); }
+.amber .indicator-dot { background: var(--warning); }
+.green .indicator-dot { background: var(--success); }
+.indicator-content { flex: 1; }
+.indicator-text { font-size: 14px; font-weight: 500; }
+.red   .indicator-text { color: #7F1D1D; }
+.amber .indicator-text { color: #78350F; }
+.green .indicator-text { color: #064E3B; }
+.indicator-desc { font-size: 12px; margin-top: 3px; }
+.red   .indicator-desc { color: #B91C1C; }
+.amber .indicator-desc { color: #92400E; }
+.green .indicator-desc { color: #065F46; }
+.indicator-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+.red   .indicator-badge { background: rgba(239,68,68,0.15);  color: var(--danger); }
+.amber .indicator-badge { background: rgba(245,158,11,0.15); color: var(--warning); }
+.green .indicator-badge { background: rgba(16,185,129,0.15); color: var(--success); }
+
+.feature-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.feature-table th { padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: .07em; background: var(--off-white); border-bottom: 1px solid var(--border); }
+.feature-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--slate); }
+.feature-table tr:last-child td { border-bottom: none; }
+.feature-table tr:hover td { background: var(--off-white); }
+.feature-val  { font-family: monospace; font-size: 12px; color: var(--cyan-dim); }
+.feature-risk { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.risk-h { background: rgba(239,68,68,0.1);  color: var(--danger); }
+.risk-m { background: rgba(245,158,11,0.1); color: var(--warning); }
+.risk-l { background: rgba(16,185,129,0.1); color: var(--success); }
+
+.content-overview { margin-bottom: 20px; }
+.content-screenshot { display:block; width:100%; max-height:520px; object-fit:contain; object-position:top; border:1px solid var(--border); border-radius:9px; background:var(--off-white); }
+.content-overview-note { margin:10px 0 0; color:var(--gray); font-size:12px; }
+
+@media(max-width:660px) {
+  .verdict-banner { padding: 22px; }
+  .verdict-meta   { padding: 14px 22px; gap: 20px; }
+  .score-bar-section { padding: 12px 22px 4px; }
+}

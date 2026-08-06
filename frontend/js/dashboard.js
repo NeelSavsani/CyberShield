@@ -1,0 +1,185 @@
+/* Dashboard UI backed by the supplied Firebase project and this URL analyzer. */
+const ANALYZER_API = 'http://127.0.0.1:8000';
+let history = [];
+const isGuest = () => localStorage.getItem('cs_guest') === 'true';
+const guestHistoryKey = 'cs_guest_analyses';
+const analysisStages = [
+  'Validating URL safety', 'Checking HTTP response and redirects', 'Resolving DNS records',
+  'Checking domain age and registration', 'Inspecting TLS certificate', 'Checking threat reputation',
+  'Rendering page in a secure browser', 'Inspecting page content, scripts and forms', 'Calculating risk score'
+];
+let progressTimer;
+
+const byId = id => document.getElementById(id);
+const escapeHtml = value => { const el = document.createElement('div'); el.textContent = value ?? ''; return el.innerHTML; };
+const screenshotUrl = path => {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  // Accept both the current static-mount-relative path (`screenshots/...`)
+  // and the value returned by a backend that has not been restarted yet
+  // (`reports/screenshots/...`).
+  const cleanPath = path.replace(/^\/+/, '');
+  return `${ANALYZER_API}/${cleanPath.startsWith('reports/') ? cleanPath : `reports/${cleanPath}`}`;
+};
+
+function normalizeResult(response, content) {
+  const score = Math.round(response.phishing_probability || 0);
+  const verdict = score >= 70 ? 'phishing' : score >= 40 ? 'suspicious' : 'safe';
+  const contributors = response.data?.classification?.contributors || [];
+  return {
+    risk_score: score,
+    verdict,
+    input_type: 'url',
+    content,
+    analyzed_at: new Date().toISOString(),
+    screenshot_url: screenshotUrl(response.data?.browser?.screenshot),
+    indicators: contributors.map(item => ({
+      text: item.reason || 'Risk signal detected',
+      level: item.impact === 'high' ? 'red' : item.impact === 'medium' ? 'amber' : 'green'
+    })),
+    features: response.data?.features?.values || {}
+  };
+}
+
+function setLoading(loading) {
+  byId('url-analyze-btn').disabled = loading;
+  byId('url-spinner').style.display = loading ? 'block' : 'none';
+  byId('url-btn-label').textContent = loading ? 'Analyzing…' : 'Analyze URL';
+}
+
+function renderProgress(activeIndex, state = 'running') {
+  const list = byId('analysis-progress-list');
+  if (!list) return;
+  list.innerHTML = analysisStages.map((stage, index) => {
+    const status = state === 'failed' && index === activeIndex ? 'failed' : index < activeIndex || state === 'complete' ? 'done' : index === activeIndex ? 'active' : '';
+    const icon = status === 'done' ? 'fa-circle-check' : status === 'failed' ? 'fa-circle-exclamation' : status === 'active' ? 'fa-spinner' : 'fa-circle';
+    return `<div class="analysis-step ${status}"><i class="fa-solid ${icon}"></i><span>${stage}</span></div>`;
+  }).join('');
+  byId('analysis-progress-title').textContent = state === 'complete' ? 'Analysis complete — preparing your result' : state === 'failed' ? 'Analysis could not be completed' : analysisStages[activeIndex];
+}
+
+function startProgress() {
+  const panel = byId('analysis-progress');
+  panel.classList.add('show');
+  let index = 0;
+  renderProgress(index);
+  clearInterval(progressTimer);
+  progressTimer = setInterval(() => {
+    index = Math.min(index + 1, analysisStages.length - 1);
+    renderProgress(index);
+  }, 3500);
+}
+
+function stopProgress(state = 'complete') {
+  clearInterval(progressTimer);
+  const active = state === 'complete' ? analysisStages.length - 1 : [...document.querySelectorAll('.analysis-step')].findIndex(item => item.classList.contains('active'));
+  renderProgress(Math.max(active, 0), state);
+}
+
+function showResultBox(result) {
+  const score = result.risk_score;
+  const header = byId('result-header');
+  byId('result-box').classList.add('show');
+  byId('risk-score').textContent = score;
+  header.className = `result-header ${score >= 70 ? 'danger' : score >= 40 ? 'warning' : 'safe'}`;
+  byId('verdict-icon').innerHTML = score >= 70 ? '<i class="fa-solid fa-bell"></i>' : score >= 40 ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-circle-check"></i>';
+  byId('verdict-text').textContent = score >= 70 ? 'High risk — likely phishing' : score >= 40 ? 'Suspicious — review carefully' : 'Safe — no threat detected';
+  byId('indicator-list').innerHTML = result.indicators.map(item => `<span class="indicator ${item.level}">${escapeHtml(item.text)}</span>`).join('') || '<span class="indicator green">No high-impact indicators</span>';
+}
+
+function renderHistory() {
+  const tbody = byId('history-body');
+  const empty = byId('empty-state');
+  tbody.innerHTML = history.map(item => `<tr>
+    <td><span class="type-badge type-url"><i class="fa-solid fa-link"></i> URL</span></td>
+    <td title="${escapeHtml(item.content)}" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(item.content)}</td>
+    <td><span class="risk-pill ${item.riskScore >= 70 ? 'risk-high' : item.riskScore >= 40 ? 'risk-medium' : 'risk-low'}">${item.riskScore}</span></td>
+    <td>${escapeHtml(item.verdict)}</td><td style="color:var(--gray);font-size:12px">${formatDate(item.createdAt || item.analyzedAt)}</td>
+    <td><button class="action-btn" data-analysis-id="${item.id}">View</button></td>
+  </tr>`).join('');
+  empty.style.display = history.length ? 'none' : 'block';
+  tbody.querySelectorAll('[data-analysis-id]').forEach(button => button.addEventListener('click', () => viewResult(button.dataset.analysisId)));
+}
+
+async function refreshHistory() {
+  history = isGuest() ? JSON.parse(sessionStorage.getItem(guestHistoryKey) || '[]') : await window.csFirebase.listAnalyses();
+  const weekAgo = Date.now() - 7 * 86400000;
+  byId('stat-total').textContent = history.length;
+  byId('stat-threats').textContent = history.filter(item => item.riskScore >= 70).length;
+  byId('stat-safe').textContent = history.filter(item => item.riskScore < 40).length;
+  byId('stat-week').textContent = history.filter(item => new Date(item.createdAt || item.analyzedAt).getTime() >= weekAgo).length;
+  renderHistory();
+}
+
+async function saveAnalysis(result, content) {
+  if (!isGuest()) return window.csFirebase.saveAnalysis(result, content);
+  const record = {
+    id: `guest-${Date.now()}`,
+    inputType: result.input_type,
+    content,
+    riskScore: result.risk_score,
+    verdict: result.verdict,
+    indicators: result.indicators || [],
+    features: result.features || {},
+    screenshotUrl: result.screenshot_url || null,
+    analyzedAt: result.analyzed_at,
+    createdAt: new Date().toISOString()
+  };
+  const guestHistory = JSON.parse(sessionStorage.getItem(guestHistoryKey) || '[]');
+  guestHistory.unshift(record);
+  sessionStorage.setItem(guestHistoryKey, JSON.stringify(guestHistory));
+  return record.id;
+}
+
+function viewResult(id) {
+  const item = history.find(entry => entry.id === id);
+  if (!item) return;
+  sessionStorage.setItem('cs_result', JSON.stringify({ risk_score: item.riskScore, verdict: item.verdict, indicators: item.indicators, input_type: item.inputType, content: item.content, analyzed_at: item.analyzedAt, features: item.features || {}, screenshot_url: item.screenshotUrl || null, analysis_id: item.id }));
+  location.href = 'result.html';
+}
+
+async function analyzeUrl() {
+  const content = byId('url-input').value.trim();
+  if (!content) return showToast('Please enter a URL first.', 'warning');
+  setLoading(true);
+  startProgress();
+  try {
+    const response = await fetch(`${ANALYZER_API}/analyze`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: content }) });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.detail || 'Analysis failed.');
+    const result = normalizeResult(body, content);
+    result.analysis_id = await saveAnalysis(result, content);
+    sessionStorage.setItem('cs_result', JSON.stringify(result));
+    await refreshHistory();
+    stopProgress('complete');
+    window.setTimeout(() => { window.location.href = 'result.html'; }, 250);
+  } catch (error) { stopProgress('failed'); showToast(error.message, 'error'); }
+  finally { setLoading(false); }
+}
+
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(item => item.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(item => item.classList.remove('active'));
+  tab.classList.add('active'); byId(`tab-${tab.dataset.tab}`).classList.add('active');
+}));
+byId('url-analyze-btn')?.addEventListener('click', analyzeUrl);
+byId('url-paste-btn')?.addEventListener('click', async () => {
+  try {
+    const clipboardText = await navigator.clipboard.readText();
+    if (!clipboardText.trim()) return showToast('Your clipboard is empty.', 'warning');
+    const input = byId('url-input');
+    input.value = clipboardText.trim();
+    input.focus();
+  } catch (error) {
+    showToast('Clipboard access was blocked. Please paste with Ctrl+V.', 'warning');
+  }
+});
+byId('email-analyze-btn')?.addEventListener('click', () => showToast('URL analysis is currently available.', 'info'));
+byId('image-analyze-btn')?.addEventListener('click', () => showToast('URL analysis is currently available.', 'info'));
+byId('clear-history-btn')?.addEventListener('click', async () => {
+  if (!history.length || !confirm('Clear all saved analyses?')) return;
+  if (isGuest()) sessionStorage.removeItem(guestHistoryKey);
+  else await Promise.all(history.map(item => window.csFirebase.deleteAnalysis(item.id)));
+  await refreshHistory();
+});
+refreshHistory().catch(error => showToast(error.message, 'error'));

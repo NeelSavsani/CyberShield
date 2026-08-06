@@ -1,0 +1,133 @@
+/* ============================================================
+   CyberShield — Global Styles  (css/style.css)
+   Group G52 | LDRP-ITR (KSV)
+   Shared across all pages: nav, buttons, sidebar, topbar
+============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:      #0B1E3D;
+  --navy-mid:  #0D2347;
+  --cyan:      #00C8FF;
+  --cyan-dim:  #0891B2;
+  --white:     #FFFFFF;
+  --slate:     #334155;
+  --gray:      #64748B;
+  --gray-lt:   #CBD5E1;
+  --off-white: #F0F4F8;
+  --border:    #E2E8F0;
+  --danger:    #EF4444;
+  --success:   #10B981;
+  --warning:   #F59E0B;
+  --purple:    #7C3AED;
+  --teal:      #0D9488;
+  --sidebar-w: 240px;
+  --font-head: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+
+/* ── Dark theme (toggled via the moon/sun icon in the topbar) ─
+   Overrides only the "content area" tokens — the sidebar is
+   already navy/dark in both modes, so it stays visually
+   consistent. Applied by adding data-theme="dark" to <html>,
+   see js/main.js → initThemeToggle(). ──────────────────────── */
+html[data-theme="dark"] {
+  --white:     #131C31;
+  --slate:     #E2E8F0;
+  --gray:      #94A3B8;
+  --gray-lt:   #475569;
+  --off-white: #0A1220;
+  --border:    #253248;
+}
+html[data-theme="dark"] body { background: var(--off-white); }
+html[data-theme="dark"] .topbar { background: var(--white); border-bottom-color: var(--border); }
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .auth-card { background: var(--white); border-color: var(--border); }
+html[data-theme="dark"] .form-input,
+html[data-theme="dark"] .filter-select,
+html[data-theme="dark"] .search-input,
+html[data-theme="dark"] .select-pill { background: var(--off-white); border-color: var(--border); color: var(--slate); }
+html[data-theme="dark"] .data-table tr:hover td,
+html[data-theme="dark"] .reset-link-box { background: rgba(255,255,255,0.03); }
+
+/* ── Theme toggle button ─────────────────────────────────────── */
+.theme-toggle {
+  width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border);
+  background: var(--white); color: var(--gray); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all .15s;
+}
+.theme-toggle:hover { border-color: var(--cyan-dim); color: var(--cyan-dim); }
+
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--off-white); color: var(--slate); display: flex; min-height: 100vh; }
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w); background: var(--navy);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0;
+  height: 100vh; z-index: 50;
+}
+.sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.07); text-decoration: none; }
+.sidebar-logo svg { width: 30px; height: 30px; flex-shrink: 0; }
+.sidebar-logo-text { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: var(--white); }
+.sidebar-logo-text span { color: var(--cyan); }
+.sidebar-section { padding: 14px 12px 6px; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin: 2px 8px; border-radius: 8px; cursor: pointer; text-decoration: none; color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: background .15s, color .15s; }
+.nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); }
+.nav-item.active { background: rgba(0,200,255,0.12); color: var(--cyan); }
+.nav-icon { font-size: 17px; width: 20px; text-align: center; flex-shrink: 0; }
+.sidebar-bottom { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.07); padding: 12px 8px; }
+.user-chip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,200,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--cyan); flex-shrink: 0; }
+.user-name { font-size: 13px; font-weight: 600; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: 11px; color: var(--gray); }
+
+/* ── Main area ───────────────────────────────────────────── */
+.main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Topbar ──────────────────────────────────────────────── */
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+.topbar-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--navy); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all .15s; font-family: var(--font-body); }
+.btn-outline { background: transparent; color: var(--gray); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: var(--cyan-dim); color: var(--cyan-dim); }
+.btn-navy { background: var(--navy); color: var(--white); }
+.btn-navy:hover { background: #1A3A6E; }
+
+/* ── Content area ────────────────────────────────────────── */
+.content { padding: 28px; }
+
+/* ── Panel ───────────────────────────────────────────────── */
+.panel { background: var(--white); border-radius: 14px; border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; }
+.panel-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--navy); }
+.panel-body { padding: 16px 22px 20px; }
+
+/* ── Action buttons ──────────────────────────────────────── */
+.action-btn-lg { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 9px; font-family: var(--font-head); font-size: 14px; font-weight: 700; cursor: pointer; border: none; text-decoration: none; transition: all .15s; }
+.btn-back   { background: var(--off-white); color: var(--slate); border: 1px solid var(--border); }
+.btn-back:hover   { background: var(--border); }
+.btn-report { background: var(--navy); color: var(--white); }
+.btn-report:hover { background: #1A3A6E; }
+.btn-flag   { background: rgba(239,68,68,0.08); color: var(--danger); border: 1px solid rgba(239,68,68,0.25); }
+.btn-flag:hover   { background: rgba(239,68,68,0.15); }
+.actions-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ── Spinner ─────────────────────────────────────────────── */
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 660px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .content { padding: 16px; }
+}

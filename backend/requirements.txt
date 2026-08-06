@@ -1,0 +1,53 @@
+# ==========================
+# FastAPI
+# ==========================
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+python-multipart==0.0.20
+
+# ==========================
+# HTTP
+# ==========================
+requests==2.32.5
+httpx==0.28.1
+
+# ==========================
+# HTML
+# ==========================
+beautifulsoup4==4.13.5
+lxml==6.0.1
+
+# ==========================
+# URL
+# ==========================
+validators==0.35.0
+tldextract==5.3.0
+
+# ==========================
+# DNS
+# ==========================
+dnspython==2.7.0
+
+# ==========================
+# WHOIS
+# ==========================
+python-whois==0.9.5
+
+# ==========================
+# SSL
+# ==========================
+cryptography==45.0.7
+pyOpenSSL==25.2.0
+
+# ==========================
+# Utility
+# ==========================
+python-dotenv==1.1.1
+python-dateutil==2.9.0.post0
+loguru==0.7.3
+
+# Model training (used by ml/train.py; not required to run the API baseline)
+scikit-learn==1.7.1
+pandas==2.3.1
+joblib==1.5.1

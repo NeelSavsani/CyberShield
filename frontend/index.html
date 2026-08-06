@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberShield — Phishing & Threat Detection</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Base ──────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #0B1E3D;
+      --navy-mid:   #0D2347;
+      --cyan:       #00C8FF;
+      --cyan-dim:   #0891B2;
+      --white:      #FFFFFF;
+      --slate:      #334155;
+      --gray:       #64748B;
+      --gray-lt:    #CBD5E1;
+      --off-white:  #F0F4F8;
+      --purple:     #7C3AED;
+      --teal:       #0D9488;
+      --green:      #059669;
+      --font-head:  'Space Grotesk', sans-serif;
+      --font-body:  'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--white);
+      color: var(--slate);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Utility ───────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: var(--navy);
+    }
+    .btn-primary:hover {
+      background: #33d4ff;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0, 200, 255, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.3);
+    }
+    .btn-outline:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0,200,255,0.06);
+    }
+
+    /* ── Navbar ────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 30, 61, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 200, 255, 0.12);
+      padding: 0 24px;
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .nav-logo-text {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .nav-logo-text span { color: var(--cyan); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--gray-lt);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--cyan); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-sm {
+      padding: 8px 20px;
+      font-size: 14px;
+    }
+
+    /* ── Hero Section ──────────────────────────────── */
+    .hero {
+      background: var(--navy);
+      padding: 100px 24px 80px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    /* Decorative background glow circles */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,200,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -80px;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,200,255,0.1);
+      border: 1px solid rgba(0,200,255,0.25);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cyan);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(36px, 6vw, 62px);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 .highlight {
+      color: var(--cyan);
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--gray-lt);
+      max-width: 580px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Stats bar ─────────────────────────────────── */
+    .stats-bar {
+      background: var(--navy-mid);
+      border-top: 1px solid rgba(0,200,255,0.1);
+      border-bottom: 1px solid rgba(0,200,255,0.1);
+      padding: 28px 24px;
+    }
+
+    .stats-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      gap: 64px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    /* ── How it works (3 cards) ────────────────────── */
+    .section {
+      padding: 80px 24px;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan-dim);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: var(--font-head);
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 700;
+      color: var(--navy);
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--gray);
+      font-size: 16px;
+      max-width: 520px;
+      margin: 0 auto 56px;
+    }
+
+    /* 3-column feature cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gray-lt);
+      border-radius: 14px;
+      padding: 32px 28px;
+      transition: box-shadow 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.10);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .card-url::before   { background: var(--cyan-dim); }
+    .card-email::before { background: var(--purple); }
+    .card-image::before { background: var(--teal); }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    .card-url   .card-icon { background: rgba(8,145,178,0.10); }
+    .card-email .card-icon { background: rgba(124,58,237,0.10); }
+    .card-image .card-icon { background: rgba(13,148,136,0.10); }
+
+    .card h3 {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--gray);
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    .card-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    .card-url   .card-tag { background: rgba(8,145,178,0.10);  color: var(--cyan-dim); }
+    .card-email .card-tag { background: rgba(124,58,237,0.10); color: var(--purple); }
+    .card-image .card-tag { background: rgba(13,148,136,0.10); color: var(--teal); }
+
+    /* ── How it works steps ────────────────────────── */
+    .steps-section {
+      background: var(--off-white);
+      padding: 80px 24px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+      position: relative;
+    }
+
+    .step {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .step-number {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--cyan);
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .step h4 {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 13px;
+      color: var(--gray);
+      line-height: 1.6;
+    }
+
+    /* ── CTA Section ───────────────────────────────── */
+    .cta-section {
+      background: var(--navy);
+      padding: 80px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,200,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-section h2 {
+      font-family: var(--font-head);
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-section p {
+      color: var(--gray-lt);
+      font-size: 16px;
+      margin-bottom: 36px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-section .hero-actions { position: relative; z-index: 1; }
+
+    /* ── Footer ────────────────────────────────────── */
+    footer {
+      background: var(--navy-mid);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-logo {
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .footer-logo span { color: var(--cyan); }
+
+    footer p {
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--gray);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--cyan); }
+
+    /* ── Responsive ────────────────────────────────── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .stats-inner { gap: 32px; }
+      .footer-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- NAVBAR                                     -->
+  <!-- ══════════════════════════════════════════ -->
+  <nav>
+    <div class="nav-inner">
+
+      <!-- Logo -->
+      <a href="index.html" class="nav-logo">
+        <!-- Shield SVG icon (inline, no image needed) -->
+        <svg class="nav-logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 3L4 9V19C4 26.18 10.18 32.74 18 34C25.82 32.74 32 26.18 32 19V9L18 3Z"
+                fill="#0B1E3D" stroke="#00C8FF" stroke-width="1.5"/>
+          <path d="M13 18L16.5 21.5L23 14" stroke="#00C8FF" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="nav-logo-text">Cyber<span>Shield</span></span>
+      </a>
+
+      <!-- Nav links (middle) -->
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+
+      <!-- Auth buttons (right) -->
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-outline btn-sm">Log in</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Sign up free</a>
+      </div>
+
+    </div>
+  </nav>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- HERO                                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="hero">
+
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Real-time threat detection
+    </div>
+
+    <h1>
+      Detect phishing before<br />
+      it <span class="highlight">detects you.</span>
+    </h1>
+
+    <p>
+      CyberShield scans suspicious URLs, email content, and screenshot images
+      in seconds — giving you a risk score, threat indicators, and a clear verdict.
+    </p>
+
+    <div class="hero-actions">
+      <a href="register.html" class="btn btn-primary">
+        <!-- Arrow icon inline SVG -->
+        Get started free
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="login.html" class="btn btn-outline">Log in to dashboard</a>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- STATS BAR                                  -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Detection types</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">Real-time</div>
+        <div class="stat-label">Analysis speed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">ML-powered</div>
+        <div class="stat-label">Classifier engine</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">Secure</div>
+        <div class="stat-label">Auth & history</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- FEATURES — 3 detection types              -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="section" id="features">
+    <div class="container">
+
+      <p class="section-label">What we detect</p>
+      <h2 class="section-title">Three ways phishing hides. We find all of them.</h2>
+      <p class="section-subtitle">
+        Submit any suspicious content — our ML models analyse it across
+        three independent modules and combine the results into one risk score.
+      </p>
+
+      <div class="cards-grid">
+
+        <!-- Card 1: URL -->
+        <div class="card card-url">
+          <div class="card-icon"><i class="fa-solid fa-link"></i></div>
+          <h3>URL Analyzer</h3>
+          <p>
+            Paste any suspicious link. We extract lexical features — domain age,
+            special characters, keyword patterns — and classify it using a
+            trained Naive Bayes / SVM model.
+          </p>
+          <span class="card-tag">Cyber Security</span>
+        </div>
+
+        <!-- Card 2: Email -->
+        <div class="card card-email">
+          <div class="card-icon"><i class="fa-solid fa-envelope"></i></div>
+          <h3>Email / Text Analyzer</h3>
+          <p>
+            Paste an email or message. Our NLP pipeline tokenizes and classifies
+            the text for urgency language, impersonation patterns, and
+            social engineering keywords using spaCy and NLTK.
+          </p>
+          <span class="card-tag">Natural Language Processing</span>
+        </div>
+
+        <!-- Card 3: Image -->
+        <div class="card card-image">
+          <div class="card-icon"><i class="fa-solid fa-image"></i></div>
+          <h3>Screenshot Analyzer</h3>
+          <p>
+            Upload a screenshot of a suspicious email or login page. OpenCV
+            extracts logo regions and compares them against known brand
+            templates to detect visual spoofing attempts.
+          </p>
+          <span class="card-tag">Image Processing</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- HOW IT WORKS — 4 steps                    -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="steps-section" id="how-it-works">
+    <div class="container">
+
+      <p class="section-label">How it works</p>
+      <h2 class="section-title">From submission to verdict in seconds.</h2>
+      <p class="section-subtitle" style="margin-bottom:48px">
+        No technical knowledge needed. Just paste or upload and let the system do the work.
+      </p>
+
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h4>Submit content</h4>
+          <p>Paste a URL, copy in an email, or upload a screenshot from your device.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h4>Analysis runs</h4>
+          <p>Our ML models and image pipeline analyse the content across all relevant modules.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h4>Risk score returned</h4>
+          <p>You receive a 0–100 risk score, the threat indicators found, and a recommendation.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <h4>History saved</h4>
+          <p>Every analysis is saved to your dashboard so you can review and export any time.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CTA                                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <section class="cta-section" id="about">
+
+    <h2>Start detecting threats today.</h2>
+    <p>Create a free account and run your first scan in under a minute.</p>
+
+    <div class="hero-actions">
+      <a href="register.html" class="btn btn-primary">
+        Create free account
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="login.html" class="btn btn-outline">Already have an account</a>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- FOOTER                                     -->
+  <!-- ══════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-inner">
+
+      <div class="footer-logo">Cyber<span>Shield</span></div>
+
+      <p>Group G52 &nbsp;·&nbsp; B.E. Computer Engineering &nbsp;·&nbsp; LDRP-ITR (KSV)</p>
+
+      <ul class="footer-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html">Sign up</a></li>
+      </ul>
+
+    </div>
+  </footer>
+
+</body>
+</html>

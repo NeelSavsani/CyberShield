@@ -1,0 +1,20 @@
+services:
+  api:
+    build: ./backend
+    env_file: ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - cybershield-data:/app/data
+    restart: unless-stopped
+
+  dashboard:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
+volumes:
+  cybershield-data:

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — CyberShield</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .admin-tabs{display:flex;gap:6px;padding:0 28px;background:var(--white);border-bottom:1px solid var(--border);}
+    .admin-tab{padding:14px 20px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--gray);border-bottom:3px solid transparent;transition:all .15s;}
+    .admin-tab.active{color:var(--navy);border-bottom-color:var(--cyan);}
+    .admin-tab:hover:not(.active){color:var(--slate);}
+    .tab-pane{display:none;padding:28px;}
+    .tab-pane.active{display:block;}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+    .stat-card{background:var(--white);border-radius:12px;padding:20px 22px;border:1px solid var(--border);}
+    .stat-num{font-family:var(--font-head);font-size:28px;font-weight:700;color:var(--navy);}
+    .stat-lbl{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+    .panel{background:var(--white);border-radius:14px;border:1px solid var(--border);margin-bottom:20px;overflow:hidden;}
+    .panel-header{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+    .panel-title{font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--navy);}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    thead th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.07em;background:var(--off-white);border-bottom:1px solid var(--border);}
+    tbody td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--slate);vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:var(--off-white);}
+    .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+    .badge-danger{background:rgba(239,68,68,0.1);color:#DC2626;}
+    .badge-success{background:rgba(16,185,129,0.1);color:#059669;}
+    .badge-warning{background:rgba(245,158,11,0.1);color:#D97706;}
+    .badge-info{background:rgba(8,145,178,0.1);color:#0891B2;}
+    .badge-purple{background:rgba(124,58,237,0.1);color:#7C3AED;}
+    .badge-error{background:rgba(239,68,68,0.1);color:#DC2626;}
+    .badge-security{background:rgba(124,58,237,0.1);color:#7C3AED;}
+    .action-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--gray);cursor:pointer;transition:all .15s;}
+    .action-btn:hover{border-color:var(--danger);color:var(--danger);}
+    .flag-form{display:flex;gap:10px;flex-wrap:wrap;padding:20px 22px;}
+    .flag-form input,.flag-form select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--slate);background:var(--off-white);outline:none;font-family:var(--font-body);}
+    .flag-form input:focus,.flag-form select:focus{border-color:var(--cyan-dim);background:var(--white);}
+    .flag-form input{flex:1;min-width:200px;}
+    .flag-submit{padding:9px 20px;background:var(--navy);color:var(--white);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+    .flag-submit:hover{background:#1A3A6E;}
+    .search-bar{display:flex;gap:10px;padding:16px 22px;border-bottom:1px solid var(--border);}
+    .search-bar input{flex:1;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:var(--font-body);}
+    .search-bar input:focus{border-color:var(--cyan-dim);}
+    .empty-state{padding:40px;text-align:center;color:var(--gray);}
+    .empty-icon{font-size:36px;margin-bottom:12px;}
+    @media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <svg viewBox="0 0 36 36" fill="none">
+        <path d="M18 3L4 9V19C4 26.18 10.18 32.74 18 34C25.82 32.74 32 26.18 32 19V9L18 3Z" fill="#0B1E3D" stroke="#00C8FF" stroke-width="1.5"/>
+        <path d="M13 18L16.5 21.5L23 14" stroke="#00C8FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="sidebar-logo-text">Cyber<span>Shield</span></span>
+    </a>
+    <div class="sidebar-section">Admin</div>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-house"></i></span>Dashboard</a>
+    <a href="admin.html" class="nav-item active"><span class="nav-icon"><i class="fa-solid fa-shield-halved"></i></span>Admin Panel</a>
+    <div class="sidebar-section">Account</div>
+    <a href="profile.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-user"></i></span>Profile</a>
+    <a href="settings.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span>Settings</a>
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="user-avatar">A</div>
+        <div>
+          <div class="user-name">Admin</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+      <a href="login.html" class="nav-item" style="margin-top:4px"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>Log out</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Admin Panel</span>
+      <div class="topbar-right">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+        <button class="topbar-btn btn-navy" onclick="refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('overview')"><i class="fa-solid fa-chart-column"></i> Overview</button>
+      <button class="admin-tab" onclick="switchTab('users')"><i class="fa-solid fa-users"></i> Users</button>
+      <button class="admin-tab" onclick="switchTab('analyses')"><i class="fa-solid fa-magnifying-glass"></i> All Analyses</button>
+      <button class="admin-tab" onclick="switchTab('flagged')"><i class="fa-solid fa-flag"></i> Flagged Items</button>
+      <button class="admin-tab" onclick="switchTab('logs')"><i class="fa-solid fa-satellite-dish"></i> Threat Monitoring</button>
+    </div>
+
+    <!-- Tab: Overview -->
+    <div class="tab-pane active" id="tab-overview">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-lbl">Total Users</div>
+          <div class="stat-num" id="total-users">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Total Analyses</div>
+          <div class="stat-num" id="total-analyses">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Phishing Found</div>
+          <div class="stat-num" id="total-phishing" style="color:var(--danger)">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Flagged Items</div>
+          <div class="stat-num" id="total-flagged" style="color:var(--warning)">—</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Recent Analyses — All Users</span>
+        </div>
+        <table>
+          <thead><tr><th>User</th><th>Type</th><th>Content</th><th>Risk</th><th>Verdict</th><th>Date</th></tr></thead>
+          <tbody id="overview-table"><tr><td colspan="6" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: Users -->
+    <div class="tab-pane" id="tab-users">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Registered Users</span>
+          <span id="user-count" style="font-size:12px;color:var(--gray)">0 users</span>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="user-search" placeholder="Search by name or email…" oninput="filterUsers()" />
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Last Login</th><th>Action</th></tr></thead>
+          <tbody id="users-table"><tr><td colspan="7" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: All Analyses -->
+    <div class="tab-pane" id="tab-analyses">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Analyses</span>
+          <span id="analyses-count" style="font-size:12px;color:var(--gray)">0 records</span>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="analysis-search" placeholder="Search by content or user…" oninput="filterAnalyses()" />
+          <select id="verdict-filter" onchange="filterAnalyses()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
+            <option value="">All verdicts</option>
+            <option value="phishing">Phishing</option>
+            <option value="suspicious">Suspicious</option>
+            <option value="safe">Safe</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>User</th><th>Type</th><th>Content</th><th>Risk</th><th>Verdict</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="analyses-table"><tr><td colspan="7" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: Flagged Items -->
+    <div class="tab-pane" id="tab-flagged">
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-header">
+          <span class="panel-title">Add to Phishing Database</span>
+        </div>
+        <div class="flag-form">
+          <select id="flag-type">
+            <option value="domain">Domain</option>
+            <option value="url">URL</option>
+            <option value="keyword">Keyword</option>
+            <option value="email_sender">Email Sender</option>
+          </select>
+          <input type="text" id="flag-value" placeholder="e.g. paypal-secure-login.xyz" />
+          <input type="text" id="flag-reason" placeholder="Reason (optional)" />
+          <button class="flag-submit" onclick="addFlaggedItem()">+ Add to database</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Flagged Phishing Database</span>
+          <span id="flagged-count" style="font-size:12px;color:var(--gray)">0 items</span>
+        </div>
+        <table>
+          <thead><tr><th>Type</th><th>Value</th><th>Reason</th><th>Added</th><th>Action</th></tr></thead>
+          <tbody id="flagged-table"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: Threat Monitoring / System Logs -->
+    <div class="tab-pane" id="tab-logs">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">System &amp; Threat Logs</span>
+          <span id="logs-count" style="font-size:12px;color:var(--gray)">0 entries</span>
+        </div>
+        <table>
+          <thead><tr><th>Level</th><th>Source</th><th>Message</th><th>Logged</th></tr></thead>
+          <tbody id="logs-table"><tr><td colspan="4" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end .main -->
+
+  <script src="js/firebase.js"></script>
+  <script src="js/firebase-data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // API base URL comes from main.js (loaded just above) — redeclaring
+    // it here with `const` used to throw a SyntaxError the instant this
+    // script was parsed, silently killing the ENTIRE admin panel (every
+    // tab, every button) before any of it could run.
+    let allUsers    = [];
+    let allAnalyses = [];
+
+    // ── Tab switching ──────────────────────────────────────
+    function switchTab(name) {
+      document.querySelectorAll('.admin-tab').forEach((t,i) => {
+        const tabs = ['overview','users','analyses','flagged','logs'];
+        t.classList.toggle('active', tabs[i] === name);
+      });
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      if (name === 'users')    loadUsers();
+      if (name === 'analyses') loadAnalyses();
+      if (name === 'flagged')  loadFlagged();
+      if (name === 'logs')     loadLogs();
+    }
+
+    // ── Load system / threat logs (additive) ────────────────
+    async function loadLogs() {
+      const tbody = document.getElementById('logs-table');
+      try {
+        const res  = await fetch(`${API}/admin/logs`);
+        const data = await res.json();
+        const rows = data.logs ?? [];
+        document.getElementById('logs-count').textContent = `${data.count ?? 0} entries`;
+
+        if (!rows.length) {
+          tbody.innerHTML = `<tr><td colspan="4" class="empty-state">${data.note || 'No log entries yet.'}</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = rows.map(l => `
+          <tr>
+            <td><span class="badge badge-${l.log_level}">${l.log_level}</span></td>
+            <td>${l.source}</td>
+            <td>${l.message}</td>
+            <td style="color:var(--gray);font-size:12px">${l.created_at}</td>
+          </tr>`).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger);padding:16px">Could not load logs. Is Flask running?</td></tr>`;
+      }
+    }
+
+    // ── Load overview ──────────────────────────────────────
+    async function loadOverview() {
+      try {
+        const [uRes, aRes] = await Promise.all([
+          fetch(`${API}/admin/users`),
+          fetch(`${API}/admin/analyses`)
+        ]);
+        const uData = await uRes.json();
+        const aData = await aRes.json();
+
+        document.getElementById('total-users').textContent     = uData.count ?? '—';
+        document.getElementById('total-analyses').textContent  = aData.count ?? '—';
+        document.getElementById('total-phishing').textContent  =
+          (aData.analyses ?? []).filter(a => a.verdict === 'phishing').length;
+
+        const tbody = document.getElementById('overview-table');
+        const rows  = (aData.analyses ?? []).slice(0, 20);
+        if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No analyses yet.</td></tr>'; return; }
+
+        tbody.innerHTML = rows.map(a => `
+          <tr>
+            <td>${a.first_name ?? ''} ${a.last_name ?? ''}</td>
+            <td><span class="badge badge-info">${a.input_type}</span></td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.content}</td>
+            <td><span class="badge ${riskBadge(a.risk_score)}">${a.risk_score}</span></td>
+            <td><span class="badge ${verdictBadge(a.verdict)}">${a.verdict}</span></td>
+            <td style="color:var(--gray);font-size:12px">${a.created_at}</td>
+          </tr>`).join('');
+      } catch(e) {
+        document.getElementById('overview-table').innerHTML =
+          `<tr><td colspan="6" style="color:var(--danger);padding:16px">Could not load data. Is Flask running?</td></tr>`;
+      }
+    }
+
+    // ── Load users ─────────────────────────────────────────
+    async function loadUsers() {
+      try {
+        const res  = await fetch(`${API}/admin/users`);
+        const data = await res.json();
+        allUsers   = data.users ?? [];
+        document.getElementById('user-count').textContent = allUsers.length + ' users';
+        renderUsers(allUsers);
+      } catch(e) {
+        document.getElementById('users-table').innerHTML =
+          `<tr><td colspan="7" style="color:var(--danger);padding:16px">Could not load users. Is Flask running?</td></tr>`;
+      }
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('users-table');
+      if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-icon"><i class="fa-solid fa-users"></i></div><p>No users found.</p></td></tr>'; return; }
+      tbody.innerHTML = users.map(u => `
+        <tr>
+          <td><strong>${u.first_name} ${u.last_name}</strong></td>
+          <td>${u.email}</td>
+          <td><span class="badge ${u.role === 'admin' ? 'badge-purple' : 'badge-info'}">${u.role}</span></td>
+          <td><span class="badge ${u.is_active ? 'badge-success' : 'badge-danger'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+          <td style="font-size:12px;color:var(--gray)">${u.created_at}</td>
+          <td style="font-size:12px;color:var(--gray)">${u.last_login || '—'}</td>
+          <td><button class="action-btn" onclick="deleteUser(${u.id})">Remove</button></td>
+        </tr>`).join('');
+    }
+
+    function filterUsers() {
+      const q = document.getElementById('user-search').value.toLowerCase();
+      renderUsers(allUsers.filter(u =>
+        `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(q)
+      ));
+    }
+
+    // ── Load analyses ──────────────────────────────────────
+    async function loadAnalyses() {
+      try {
+        const res   = await fetch(`${API}/admin/analyses`);
+        const data  = await res.json();
+        allAnalyses = data.analyses ?? [];
+        document.getElementById('analyses-count').textContent = allAnalyses.length + ' records';
+        renderAnalyses(allAnalyses);
+      } catch(e) {
+        document.getElementById('analyses-table').innerHTML =
+          `<tr><td colspan="7" style="color:var(--danger);padding:16px">Could not load analyses. Is Flask running?</td></tr>`;
+      }
+    }
+
+    function renderAnalyses(list) {
+      const tbody = document.getElementById('analyses-table');
+      if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-icon"><i class="fa-solid fa-magnifying-glass"></i></div><p>No analyses found.</p></td></tr>'; return; }
+      tbody.innerHTML = list.map(a => `
+        <tr>
+          <td>${a.first_name ?? ''} ${a.last_name ?? ''}</td>
+          <td><span class="badge badge-info">${a.input_type}</span></td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.content}">${a.content}</td>
+          <td><span class="badge ${riskBadge(a.risk_score)}">${a.risk_score}</span></td>
+          <td><span class="badge ${verdictBadge(a.verdict)}">${a.verdict}</span></td>
+          <td style="font-size:12px;color:var(--gray)">${a.created_at}</td>
+          <td><button class="action-btn" onclick="deleteAnalysis(${a.id})">Delete</button></td>
+        </tr>`).join('');
+    }
+
+    function filterAnalyses() {
+      const q = document.getElementById('analysis-search').value.toLowerCase();
+      const v = document.getElementById('verdict-filter').value;
+      renderAnalyses(allAnalyses.filter(a =>
+        `${a.content} ${a.first_name} ${a.last_name}`.toLowerCase().includes(q) &&
+        (!v || a.verdict === v)
+      ));
+    }
+
+    // ── Load flagged items ─────────────────────────────────
+    async function loadFlagged() {
+      // Stub — wire to Flask /admin/flagged endpoint when built
+      document.getElementById('flagged-count').textContent = '5 items';
+      const sample = [
+        {id:1, item_type:'domain', value:'paypal-secure-login.net',   reason:'Confirmed phishing', created_at:'14 Jul 2025'},
+        {id:2, item_type:'domain', value:'amazon-verify-account.xyz', reason:'Confirmed phishing', created_at:'14 Jul 2025'},
+        {id:3, item_type:'keyword',value:'verify your account now',   reason:'Urgency phrase',     created_at:'14 Jul 2025'},
+      ];
+      document.getElementById('flagged-table').innerHTML = sample.map(f => `
+        <tr>
+          <td><span class="badge badge-warning">${f.item_type}</span></td>
+          <td style="font-family:monospace;font-size:12px">${f.value}</td>
+          <td style="color:var(--gray);font-size:12px">${f.reason}</td>
+          <td style="color:var(--gray);font-size:12px">${f.created_at}</td>
+          <td><button class="action-btn">Remove</button></td>
+        </tr>`).join('');
+    }
+
+    async function addFlaggedItem() {
+      const type   = document.getElementById('flag-type').value;
+      const value  = document.getElementById('flag-value').value.trim();
+      const reason = document.getElementById('flag-reason').value.trim();
+      if (!value) { alert('Please enter a value to flag.'); return; }
+      try {
+        const res  = await fetch(`${API}/admin/flag`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({item_type: type, value, reason, admin_id: 1})
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('flag-value').value  = '';
+          document.getElementById('flag-reason').value = '';
+          alert(`<i class="fa-solid fa-circle-check"></i> "${value}" added to phishing database.`);
+          loadFlagged();
+        }
+      } catch(e) { alert('Could not add item. Is Flask running?'); }
+    }
+
+    // ── Helpers ────────────────────────────────────────────
+    function riskBadge(score) {
+      return score >= 70 ? 'badge-danger' : score >= 40 ? 'badge-warning' : 'badge-success';
+    }
+    function verdictBadge(v) {
+      return v === 'phishing' ? 'badge-danger' : v === 'suspicious' ? 'badge-warning' : 'badge-success';
+    }
+    async function deleteAnalysis(id) {
+      if (!confirm('Delete this analysis?')) return;
+      await window.csFirebase.deleteAnalysis(String(id));
+      loadAnalyses();
+    }
+    async function deleteUser(id) {
+      if (!confirm('Remove this user? This will also delete all their analyses.')) return;
+      alert('User removal endpoint not yet wired — add DELETE /admin/users/<id> in app.py');
+    }
+    function refreshAll() { loadOverview(); }
+
+    // ── Init ───────────────────────────────────────────────
+    loadOverview();
+    document.getElementById('total-flagged').textContent = 3;
+  </script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

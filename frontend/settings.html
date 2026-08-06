@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — CyberShield</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="icon" type="image/png" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <svg viewBox="0 0 36 36" fill="none">
+        <path d="M18 3L4 9V19C4 26.18 10.18 32.74 18 34C25.82 32.74 32 26.18 32 19V9L18 3Z" fill="#0B1E3D" stroke="#00C8FF" stroke-width="1.5"/>
+        <path d="M13 18L16.5 21.5L23 14" stroke="#00C8FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="sidebar-logo-text">Cyber<span>Shield</span></span>
+    </a>
+
+    <div class="sidebar-section">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-house"></i></span> Dashboard</a>
+    <a href="history.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span> History</a>
+    <a href="reports.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span> Reports</a>
+
+    <div class="sidebar-section">Account</div>
+    <a href="profile.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-user"></i></span> Profile</a>
+    <a href="settings.html" class="nav-item active"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Settings</a>
+
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Loading…</div>
+          <div class="user-role">Account</div>
+        </div>
+      </div>
+      <a href="login.html" data-logout class="nav-item" style="margin-top:4px">
+        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span> Log out
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">Settings</span>
+      <div class="topbar-right">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+        <span class="save-status" id="save-status">Saved <i class="fa-solid fa-check"></i></span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="alert-box alert-success" id="alert-success"></div>
+      <div class="alert-box alert-error" id="alert-error"></div>
+
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Alert Threshold</span></div>
+        <div class="panel-body">
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-title">Risk score threshold</div>
+              <div class="settings-row-desc">
+                CyberShield will flag a scan as a threat once its risk score reaches this
+                value. Lower it to be warned earlier; raise it to reduce false alarms.
+              </div>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="threshold-slider" min="0" max="100" value="70" />
+              <span class="slider-value" id="threshold-value">70</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Notifications</span></div>
+        <div class="panel-body">
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-title">Email alerts</div>
+              <div class="settings-row-desc">Get an email whenever a scan crosses your alert threshold.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="email-alerts" checked />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-title">Weekly summary</div>
+              <div class="settings-row-desc">Receive a weekly digest of your scan activity and detected threats.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="weekly-summary" checked />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Appearance &amp; Reports</span></div>
+        <div class="panel-body">
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-title">Theme</div>
+              <div class="settings-row-desc">Interface color theme for CyberShield.</div>
+            </div>
+            <select class="select-pill" id="theme-select">
+              <option value="dark">Dark (cybersecurity)</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row-title">Default report format</div>
+              <div class="settings-row-desc">Format used when you download a report from History or Reports.</div>
+            </div>
+            <select class="select-pill" id="report-format">
+              <option value="pdf">PDF</option>
+              <option value="html">HTML</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <button class="action-btn-lg btn-report" id="save-btn">Save settings</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/firebase-data.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

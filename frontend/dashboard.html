@@ -272,10 +272,10 @@
     .paste-btn {
       position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
       border: 0; border-radius: 6px; padding: 6px 9px;
-      background: #e6f8ff; color: var(--blue); cursor: pointer;
+      background: var(--cyan-dim); color: var(--white); cursor: pointer;
       font: 700 12px var(--font-body);
     }
-    .paste-btn:hover { background: #ccefff; }
+    .paste-btn:hover { background: var(--teal); }
     input[type="text"]:focus,
     input[type="url"]:focus,
     textarea:focus {
@@ -457,6 +457,8 @@
     .analysis-progress.show { display:block; }
     .analysis-progress-head { display:flex; align-items:center; gap:9px; padding:14px 16px; background:var(--off-white); color:var(--navy); font-size:13px; font-weight:700; }
     .analysis-progress-head i { color:var(--cyan-dim); }
+    .analysis-progress.error .analysis-progress-head { color:var(--danger); font-size:16px; }
+    .analysis-progress.error .analysis-progress-head i { color:var(--danger); }
     .analysis-progress-list { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:9px; padding:14px 16px; }
     .analysis-step { display:flex; align-items:center; gap:7px; color:var(--gray); font-size:12px; }
     .analysis-step i { width:15px; text-align:center; color:var(--gray-lt); }

@@ -48,7 +48,6 @@ function renderRows(rows) {
     <td><strong>${row.riskScore ?? 0}</strong>/100</td>
     <td>${badge(row.verdict)}</td>
     <td>${parseRowDate(row).toLocaleString('en-IN')}</td>
-    <td><button class="icon-btn" title="View full result" onclick="viewRow('${row.id}')"><i class="fa-solid fa-eye"></i></button></td>
     <td><button class="icon-btn" title="Delete" onclick="deleteRow('${row.id}')"><i class="fa-solid fa-trash"></i></button></td>
   </tr>`).join('');
 }
@@ -60,23 +59,6 @@ function applyFilters() {
     && (!q || String(row.content).toLowerCase().includes(q)));
   
   renderRows(filtered);
-}
-
-function viewRow(id) {
-  const row = allRows.find(entry => entry.id === id);
-  if (!row) return;
-  sessionStorage.setItem('cs_result', JSON.stringify({
-    risk_score: row.riskScore,
-    verdict: row.verdict,
-    indicators: row.indicators,
-    input_type: row.inputType,
-    content: row.content,
-    analyzed_at: row.analyzedAt || row.createdAt,
-    features: row.features || {},
-    screenshot_url: row.screenshotUrl || null,
-    analysis_id: row.id
-  }));
-  window.location.href = 'result.html';
 }
 
 async function deleteRow(id) {
@@ -99,7 +81,7 @@ async function loadHistory() {
     updateStatCards(allRows);
     applyFilters();
   } catch (err) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px">Could not load Firestore history.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px">Could not load Firestore history.</td></tr>';
     updateStatCards([]);
   }
 }

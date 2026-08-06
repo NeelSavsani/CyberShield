@@ -59,8 +59,14 @@ function renderResult(result) {
   const typeLabels = { url: '<i class="fa-solid fa-link"></i> URL', email: '<i class="fa-solid fa-envelope"></i> Email / Text', image: '<i class="fa-solid fa-image"></i> Screenshot' };
   document.getElementById('meta-type').innerHTML      = typeLabels[inputType] || inputType;
   document.getElementById('meta-time').textContent    = time;
-  document.getElementById('meta-content').textContent = content;
-  document.getElementById('meta-content').title       = content;
+  const contentEl = document.getElementById('meta-content');
+  contentEl.textContent = content;
+  contentEl.title = content;
+  if (inputType === 'url') {
+    contentEl.href = content;
+  } else {
+    contentEl.removeAttribute('href');
+  }
 
   const overview = document.getElementById('content-overview');
   const screenshotEl = document.getElementById('content-screenshot');

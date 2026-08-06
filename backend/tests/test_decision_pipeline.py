@@ -1,5 +1,7 @@
 import unittest
+from unittest.mock import AsyncMock, patch
 
+from app.orchestrator import analyze_url
 from app.services.classifier import EvidenceClassifier
 from app.services.feature_extractor import FeatureExtractor
 from app.services.url_safety import UnsafeTargetError, ensure_safe_analysis_target
@@ -31,3 +33,16 @@ class DecisionPipelineTests(unittest.IsolatedAsyncioTestCase):
     async def test_localhost_is_rejected(self):
         with self.assertRaises(UnsafeTargetError):
             await ensure_safe_analysis_target("http://127.0.0.1:8000")
+
+    async def test_unreachable_url_returns_not_found_without_a_risk_verdict(self):
+        http_result = {"reachable": False, "error": "Name or service not known"}
+        with patch("app.orchestrator.ensure_safe_analysis_target", new=AsyncMock(return_value=[])), patch(
+            "app.orchestrator.HTTPAnalyzer.analyze", new=AsyncMock(return_value=http_result)
+        ):
+            result = await analyze_url("https://does-not-exist.invalid")
+
+        self.assertFalse(result.success)
+        self.assertFalse(result.exists)
+        self.assertIsNone(result.phishing_probability)
+        self.assertEqual(result.risk, "Unknown")
+        self.assertEqual(result.message, "URL not found.")

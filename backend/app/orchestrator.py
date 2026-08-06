@@ -103,6 +103,22 @@ async def analyze_url(url: str) -> AnalysisResponse:
             False
         )
 
+        # A transport failure (such as an NXDOMAIN hostname or a refused
+        # connection) means there is no page to inspect. Do not feed missing
+        # evidence into the classifier: its neutral defaults can otherwise
+        # incorrectly produce a "Safe" verdict with a zero score.
+        if not exists:
+            return AnalysisResponse(
+                success=False,
+                url=url,
+                normalized_url=normalized_url,
+                exists=False,
+                phishing_probability=None,
+                risk="Unknown",
+                message="URL not found.",
+                data={"http": http_result},
+            )
+
         # ==================================================
         # DNS Analyzer
         # ==================================================

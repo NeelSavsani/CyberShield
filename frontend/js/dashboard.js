@@ -60,6 +60,8 @@ function renderProgress(activeIndex, state = 'running') {
 
 function startProgress() {
   const panel = byId('analysis-progress');
+  panel.classList.remove('error');
+  byId('analysis-progress-list').hidden = false;
   panel.classList.add('show');
   let index = 0;
   renderProgress(index);
@@ -70,10 +72,17 @@ function startProgress() {
   }, 3500);
 }
 
-function stopProgress(state = 'complete') {
+function stopProgress(state = 'complete', message = '', failedStage) {
   clearInterval(progressTimer);
-  const active = state === 'complete' ? analysisStages.length - 1 : [...document.querySelectorAll('.analysis-step')].findIndex(item => item.classList.contains('active'));
+  const active = state === 'complete'
+    ? analysisStages.length - 1
+    : failedStage ?? [...document.querySelectorAll('.analysis-step')].findIndex(item => item.classList.contains('active'));
   renderProgress(Math.max(active, 0), state);
+  if (message) {
+    byId('analysis-progress').classList.add('error');
+    byId('analysis-progress-title').textContent = message;
+    byId('analysis-progress-list').hidden = true;
+  }
 }
 
 function showResultBox(result) {
@@ -146,14 +155,20 @@ async function analyzeUrl() {
   try {
     const response = await fetch(`${ANALYZER_API}/analyze`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: content }) });
     const body = await response.json();
-    if (!response.ok) throw new Error(body.detail || 'Analysis failed.');
+    if (!response.ok || !body.success || body.exists === false) {
+      throw new Error(body.exists === false ? 'URL not found.' : body.detail || body.message || 'Analysis failed.');
+    }
     const result = normalizeResult(body, content);
     result.analysis_id = await saveAnalysis(result, content);
     sessionStorage.setItem('cs_result', JSON.stringify(result));
     await refreshHistory();
     stopProgress('complete');
     window.setTimeout(() => { window.location.href = 'result.html'; }, 250);
-  } catch (error) { stopProgress('failed'); showToast(error.message, 'error'); }
+  } catch (error) {
+    const message = error.message || 'Analysis failed.';
+    stopProgress('failed', message, message === 'URL not found.' ? 1 : undefined);
+    showToast(message, 'error');
+  }
   finally { setLoading(false); }
 }
 

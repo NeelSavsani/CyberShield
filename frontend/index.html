@@ -613,7 +613,7 @@
                 stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </a>
-      <a href="login.html" class="btn btn-outline">Log in to dashboard</a>
+      <a href="dashboard.html" class="btn btn-outline" id="guest-dashboard-link">Go to Dashboard</a>
     </div>
 
   </section>
@@ -781,5 +781,16 @@
     </div>
   </footer>
 
+  <script src="js/firebase.js"></script>
+  <script>
+    document.getElementById('guest-dashboard-link').addEventListener('click', async event => {
+      event.preventDefault();
+      const fb = await window.firebaseReady;
+      await fb.signOut(fb.auth);
+      localStorage.setItem('cs_guest', 'true');
+      sessionStorage.setItem('cs_user', JSON.stringify({ id: 'guest', name: 'Guest User', email: '' }));
+      window.location.href = 'dashboard.html';
+    });
+  </script>
 </body>
 </html>

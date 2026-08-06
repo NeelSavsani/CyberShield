@@ -11,35 +11,35 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import Image as RLImage, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-INPUT = ROOT / "output" / "CyberShield_SRS_Report.docx"
-OUTPUT = ROOT / "output" / "CyberShield_SRS_Report.pdf"
+INPUT = ROOT / "output" / "CyberShield_IEEE_SRS.docx"
+OUTPUT = ROOT / "output" / "CyberShield_IEEE_SRS.pdf"
 FONT_DIR = Path(r"C:\Windows\Fonts")
-FONT = "Arial"
-FONT_BOLD = "Arial-Bold"
+FONT = "Times New Roman"
+FONT_BOLD = "Times New Roman-Bold"
 
 
 def register_fonts():
-    pdfmetrics.registerFont(TTFont(FONT, str(FONT_DIR / "arial.ttf")))
-    pdfmetrics.registerFont(TTFont(FONT_BOLD, str(FONT_DIR / "arialbd.ttf")))
+    pdfmetrics.registerFont(TTFont(FONT, str(FONT_DIR / "times.ttf")))
+    pdfmetrics.registerFont(TTFont(FONT_BOLD, str(FONT_DIR / "timesbd.ttf")))
 
 
 def styles():
     base = getSampleStyleSheet()
     return {
-        "body": ParagraphStyle("body", parent=base["BodyText"], fontName=FONT, fontSize=13.8, leading=18, alignment=TA_JUSTIFY, spaceAfter=8),
-        "h1": ParagraphStyle("h1", parent=base["Heading1"], fontName=FONT_BOLD, fontSize=18, leading=23, textColor=colors.HexColor("#0B1E3D"), spaceBefore=18, spaceAfter=10, keepWithNext=True),
-        "h2": ParagraphStyle("h2", parent=base["Heading2"], fontName=FONT_BOLD, fontSize=15.5, leading=19, textColor=colors.HexColor("#0B1E3D"), spaceBefore=14, spaceAfter=7, keepWithNext=True),
-        "h3": ParagraphStyle("h3", parent=base["Heading3"], fontName=FONT_BOLD, fontSize=13.5, leading=17, textColor=colors.black, spaceBefore=10, spaceAfter=5, keepWithNext=True),
-        "cover": ParagraphStyle("cover", parent=base["Title"], fontName=FONT_BOLD, fontSize=27, leading=33, alignment=TA_CENTER, textColor=colors.HexColor("#0B1E3D"), spaceAfter=18),
-        "cover_sub": ParagraphStyle("cover_sub", parent=base["BodyText"], fontName=FONT_BOLD, fontSize=17, leading=22, alignment=TA_CENTER, textColor=colors.HexColor("#008BB5"), spaceAfter=22),
-        "cover_italic": ParagraphStyle("cover_italic", parent=base["BodyText"], fontName=FONT, fontSize=14, leading=18, alignment=TA_CENTER, textColor=colors.HexColor("#0B1E3D"), spaceAfter=42),
-        "bullet": ParagraphStyle("bullet", parent=base["BodyText"], fontName=FONT, fontSize=13.8, leading=18, leftIndent=20, firstLineIndent=-10, bulletIndent=6, spaceAfter=5, alignment=TA_LEFT),
-        "table": ParagraphStyle("table", parent=base["BodyText"], fontName=FONT, fontSize=10.2, leading=12.2, alignment=TA_LEFT),
-        "table_hdr": ParagraphStyle("table_hdr", parent=base["BodyText"], fontName=FONT_BOLD, fontSize=10.4, leading=12.4, alignment=TA_CENTER, textColor=colors.HexColor("#0B1E3D")),
+        "body": ParagraphStyle("body", parent=base["BodyText"], fontName=FONT, fontSize=12, leading=18, alignment=TA_JUSTIFY, spaceAfter=0),
+        "h1": ParagraphStyle("h1", parent=base["Heading1"], fontName=FONT_BOLD, fontSize=16, leading=20, textColor=colors.black, spaceBefore=12, spaceAfter=6, keepWithNext=True),
+        "h2": ParagraphStyle("h2", parent=base["Heading2"], fontName=FONT_BOLD, fontSize=14, leading=18, textColor=colors.black, spaceBefore=9, spaceAfter=5, keepWithNext=True),
+        "h3": ParagraphStyle("h3", parent=base["Heading3"], fontName=FONT_BOLD, fontSize=13, leading=17, textColor=colors.black, spaceBefore=8, spaceAfter=4, keepWithNext=True),
+        "cover": ParagraphStyle("cover", parent=base["Title"], fontName=FONT_BOLD, fontSize=20, leading=25, alignment=TA_CENTER, textColor=colors.black, spaceAfter=8),
+        "cover_sub": ParagraphStyle("cover_sub", parent=base["BodyText"], fontName=FONT_BOLD, fontSize=18, leading=23, alignment=TA_CENTER, textColor=colors.black, spaceAfter=30),
+        "cover_italic": ParagraphStyle("cover_italic", parent=base["BodyText"], fontName=FONT, fontSize=14, leading=18, alignment=TA_CENTER, textColor=colors.black, spaceAfter=38),
+        "bullet": ParagraphStyle("bullet", parent=base["BodyText"], fontName=FONT, fontSize=12, leading=18, leftIndent=20, firstLineIndent=-10, bulletIndent=6, spaceAfter=0, alignment=TA_LEFT),
+        "table": ParagraphStyle("table", parent=base["BodyText"], fontName=FONT, fontSize=10, leading=12, alignment=TA_LEFT),
+        "table_hdr": ParagraphStyle("table_hdr", parent=base["BodyText"], fontName=FONT_BOLD, fontSize=10.5, leading=12.5, alignment=TA_CENTER, textColor=colors.black),
     }
 
 
@@ -118,14 +118,13 @@ def iter_blocks(parent):
 
 def header_footer(canvas, doc):
     canvas.saveState()
-    canvas.setStrokeColor(colors.HexColor("#0B1E3D"))
-    canvas.setLineWidth(.75)
-    canvas.line(doc.leftMargin, A4[1] - .58 * inch, A4[0] - doc.rightMargin, A4[1] - .58 * inch)
     canvas.setFont(FONT_BOLD, 8.5)
-    canvas.setFillColor(colors.HexColor("#0B1E3D"))
-    canvas.drawString(doc.leftMargin, A4[1] - .45 * inch, "CYBERSHIELD")
+    canvas.setFillColor(colors.black)
+    canvas.drawCentredString(A4[0] / 2, A4[1] - .45 * inch, "CYBERSHIELD - SOFTWARE REQUIREMENTS SPECIFICATION")
     canvas.setFont(FONT, 8.5)
-    canvas.drawCentredString(A4[0] / 2, .42 * inch, f"Page {doc.page}")
+    roman = ["i", "ii", "iii", "iv"]
+    page_label = roman[doc.page - 1] if doc.page <= 4 else str(doc.page - 4)
+    canvas.drawCentredString(A4[0] / 2, .42 * inch, page_label)
     canvas.restoreState()
 
 
@@ -133,11 +132,19 @@ def main():
     register_fonts()
     source = Document(INPUT)
     s = styles()
-    doc = SimpleDocTemplate(str(OUTPUT), pagesize=A4, leftMargin=inch, rightMargin=inch, topMargin=.85 * inch, bottomMargin=.75 * inch, title="CyberShield Software Requirements Specification", author="CyberShield Project Team")
+    doc = SimpleDocTemplate(str(OUTPUT), pagesize=A4, leftMargin=1.25 * inch, rightMargin=inch, topMargin=inch, bottomMargin=inch, title="CyberShield Software Requirements Specification", author="CyberShield Project Team")
     story = []
     width = A4[0] - doc.leftMargin - doc.rightMargin
+    images = [ROOT / "output" / "ieee_srs_diagrams" / name for name in ("use_case.png", "dfd.png", "erd.png")]
+    image_index = 0
     for kind, block in iter_blocks(source):
-        story.extend(paragraph_story(block, s) if kind == "p" else table_story(block, s, width))
+        if kind == "p" and block._p.xpath('.//w:drawing'):
+            image = RLImage(str(images[image_index]), width=5.7 * inch, height=3.5 * inch)
+            image.hAlign = "CENTER"
+            story.extend([image, Spacer(1, 4)])
+            image_index += 1
+        else:
+            story.extend(paragraph_story(block, s) if kind == "p" else table_story(block, s, width))
     doc.build(story, onFirstPage=header_footer, onLaterPages=header_footer)
     print(OUTPUT)
 

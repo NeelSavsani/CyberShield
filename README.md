@@ -23,12 +23,33 @@ For the college demo, `backend/models/phishing_model.joblib` is generated from
 a clearly labelled synthetic dataset. See [COLLEGE_DEMO.md](COLLEGE_DEMO.md)
 for the correct way to present its limits.
 
-## Run locally
+## Run locally first time
 
 ```powershell
 cd backend
-.\venv\Scripts\uvicorn.exe app.main:app --reload
+rmdir /s /q venv
+py -3.12 -m venv venv
+.\venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install playwright
+playwright install chromium
 ```
+
+## Run locally after first time
+```powershell
+cd backend
+.\venv\Scripts\activate 
+uvicorn app.main:app --reload
+```
+
+In another terminal
+```powershell
+python -m http.server 5173 --directory frontend
+```
+
+Open browser and go to `http://localhost:5173/`
+
 
 Then submit a URL to `POST /analyze` or use the interactive API at
 `http://127.0.0.1:8000/docs`.

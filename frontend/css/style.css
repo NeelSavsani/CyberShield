@@ -52,6 +52,18 @@ html[data-theme="dark"] .search-input,
 html[data-theme="dark"] .select-pill { background: var(--off-white); border-color: var(--border); color: var(--slate); }
 html[data-theme="dark"] .data-table tr:hover td,
 html[data-theme="dark"] .reset-link-box { background: rgba(255,255,255,0.03); }
+/* Some components use the navy brand token for text in light mode. Keep the
+   sidebar navy, but switch those content-area labels to a readable light tone. */
+html[data-theme="dark"] .topbar-title,
+html[data-theme="dark"] .panel-title,
+html[data-theme="dark"] .stat-card-value,
+html[data-theme="dark"] .stat-value,
+html[data-theme="dark"] .profile-name,
+html[data-theme="dark"] .auth-logo-text,
+html[data-theme="dark"] .auth-title { color: #F8FAFC; }
+html[data-theme="dark"] .analysis-progress-head,
+html[data-theme="dark"] .analysis-step.active { color: #E2E8F0; }
+html[data-theme="dark"] .topbar-btn-outline { color: var(--slate); }
 
 /* ── Theme toggle button ─────────────────────────────────────── */
 .theme-toggle {
@@ -74,7 +86,7 @@ body { font-family: var(--font-body); background: var(--off-white); color: var(-
   height: 100vh; z-index: 50;
 }
 .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.07); text-decoration: none; }
-.sidebar-logo svg { width: 30px; height: 30px; flex-shrink: 0; }
+.sidebar-logo img { width: 30px; height: 30px; flex-shrink: 0; object-fit: contain; }
 .sidebar-logo-text { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: var(--white); }
 .sidebar-logo-text span { color: var(--cyan); }
 .sidebar-section { padding: 14px 12px 6px; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.25); }

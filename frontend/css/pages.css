@@ -20,7 +20,7 @@
   padding: 36px 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
 }
 .auth-logo { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 22px; }
-.auth-logo img { width: 56px; height: 56px; }
+.auth-logo img { width: 30px; height: 30px; object-fit: contain; }
 .auth-logo-text { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--navy); }
 .auth-logo-text span { color: var(--cyan-dim); }
 .auth-title { font-family: var(--font-head); font-size: 19px; font-weight: 700; color: var(--navy); text-align: center; margin-bottom: 6px; }

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>CyberShield Training Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="simulation-banner" aria-label="Training notice">
+        <strong>CyberShield training simulation</strong>
+        <span>This page is intentionally non-functional. Do not enter real information.</span>
+      </section>
+
+      <section class="card" aria-labelledby="page-title">
+        <p class="eyebrow">ACCOUNT SECURITY CHECK</p>
+        <h1 id="page-title">Verify your account</h1>
+        <p class="lead">This fictional page is a safe demonstration fixture for CyberShield. It has deliberately suspicious form metadata so the analyzer can explain the resulting risk score.</p>
+
+        <!--
+          This form is deliberately prevented from submitting by app.js.
+          The invalid external action exists only to exercise the form analyzer.
+        -->
+        <form id="training-form" action="https://example.invalid/collect" method="get" autocomplete="off">
+          <label for="demo-email">Demo email</label>
+          <input id="demo-email" name="email" type="email" placeholder="demo@example.com" autocomplete="off">
+
+          <label for="demo-password">Demo password</label>
+          <input id="demo-password" name="password" type="password" placeholder="Use only placeholder text" autocomplete="off">
+
+          <label for="demo-code">Demo verification code</label>
+          <input id="demo-code" name="otp_code" inputmode="numeric" placeholder="000000" autocomplete="off">
+
+          <button type="submit">Continue simulation</button>
+        </form>
+
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

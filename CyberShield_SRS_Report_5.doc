@@ -1,0 +1,1195 @@
+{\rtf1\ansi\deff0{\fonttbl{\f0 Times New Roman;}}\paperw11907\paperh16840\margl1800\margr1440\margt1440\margb1440{\header\pard\f0\fs18 CyberShield - Software Requirements Specification\par}{\footer\pard\qc\f0\fs18\chpgn\par}\f0\fs24\pard\qj\sa120\sl360\slmult1 PROJECT REPORT\par
+\pard\qj\sa120\sl360\slmult1 CyberShield\par
+\pard\qj\sa120\sl360\slmult1 A Multi-Modal Phishing Detection Platform\par
+\pard\qj\sa120\sl360\slmult1 URL Analysis, SMS/Email NLP Analysis, and Screenshot Phishing Detection\par
+\pard\qj\sa120\sl360\slmult1 Submitted in partial fulfillment of the academic project requirements\par
+\pard\qj\sa120\sl360\slmult1 Version 5.0\par
+\page
+\pard\sb240\sa140\b\fs32 Acknowledgement\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The CyberShield team sincerely thanks its project guide, faculty members, classmates,\par
+\pard\qj\sa120\sl360\slmult1 families, and friends for their support during the development of this academic project.\par
+\pard\qj\sa120\sl360\slmult1 Their guidance helped shape the project from a URL-focused detector into a broader\par
+\pard\qj\sa120\sl360\slmult1 phishing-awareness platform that considers the way people actually encounter\par
+\pard\qj\sa120\sl360\slmult1 suspicious content: through links, messages, emails, and screenshots.\par
+\pard\qj\sa120\sl360\slmult1 The team also acknowledges the cybersecurity and research communities whose\par
+\pard\qj\sa120\sl360\slmult1 standards, threat reports, secure-development guidance, and open technical work make\par
+\pard\qj\sa120\sl360\slmult1 responsible phishing analysis possible. The report is prepared using the\par
+\pard\qj\sa120\sl360\slmult1 college-provided project-report index so that its study, design, data, results, and\par
+\pard\qj\sa120\sl360\slmult1 references can be reviewed in a familiar academic structure.\par
+\page
+\pard\sb240\sa140\b\fs32 Abstract\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield is a web-based, multi-modal phishing detection platform designed to help\par
+\pard\qj\sa120\sl360\slmult1 users assess suspicious URLs, SMS messages, email content, and screenshots before\par
+\pard\qj\sa120\sl360\slmult1 they interact with them. The system combines cybersecurity intelligence,\par
+\pard\qj\sa120\sl360\slmult1 natural-language processing (NLP), and image processing (IP) to identify technical,\par
+\pard\qj\sa120\sl360\slmult1 linguistic, and visual indicators of phishing. Unlike a link-only checker, CyberShield\par
+\pard\qj\sa120\sl360\slmult1 produces a unified risk assessment with evidence, confidence, limitations, and safe next\par
+\pard\qj\sa120\sl360\slmult1 steps.\par
+\pard\qj\sa120\sl360\slmult1 The proposed platform accepts a user submission, validates and normalizes it, applies a\par
+\pard\qj\sa120\sl360\slmult1 modality-specific analysis pipeline, combines the resulting signals, and displays an\par
+\pard\qj\sa120\sl360\slmult1 understandable result. It is designed around privacy-aware storage, role-based access,\par
+\pard\qj\sa120\sl360\slmult1 audit logging, safe file handling, configurable retention, and measurable verification.\par
+\pard\qj\sa120\sl360\slmult1 This report documents the problem, technology choices, system requirements,\par
+\pard\qj\sa120\sl360\slmult1 diagrams, data design, results, limitations, and future scope of CyberShield.\par
+\page
+\pard\sb240\sa140\b\fs32 Table of Contents\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Acknowledgement ........................................................ i\par
+\pard\qj\sa120\sl360\slmult1 Abstract ...................................................................... ii\par
+\pard\qc\b\fs22 Table of Contents ........................................................ iii\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 List of Figures ............................................................ iv\par
+\pard\qj\sa120\sl360\slmult1 List of Tables ............................................................. v\par
+\pard\sb240\sa140\b\fs26 1 Introduction ............................................................ 1\b0\fs24\par
+\pard\sb240\sa140\b\fs26 2 Technology and Literature Review ............................ 6\b0\fs24\par
+\pard\sb240\sa140\b\fs26 3 System Requirements Study ................................... 13\b0\fs24\par
+\pard\sb240\sa140\b\fs26 4 System Diagrams ................................................... 27\b0\fs24\par
+\pard\sb240\sa140\b\fs26 5 Data Dictionary ....................................................... 33\b0\fs24\par
+\pard\sb240\sa140\b\fs26 6 Result, Discussion and Conclusion .......................... 37\b0\fs24\par
+\pard\sb240\sa140\b\fs26 7 References .............................................................. 39\b0\fs24\par
+\page
+\pard\qj\sa120\sl360\slmult1 v\par
+\pard\sb240\sa140\b\fs32 List of Figures\b0\fs24\par
+\pard\qc\b\fs22 Figure 1: CyberShield Product Context\b0\fs24\par
+\pard\qc\b\fs22 Figure 2: URL Detection Processing Flow\b0\fs24\par
+\pard\qc\b\fs22 Figure 3: Text and Email NLP Processing Flow\b0\fs24\par
+\pard\qc\b\fs22 Figure 4: Screenshot Analysis Flow\b0\fs24\par
+\pard\qc\b\fs22 Figure 5: System Use Case Flow\b0\fs24\par
+\pard\qc\b\fs22 Figure 6: Level-0 Data Flow Diagram\b0\fs24\par
+\pard\qc\b\fs22 Figure 7: Entity Relationship View\b0\fs24\par
+\pard\qc\b\fs22 Figure 8: Request Processing Sequence\b0\fs24\par
+\pard\sb240\sa140\b\fs32 List of Tables\b0\fs24\par
+\pard\qc\b\fs22 Table 1: User Characteristics\b0\fs24\par
+\pard\qc\b\fs22 Table 2: Hardware Requirements\b0\fs24\par
+\pard\qc\b\fs22 Table 3: Software Requirements\b0\fs24\par
+\pard\qc\b\fs22 Table 4: Functional Requirement Summary\b0\fs24\par
+\pard\qc\b\fs22 Table 5: Non-functional Requirement Summary\b0\fs24\par
+\pard\qc\b\fs22 Table 6: Core Data Dictionary\b0\fs24\par
+\pard\qc\b\fs22 Table 7: Evaluation and Acceptance Results\b0\fs24\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 1\par
+\pard\sb240\sa140\b\fs32 1 Introduction\b0\fs24\par
+\pard\sb240\sa140\b\fs32 1.1 Introduction\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Phishing is no longer limited to a plainly suspicious web address. Attackers use\par
+\pard\qj\sa120\sl360\slmult1 shortened or lookalike URLs, urgent SMS messages, polished email text, copied logos,\par
+\pard\qj\sa120\sl360\slmult1 QR codes, and screenshots that imitate legitimate login pages. Users often have only\par
+\pard\qj\sa120\sl360\slmult1 seconds to decide whether to click, reply, scan, or share a one-time password.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield is proposed as a single platform that analyzes the evidence available in\par
+\pard\qj\sa120\sl360\slmult1 each of these forms and gives a cautious, understandable risk assessment before an\par
+\pard\qj\sa120\sl360\slmult1 unsafe action is taken.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 2\par
+\pard\sb240\sa140\b\fs32 1 Introduction\b0\fs24\par
+\pard\sb240\sa140\b\fs32 1.2 Aims and Objectives of the Work\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The aim of CyberShield is to create a reliable and user-oriented phishing detection\par
+\pard\qj\sa120\sl360\slmult1 platform that supports URL analysis, SMS/email text analysis, and screenshot analysis.\par
+\pard\qj\sa120\sl360\slmult1 Its objectives are to identify commonly observed phishing indicators, combine\par
+\pard\qj\sa120\sl360\slmult1 cybersecurity and AI-based evidence, explain the reason for a risk level, preserve\par
+\pard\qj\sa120\sl360\slmult1 privacy, support feedback, and provide a foundation for future integration with security\par
+\pard\qj\sa120\sl360\slmult1 teams. The project emphasizes prevention and awareness rather than automated\par
+\pard\qj\sa120\sl360\slmult1 enforcement or unverified accusation.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 3\par
+\pard\sb240\sa140\b\fs32 1 Introduction\b0\fs24\par
+\pard\sb240\sa140\b\fs32 1.3 Brief Literature Review\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Phishing research and operational guidance consistently show that social engineering\par
+\pard\qj\sa120\sl360\slmult1 succeeds by creating urgency, trust, fear, or reward. URL-based signals such as\par
+\pard\qj\sa120\sl360\slmult1 deceptive domains and malicious reputation remain important, but language analysis\par
+\pard\qj\sa120\sl360\slmult1 adds evidence about credential requests and impersonation. OCR and visual analysis\par
+\pard\qj\sa120\sl360\slmult1 extend coverage to screenshots that conceal a destination or reproduce a trusted brand.\par
+\pard\qj\sa120\sl360\slmult1 This review motivates a multi-modal design in which no single weak signal is treated as\par
+\pard\qj\sa120\sl360\slmult1 proof, while several corroborating signals can produce a strong warning.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 4\par
+\pard\sb240\sa140\b\fs32 1 Introduction\b0\fs24\par
+\pard\sb240\sa140\b\fs32 1.4 Problem Definition\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Existing link checkers do not fully address the way suspicious content is shared through\par
+\pard\qj\sa120\sl360\slmult1 messages and images. A user may receive a delivery SMS with a link, a fake banking\par
+\pard\qj\sa120\sl360\slmult1 email without a visible URL, or a screenshot asking for an OTP. In each case, the user\par
+\pard\qj\sa120\sl360\slmult1 needs a prompt assessment that identifies the relevant evidence and suggests a safe\par
+\pard\qj\sa120\sl360\slmult1 response. The central problem is therefore to provide a privacy-conscious, explainable\par
+\pard\qj\sa120\sl360\slmult1 analysis workflow that can interpret multiple input forms without automatically visiting\par
+\pard\qj\sa120\sl360\slmult1 dangerous content or promising perfect detection.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 5\par
+\pard\sb240\sa140\b\fs32 1 Introduction\b0\fs24\par
+\pard\sb240\sa140\b\fs32 1.5 Plan of the Work\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The project plan begins with requirement study and threat understanding, followed by\par
+\pard\qj\sa120\sl360\slmult1 technology selection, architecture design, dataset preparation, implementation, testing,\par
+\pard\qj\sa120\sl360\slmult1 and documentation. URL analysis provides the initial cybersecurity layer; the NLP\par
+\pard\qj\sa120\sl360\slmult1 module extends detection to SMS and email language; the image module adds OCR\par
+\pard\qj\sa120\sl360\slmult1 and visual indicators for screenshots. Integration work combines results through a\par
+\pard\qj\sa120\sl360\slmult1 versioned scoring policy. The final phase evaluates accuracy, usability, performance,\par
+\pard\qj\sa120\sl360\slmult1 security, and limitations before preparing the report and demonstration.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 6\par
+\pard\sb240\sa140\b\fs32 2 Technology and Literature Review\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.1 Cybersecurity Foundations\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield uses defensive cybersecurity principles: untrusted input is validated,\par
+\pard\qj\sa120\sl360\slmult1 suspicious URLs are never opened in the user browser, reputation lookups are\par
+\pard\qj\sa120\sl360\slmult1 server-side, and results are presented as decision support. Important technical indicators\par
+\pard\qj\sa120\sl360\slmult1 include host structure, top-level domain, encoding, redirect behavior, certificate-related\par
+\pard\qj\sa120\sl360\slmult1 context, and threat-intelligence reputation.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 7\par
+\pard\sb240\sa140\b\fs32 2 Technology and Literature Review\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.2 URL Analysis Technologies\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 A URL parser separates scheme, host, path, query, port, and encoded characters.\par
+\pard\qj\sa120\sl360\slmult1 Normalization detects misleading forms such as IP-address hosts, repeated separators,\par
+\pard\qj\sa120\sl360\slmult1 punycode, long subdomains, or lookalike brand names. Threat-intelligence adapters\par
+\pard\qj\sa120\sl360\slmult1 enrich the normalized indicator while retaining source freshness and failure status.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 8\par
+\pard\sb240\sa140\b\fs32 2 Technology and Literature Review\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.3 NLP for SMS and Email\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 NLP is used to detect urgency, threats, prize claims, account-verification requests,\par
+\pard\qj\sa120\sl360\slmult1 credential or payment requests, sender impersonation, and unusual instructions. Entity\par
+\pard\qj\sa120\sl360\slmult1 extraction identifies domains, phone numbers, email addresses, amounts, and\par
+\pard\qj\sa120\sl360\slmult1 organization names. The approach combines rules and cautious classification so that\par
+\pard\qj\sa120\sl360\slmult1 ordinary urgent communication is not automatically called fraud.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 9\par
+\pard\sb240\sa140\b\fs32 2 Technology and Literature Review\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.4 Image Processing and OCR\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Screenshot analysis begins with safe decoding of PNG, JPEG, or WEBP files. OCR\par
+\pard\qj\sa120\sl360\slmult1 extracts visible text and confidence values; image processing identifies form-like\par
+\pard\qj\sa120\sl360\slmult1 layouts, QR codes, login prompts, payment prompts, and logo-like patterns. Extracted\par
+\pard\qj\sa120\sl360\slmult1 text is passed to the NLP service, while visual signals remain distinct in the\par
+\pard\qj\sa120\sl360\slmult1 explanation.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 10\par
+\pard\sb240\sa140\b\fs32 2 Technology and Literature Review\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.5 Web Application Technologies\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The platform can use a responsive web client, a secure API layer, asynchronous\par
+\pard\qj\sa120\sl360\slmult1 analysis workers, a relational database, protected object storage, and monitoring.\par
+\pard\qj\sa120\sl360\slmult1 Containerized services allow URL, NLP, and image workloads to scale independently.\par
+\pard\qj\sa120\sl360\slmult1 HTTPS, server-side secrets, structured logging, and role-based authorization are\par
+\pard\qj\sa120\sl360\slmult1 baseline engineering requirements.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 11\par
+\pard\sb240\sa140\b\fs32 2 Technology and Literature Review\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.6 Literature Review Findings\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The literature and professional guidance support a defense-in-depth strategy. Technical\par
+\pard\qj\sa120\sl360\slmult1 indicators identify known malicious infrastructure; linguistic signals identify\par
+\pard\qj\sa120\sl360\slmult1 social-engineering pressure; visual analysis identifies copied interfaces or hidden text.\par
+\pard\qj\sa120\sl360\slmult1 The gap addressed by CyberShield is a user-facing academic platform that brings these\par
+\pard\qj\sa120\sl360\slmult1 evidence types together and makes uncertainty visible rather than hiding it behind a\par
+\pard\qj\sa120\sl360\slmult1 single unexplained label.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 12\par
+\pard\sb240\sa140\b\fs32 2 Technology and Literature Review\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.7 Technology Selection Rationale\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Technology choices prioritize explainability, safe integration, and maintainability.\par
+\pard\qj\sa120\sl360\slmult1 Deterministic rules and parsers provide a reviewable baseline; external intelligence is\par
+\pard\qj\sa120\sl360\slmult1 optional enrichment; models are versioned and evaluated before use. The system is\par
+\pard\qj\sa120\sl360\slmult1 designed so that a degraded provider lowers confidence instead of making unsafe\par
+\pard\qj\sa120\sl360\slmult1 content appear clean.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 13\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.1 User Characteristics\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield serves different user groups with different information needs. A guest can\par
+\pard\qj\sa120\sl360\slmult1 submit a limited analysis and see the immediate result. A registered user can manage\par
+\pard\qj\sa120\sl360\slmult1 history and consent. An analyst reviews authorized flagged cases and provides\par
+\pard\qj\sa120\sl360\slmult1 disposition. An administrator configures limits, policies, roles, and integrations. An\par
+\pard\qj\sa120\sl360\slmult1 auditor reviews permitted governance events. Role separation reduces exposure of raw\par
+\pard\qj\sa120\sl360\slmult1 content and ensures that users see only the information required for their tasks.\par
+\pard\qc\b\fs22 Table 1: User Characteristics\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 User class\par
+\pard\qj\sa120\sl360\slmult1 Primary activity\par
+\pard\qj\sa120\sl360\slmult1 Access boundary\par
+\pard\qj\sa120\sl360\slmult1 Guest\par
+\pard\qj\sa120\sl360\slmult1 Analyze one submitted item\par
+\pard\qj\sa120\sl360\slmult1 No retained history by default.\par
+\pard\qj\sa120\sl360\slmult1 Registered user\par
+\pard\qj\sa120\sl360\slmult1 Analyze and view own history\par
+\pard\qj\sa120\sl360\slmult1 Own records and privacy settings only.\par
+\pard\qj\sa120\sl360\slmult1 Analyst\par
+\pard\qj\sa120\sl360\slmult1 Review authorized cases\par
+\pard\qj\sa120\sl360\slmult1 Assigned or policy-approved cases.\par
+\pard\qj\sa120\sl360\slmult1 Administrator\par
+\pard\qj\sa120\sl360\slmult1 Manage policy and operations\par
+\pard\qj\sa120\sl360\slmult1 Configuration and audited sensitive\par
+\pard\qj\sa120\sl360\slmult1 access.\par
+\pard\qj\sa120\sl360\slmult1 Auditor\par
+\pard\qj\sa120\sl360\slmult1 Review governance records\par
+\pard\qj\sa120\sl360\slmult1 Read-only, permitted audit scope.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 14\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.2 Hardware Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The academic deployment requires a modern client device with an updated browser and\par
+\pard\qj\sa120\sl360\slmult1 stable internet connection. The server environment requires sufficient CPU and\par
+\pard\qj\sa120\sl360\slmult1 memory for concurrent requests, protected storage for optional screenshots, and\par
+\pard\qj\sa120\sl360\slmult1 optional GPU capacity only when a selected image model needs it. Resource limits\par
+\pard\qj\sa120\sl360\slmult1 prevent large or deliberately malformed uploads from consuming analysis capacity.\par
+\pard\qj\sa120\sl360\slmult1 Table: Supporting Requirement Baseline\par
+\pard\qj\sa120\sl360\slmult1 Item\par
+\pard\qj\sa120\sl360\slmult1 Requirement\par
+\pard\qj\sa120\sl360\slmult1 Component\par
+\pard\qj\sa120\sl360\slmult1 Baseline requirement\par
+\pard\qj\sa120\sl360\slmult1 Client\par
+\pard\qj\sa120\sl360\slmult1 Desktop/mobile browser, 4 GB RAM, internet connection\par
+\pard\qj\sa120\sl360\slmult1 Application server\par
+\pard\sb240\sa140\b\fs32 2 CPU cores, 4 GB RAM minimum\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Worker node\par
+\pard\sb240\sa140\b\fs32 4 CPU cores, 8 GB RAM for OCR/NLP workload\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Storage\par
+\pard\qj\sa120\sl360\slmult1 Encrypted database backup and protected object storage\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 15\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.3 Software Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The platform requires a supported operating system, modern browser, HTTPS-capable\par
+\pard\qj\sa120\sl360\slmult1 web server, relational database, background queue, OCR engine, and monitored\par
+\pard\qj\sa120\sl360\slmult1 logging stack. Development uses a version-control system, test framework, dependency\par
+\pard\qj\sa120\sl360\slmult1 scanner, and secure configuration method. All production secrets remain outside source\par
+\pard\qj\sa120\sl360\slmult1 code and local test files.\par
+\pard\qj\sa120\sl360\slmult1 Table: Supporting Requirement Baseline\par
+\pard\qj\sa120\sl360\slmult1 Item\par
+\pard\qj\sa120\sl360\slmult1 Requirement\par
+\pard\qj\sa120\sl360\slmult1 Layer\par
+\pard\qj\sa120\sl360\slmult1 Suggested responsibility\par
+\pard\qj\sa120\sl360\slmult1 Frontend\par
+\pard\qj\sa120\sl360\slmult1 Responsive browser interface and accessibility\par
+\pard\qj\sa120\sl360\slmult1 Backend\par
+\pard\qj\sa120\sl360\slmult1 Authentication, API, scoring, audit\par
+\pard\qj\sa120\sl360\slmult1 NLP service\par
+\pard\qj\sa120\sl360\slmult1 Text normalization and phishing cues\par
+\pard\qj\sa120\sl360\slmult1 Image service\par
+\pard\qj\sa120\sl360\slmult1 Safe image decode, OCR, visual signals\par
+\pard\qj\sa120\sl360\slmult1 Database\par
+\pard\qj\sa120\sl360\slmult1 Users, requests, results, indicators, audit\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 16\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.4 Functional Requirements: URL Analysis\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The system shall accept a URL as text, validate its syntax, normalize meaningful\par
+\pard\qj\sa120\sl360\slmult1 components, identify lexical and structural indicators, and query configured reputation\par
+\pard\qj\sa120\sl360\slmult1 sources without opening the target in the user browser. The result shall include risk\par
+\pard\qj\sa120\sl360\slmult1 level, score, confidence, reasons, source limitations, and safe next actions. Redirect\par
+\pard\qj\sa120\sl360\slmult1 evaluation is optional and may run only inside an approved sandbox with strict network\par
+\pard\qj\sa120\sl360\slmult1 and time limits.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 17\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.5 Functional Requirements: SMS and Email Text\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The system shall accept pasted SMS text, email subject/body content, and available\par
+\pard\qj\sa120\sl360\slmult1 sender fields. It shall detect credential or payment requests, urgency, threats,\par
+\pard\qj\sa120\sl360\slmult1 impersonation claims, suspicious embedded entities, and language limitations.\par
+\pard\qj\sa120\sl360\slmult1 Sensitive values are masked in displayed evidence and are not written to logs. The\par
+\pard\qj\sa120\sl360\slmult1 result shall explain which phrases or extracted links influenced the assessment.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 18\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.6 Functional Requirements: Screenshot Analysis\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The system shall accept approved image formats within configured limits, verify the\par
+\pard\qj\sa120\sl360\slmult1 file signature, decode pixels safely, perform OCR, identify relevant visual phishing\par
+\pard\qj\sa120\sl360\slmult1 cues, and state OCR confidence. It shall flag login and OTP prompts, payment prompts,\par
+\pard\qj\sa120\sl360\slmult1 QR codes, obscured links, brand-like patterns, and suspicious urgency banners.\par
+\pard\qj\sa120\sl360\slmult1 Image-derived and OCR-derived evidence are displayed separately.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 19\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.7 Functional Requirements: Accounts and Feedback\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Registered users shall sign in through the approved identity mechanism, view only their\par
+\pard\qj\sa120\sl360\slmult1 own history, manage retention and consent preferences, delete eligible records, and\par
+\pard\qj\sa120\sl360\slmult1 submit feedback. Feedback distinguishes unclear explanation, possible false positive,\par
+\pard\qj\sa120\sl360\slmult1 and possible false negative. Analysts may add a documented disposition without\par
+\pard\qj\sa120\sl360\slmult1 changing the immutable original score record.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 20\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.8 Functional Requirements: Administration\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Administrators shall manage user roles, enabled integrations, input limits, retention\par
+\pard\qj\sa120\sl360\slmult1 rules, risk thresholds, and rule/model versions. Administrative changes, sensitive asset\par
+\pard\qj\sa120\sl360\slmult1 access, exports, deletion actions, and analyst overrides shall create immutable audit\par
+\pard\qj\sa120\sl360\slmult1 events. The administrative dashboard shall distinguish ordinary workload, external-feed\par
+\pard\qj\sa120\sl360\slmult1 degradation, queued work, service failure, and suspicious access activity.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 21\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.9 Non-functional Requirements: Performance\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 A typical URL or text result should be returned within five seconds at the defined\par
+\pard\qj\sa120\sl360\slmult1 95th-percentile baseline. A supported screenshot should return within fifteen seconds,\par
+\pard\qj\sa120\sl360\slmult1 excluding a disclosed external-source timeout. The system shall queue long-running\par
+\pard\qj\sa120\sl360\slmult1 work rather than leaving the browser connection indefinitely open, and it shall show\par
+\pard\qj\sa120\sl360\slmult1 progress status without exposing implementation secrets.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 22\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.10 Non-functional Requirements: Security\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The system shall enforce TLS, least-privilege role-based authorization, secure session\par
+\pard\qj\sa120\sl360\slmult1 management, input validation, rate limiting, protected object storage, server-side\par
+\pard\qj\sa120\sl360\slmult1 secrets, and safe logging. It shall defend against common application risks such as\par
+\pard\qj\sa120\sl360\slmult1 injection, cross-site scripting, broken access control, insecure upload, and accidental\par
+\pard\qj\sa120\sl360\slmult1 disclosure of credentials. Failed dependencies must not silently produce a safe label.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 23\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.11 Non-functional Requirements: Privacy and Usability\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The interface shall explain what is processed, collect the minimum necessary content,\par
+\pard\qj\sa120\sl360\slmult1 provide configurable retention, and honor eligible deletion requests. It shall use\par
+\pard\qj\sa120\sl360\slmult1 understandable risk labels, keyboard-accessible controls, sufficient contrast, non-color\par
+\pard\qj\sa120\sl360\slmult1 indicators, and calm safety guidance. It shall not promise guaranteed detection or\par
+\pard\qj\sa120\sl360\slmult1 require users to disclose passwords, OTPs, or personal documents in feedback.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 24\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.12 Assumptions and Dependencies\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield assumes that users submit material they are authorized to inspect and that\par
+\pard\qj\sa120\sl360\slmult1 external intelligence providers can be delayed, unavailable, or incomplete. OCR quality\par
+\pard\qj\sa120\sl360\slmult1 depends on image resolution, language, compression, and layout. The system depends\par
+\pard\qj\sa120\sl360\slmult1 on authentication, storage, database backup, reputation adapters, OCR capability, and\par
+\pard\qj\sa120\sl360\slmult1 monitoring. Each dependency is isolated so that a known limitation can be reported\par
+\pard\qj\sa120\sl360\slmult1 honestly.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 25\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.13 Requirement Prioritization\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Core input validation, safe result display, URL analysis, text analysis, screenshot\par
+\pard\qj\sa120\sl360\slmult1 analysis, security controls, and audit records are mandatory for the academic baseline.\par
+\pard\qj\sa120\sl360\slmult1 Export, advanced multilingual NLP, browser-extension integration,\par
+\pard\qj\sa120\sl360\slmult1 organization-specific brand profiles, and SOC workflow integration are future\par
+\pard\qj\sa120\sl360\slmult1 enhancements. Priorities are reviewed with technical feasibility, privacy impact, user\par
+\pard\qj\sa120\sl360\slmult1 benefit, and testing capacity in mind.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 26\par
+\pard\sb240\sa140\b\fs32 3 System Requirements Study\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.14 Requirement Validation\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Requirements are reviewed for clarity, traceability, testability, safety, and consistency\par
+\pard\qj\sa120\sl360\slmult1 with the college project scope. Each requirement maps to at least one unit, integration,\par
+\pard\qj\sa120\sl360\slmult1 security, performance, usability, or acceptance test. Changes are recorded with version\par
+\pard\qj\sa120\sl360\slmult1 identifiers so that an evaluator can determine which scoring policy, model, or interface\par
+\pard\qj\sa120\sl360\slmult1 condition produced a documented result.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 27\par
+\pard\sb240\sa140\b\fs32 4 System Diagrams\b0\fs24\par
+\pard\sb240\sa140\b\fs32 4.1 System Context Diagram\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The context model shows that users interact through the browser client, while protected\par
+\pard\qj\sa120\sl360\slmult1 services perform URL, text, and image analysis. External intelligence is accessed by\par
+\pard\qj\sa120\sl360\slmult1 server-side adapters, not directly from the browser.\par
+\pard\qj\sa120\sl360\slmult1 The diagram is a logical representation intended to support implementation and testing.\par
+\pard\qj\sa120\sl360\slmult1 It identifies responsibility and data movement without locking the project to a specific\par
+\pard\qj\sa120\sl360\slmult1 framework or vendor. Trust boundaries remain between the browser, API, worker\par
+\pard\qj\sa120\sl360\slmult1 processes, external intelligence providers, and protected storage.\par
+\pard\qj\sa120\sl360\slmult1 Figure: 4.1 System Context Diagram\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 Web Client\par
+\pard\qj\sa120\sl360\slmult1 CyberShield\par
+\pard\qj\sa120\sl360\slmult1 API\par
+\pard\qj\sa120\sl360\slmult1 Analysis\par
+\pard\qj\sa120\sl360\slmult1 Services\par
+\pard\qj\sa120\sl360\slmult1 Risk Result\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 28\par
+\pard\sb240\sa140\b\fs32 4 System Diagrams\b0\fs24\par
+\pard\sb240\sa140\b\fs32 4.2 Use Case Diagram\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The primary use case is to submit one input modality and receive an evidence-based\par
+\pard\qj\sa120\sl360\slmult1 result. Supporting use cases include account management, feedback, analyst review,\par
+\pard\qj\sa120\sl360\slmult1 and administration.\par
+\pard\qj\sa120\sl360\slmult1 The diagram is a logical representation intended to support implementation and testing.\par
+\pard\qj\sa120\sl360\slmult1 It identifies responsibility and data movement without locking the project to a specific\par
+\pard\qj\sa120\sl360\slmult1 framework or vendor. Trust boundaries remain between the browser, API, worker\par
+\pard\qj\sa120\sl360\slmult1 processes, external intelligence providers, and protected storage.\par
+\pard\qj\sa120\sl360\slmult1 Figure: 4.2 Use Case Diagram\par
+\pard\qj\sa120\sl360\slmult1 Submit\par
+\pard\qj\sa120\sl360\slmult1 Input\par
+\pard\qj\sa120\sl360\slmult1 Analyze\par
+\pard\qj\sa120\sl360\slmult1 View\par
+\pard\qj\sa120\sl360\slmult1 Result\par
+\pard\qj\sa120\sl360\slmult1 Feedback\par
+\pard\qj\sa120\sl360\slmult1 or Report\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 29\par
+\pard\sb240\sa140\b\fs32 4 System Diagrams\b0\fs24\par
+\pard\sb240\sa140\b\fs32 4.3 Level-0 Data Flow Diagram\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The Level-0 data flow separates request validation, modality analysis, scoring, and\par
+\pard\qj\sa120\sl360\slmult1 protected storage. It makes clear that raw untrusted inputs are checked before they\par
+\pard\qj\sa120\sl360\slmult1 reach downstream services.\par
+\pard\qj\sa120\sl360\slmult1 The diagram is a logical representation intended to support implementation and testing.\par
+\pard\qj\sa120\sl360\slmult1 It identifies responsibility and data movement without locking the project to a specific\par
+\pard\qj\sa120\sl360\slmult1 framework or vendor. Trust boundaries remain between the browser, API, worker\par
+\pard\qj\sa120\sl360\slmult1 processes, external intelligence providers, and protected storage.\par
+\pard\qj\sa120\sl360\slmult1 Figure: 4.3 Level-0 Data Flow Diagram\par
+\pard\qj\sa120\sl360\slmult1 Client\par
+\pard\qj\sa120\sl360\slmult1 API\par
+\pard\qj\sa120\sl360\slmult1 Gateway\par
+\pard\qj\sa120\sl360\slmult1 Workers\par
+\pard\qj\sa120\sl360\slmult1 Scoring\par
+\pard\qj\sa120\sl360\slmult1 Engine\par
+\pard\qj\sa120\sl360\slmult1 Data Store\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 30\par
+\pard\sb240\sa140\b\fs32 4 System Diagrams\b0\fs24\par
+\pard\sb240\sa140\b\fs32 4.4 Level-1 Processing Flow\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The Level-1 flow describes the common internal pipeline. The same controlled stages\par
+\pard\qj\sa120\sl360\slmult1 apply to URLs, text, and screenshots, while their individual analyzers produce\par
+\pard\qj\sa120\sl360\slmult1 modality-specific evidence.\par
+\pard\qj\sa120\sl360\slmult1 The diagram is a logical representation intended to support implementation and testing.\par
+\pard\qj\sa120\sl360\slmult1 It identifies responsibility and data movement without locking the project to a specific\par
+\pard\qj\sa120\sl360\slmult1 framework or vendor. Trust boundaries remain between the browser, API, worker\par
+\pard\qj\sa120\sl360\slmult1 processes, external intelligence providers, and protected storage.\par
+\pard\qj\sa120\sl360\slmult1 Figure: 4.4 Level-1 Processing Flow\par
+\pard\qj\sa120\sl360\slmult1 Validate\par
+\pard\qj\sa120\sl360\slmult1 Normalize\par
+\pard\qj\sa120\sl360\slmult1 Extract\par
+\pard\qj\sa120\sl360\slmult1 Signals\par
+\pard\qj\sa120\sl360\slmult1 Score\par
+\pard\qj\sa120\sl360\slmult1 Explain\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 31\par
+\pard\sb240\sa140\b\fs32 4 System Diagrams\b0\fs24\par
+\pard\sb240\sa140\b\fs32 4.5 Entity Relationship Diagram\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The entity model connects a user to analysis requests and results, and connects each\par
+\pard\qj\sa120\sl360\slmult1 result to one or more normalized indicators. Audit events remain separate from the\par
+\pard\qj\sa120\sl360\slmult1 result so governance history cannot be overwritten.\par
+\pard\qj\sa120\sl360\slmult1 The diagram is a logical representation intended to support implementation and testing.\par
+\pard\qj\sa120\sl360\slmult1 It identifies responsibility and data movement without locking the project to a specific\par
+\pard\qj\sa120\sl360\slmult1 framework or vendor. Trust boundaries remain between the browser, API, worker\par
+\pard\qj\sa120\sl360\slmult1 processes, external intelligence providers, and protected storage.\par
+\pard\qj\sa120\sl360\slmult1 Figure: 4.5 Entity Relationship Diagram\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 Request\par
+\pard\qj\sa120\sl360\slmult1 Result\par
+\pard\qj\sa120\sl360\slmult1 Indicator\par
+\pard\qj\sa120\sl360\slmult1 Audit Event\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 32\par
+\pard\sb240\sa140\b\fs32 4 System Diagrams\b0\fs24\par
+\pard\sb240\sa140\b\fs32 4.6 Sequence Diagram\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The sequence model shows the asynchronous path from browser submission through\par
+\pard\qj\sa120\sl360\slmult1 validation and workers to a scored result. Timeout and failure states are returned as\par
+\pard\qj\sa120\sl360\slmult1 visible limitations rather than hidden technical errors.\par
+\pard\qj\sa120\sl360\slmult1 The diagram is a logical representation intended to support implementation and testing.\par
+\pard\qj\sa120\sl360\slmult1 It identifies responsibility and data movement without locking the project to a specific\par
+\pard\qj\sa120\sl360\slmult1 framework or vendor. Trust boundaries remain between the browser, API, worker\par
+\pard\qj\sa120\sl360\slmult1 processes, external intelligence providers, and protected storage.\par
+\pard\qj\sa120\sl360\slmult1 Figure: 4.6 Sequence Diagram\par
+\pard\qj\sa120\sl360\slmult1 Submit\par
+\pard\qj\sa120\sl360\slmult1 Queue\par
+\pard\qj\sa120\sl360\slmult1 Analyze\par
+\pard\qj\sa120\sl360\slmult1 Persist\par
+\pard\qj\sa120\sl360\slmult1 Display\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 33\par
+\pard\sb240\sa140\b\fs32 5 Data Dictionary\b0\fs24\par
+\pard\sb240\sa140\b\fs32 5.1 Database Design\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield uses a relational design for identities, requests, results, normalized\par
+\pard\qj\sa120\sl360\slmult1 indicators, feedback, and audit events. Image bytes are not stored directly in normal\par
+\pard\qj\sa120\sl360\slmult1 database rows; protected object storage holds approved assets, while the database\par
+\pard\qj\sa120\sl360\slmult1 retains an opaque reference, integrity hash, consent state, and lifecycle status.\par
+\pard\qc\b\fs22 Table 6: Core Data Dictionary\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Entity\par
+\pard\qj\sa120\sl360\slmult1 Selected fields\par
+\pard\qj\sa120\sl360\slmult1 Purpose\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 user_id, role, consent\par
+\pard\qj\sa120\sl360\slmult1 Identity and access boundary.\par
+\pard\qj\sa120\sl360\slmult1 Analysis Request\par
+\pard\qj\sa120\sl360\slmult1 request_id, modality, status\par
+\pard\qj\sa120\sl360\slmult1 Tracks one analysis workflow.\par
+\pard\qj\sa120\sl360\slmult1 Result\par
+\pard\qj\sa120\sl360\slmult1 score, label, version\par
+\pard\qj\sa120\sl360\slmult1 Stores an explainable decision.\par
+\pard\qj\sa120\sl360\slmult1 Indicator\par
+\pard\qj\sa120\sl360\slmult1 type, severity, source\par
+\pard\qj\sa120\sl360\slmult1 Stores normalized evidence.\par
+\pard\qj\sa120\sl360\slmult1 Audit Event\par
+\pard\qj\sa120\sl360\slmult1 actor, action, time\par
+\pard\qj\sa120\sl360\slmult1 Governance and investigation trail.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 34\par
+\pard\sb240\sa140\b\fs32 5 Data Dictionary\b0\fs24\par
+\pard\sb240\sa140\b\fs32 5.2 Core Data Dictionary\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The data dictionary defines fields that are necessary to reproduce an analysis safely.\par
+\pard\qj\sa120\sl360\slmult1 Request records store modality, submitted time, status, and a protected input reference.\par
+\pard\qj\sa120\sl360\slmult1 Result records store score, label, confidence, policy version, and limitation. Indicators\par
+\pard\qj\sa120\sl360\slmult1 store type, normalized value or hash, source, severity, and evidence confidence.\par
+\pard\qc\b\fs22 Table 6: Core Data Dictionary\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Entity\par
+\pard\qj\sa120\sl360\slmult1 Selected fields\par
+\pard\qj\sa120\sl360\slmult1 Purpose\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 user_id, role, consent\par
+\pard\qj\sa120\sl360\slmult1 Identity and access boundary.\par
+\pard\qj\sa120\sl360\slmult1 Analysis Request\par
+\pard\qj\sa120\sl360\slmult1 request_id, modality, status\par
+\pard\qj\sa120\sl360\slmult1 Tracks one analysis workflow.\par
+\pard\qj\sa120\sl360\slmult1 Result\par
+\pard\qj\sa120\sl360\slmult1 score, label, version\par
+\pard\qj\sa120\sl360\slmult1 Stores an explainable decision.\par
+\pard\qj\sa120\sl360\slmult1 Indicator\par
+\pard\qj\sa120\sl360\slmult1 type, severity, source\par
+\pard\qj\sa120\sl360\slmult1 Stores normalized evidence.\par
+\pard\qj\sa120\sl360\slmult1 Audit Event\par
+\pard\qj\sa120\sl360\slmult1 actor, action, time\par
+\pard\qj\sa120\sl360\slmult1 Governance and investigation trail.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 35\par
+\pard\sb240\sa140\b\fs32 5 Data Dictionary\b0\fs24\par
+\pard\sb240\sa140\b\fs32 5.3 Data Retention and Integrity\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Retention policy separates transient processing artifacts, user history, audit events, and\par
+\pard\qj\sa120\sl360\slmult1 backups. A content hash supports integrity and duplicate analysis without requiring\par
+\pard\qj\sa120\sl360\slmult1 unrestricted raw content. Deletes are recorded as audit actions; they remove or\par
+\pard\qj\sa120\sl360\slmult1 de-identify eligible content while preserving only the governance information required\par
+\pard\qj\sa120\sl360\slmult1 by policy.\par
+\pard\qc\b\fs22 Table 6: Core Data Dictionary\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Entity\par
+\pard\qj\sa120\sl360\slmult1 Selected fields\par
+\pard\qj\sa120\sl360\slmult1 Purpose\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 user_id, role, consent\par
+\pard\qj\sa120\sl360\slmult1 Identity and access boundary.\par
+\pard\qj\sa120\sl360\slmult1 Analysis Request\par
+\pard\qj\sa120\sl360\slmult1 request_id, modality, status\par
+\pard\qj\sa120\sl360\slmult1 Tracks one analysis workflow.\par
+\pard\qj\sa120\sl360\slmult1 Result\par
+\pard\qj\sa120\sl360\slmult1 score, label, version\par
+\pard\qj\sa120\sl360\slmult1 Stores an explainable decision.\par
+\pard\qj\sa120\sl360\slmult1 Indicator\par
+\pard\qj\sa120\sl360\slmult1 type, severity, source\par
+\pard\qj\sa120\sl360\slmult1 Stores normalized evidence.\par
+\pard\qj\sa120\sl360\slmult1 Audit Event\par
+\pard\qj\sa120\sl360\slmult1 actor, action, time\par
+\pard\qj\sa120\sl360\slmult1 Governance and investigation trail.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 36\par
+\pard\sb240\sa140\b\fs32 5 Data Dictionary\b0\fs24\par
+\pard\sb240\sa140\b\fs32 5.4 Data Security Controls\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Database access uses service accounts with minimum permissions. Sensitive data is\par
+\pard\qj\sa120\sl360\slmult1 encrypted at rest through approved platform controls, and data in transit uses TLS.\par
+\pard\qj\sa120\sl360\slmult1 Queries use parameterized access patterns, exports require authorization, and logs omit\par
+\pard\qj\sa120\sl360\slmult1 credentials, raw session tokens, and discovered secrets.\par
+\pard\qc\b\fs22 Table 6: Core Data Dictionary\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Entity\par
+\pard\qj\sa120\sl360\slmult1 Selected fields\par
+\pard\qj\sa120\sl360\slmult1 Purpose\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 user_id, role, consent\par
+\pard\qj\sa120\sl360\slmult1 Identity and access boundary.\par
+\pard\qj\sa120\sl360\slmult1 Analysis Request\par
+\pard\qj\sa120\sl360\slmult1 request_id, modality, status\par
+\pard\qj\sa120\sl360\slmult1 Tracks one analysis workflow.\par
+\pard\qj\sa120\sl360\slmult1 Result\par
+\pard\qj\sa120\sl360\slmult1 score, label, version\par
+\pard\qj\sa120\sl360\slmult1 Stores an explainable decision.\par
+\pard\qj\sa120\sl360\slmult1 Indicator\par
+\pard\qj\sa120\sl360\slmult1 type, severity, source\par
+\pard\qj\sa120\sl360\slmult1 Stores normalized evidence.\par
+\pard\qj\sa120\sl360\slmult1 Audit Event\par
+\pard\qj\sa120\sl360\slmult1 actor, action, time\par
+\pard\qj\sa120\sl360\slmult1 Governance and investigation trail.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 37\par
+\pard\sb240\sa140\b\fs32 6 Result, Discussion and Conclusion\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6.1 Functional Results\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The planned functional result is an end-to-end workflow that accepts all three input\par
+\pard\qj\sa120\sl360\slmult1 modalities, validates them safely, runs appropriate analyzers, produces an explainable\par
+\pard\qj\sa120\sl360\slmult1 label, and retains an authorized history record. A successful demonstration includes a\par
+\pard\qj\sa120\sl360\slmult1 normal URL, a synthetic phishing SMS/email, and a synthetic screenshot with readable\par
+\pard\qj\sa120\sl360\slmult1 phishing cues.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 38\par
+\pard\sb240\sa140\b\fs32 6 Result, Discussion and Conclusion\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6.2 System Performance Results\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Performance evaluation records latency by modality, worker queue time, external-feed\par
+\pard\qj\sa120\sl360\slmult1 timeout behavior, and concurrent request handling. The target is not maximum\par
+\pard\qj\sa120\sl360\slmult1 throughput at any cost; it is predictable response time and a clear limitation when an\par
+\pard\qj\sa120\sl360\slmult1 upstream service is unavailable. Results are interpreted against the selected machine\par
+\pard\qj\sa120\sl360\slmult1 and test workload.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 39\par
+\pard\sb240\sa140\b\fs32 6 Result, Discussion and Conclusion\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6.3 Discussion\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield demonstrates why multi-modal analysis is valuable. A URL checker can\par
+\pard\qj\sa120\sl360\slmult1 find infrastructure cues, but it may miss a persuasive message with no clickable link.\par
+\pard\qj\sa120\sl360\slmult1 Text analysis can recognize social engineering, but it benefits from domain evidence.\par
+\pard\qj\sa120\sl360\slmult1 Screenshot analysis can recover hidden context, but its certainty depends on OCR\par
+\pard\qj\sa120\sl360\slmult1 quality. Combining these sources improves coverage while retaining an explanation of\par
+\pard\qj\sa120\sl360\slmult1 each contribution.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 40\par
+\pard\sb240\sa140\b\fs32 6 Result, Discussion and Conclusion\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6.4 Limitations\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 No phishing detector can guarantee complete detection. Novel domains may not appear\par
+\pard\qj\sa120\sl360\slmult1 in reputation feeds; legitimate messages can contain urgent language; attackers can use\par
+\pard\qj\sa120\sl360\slmult1 high-quality copied graphics; and OCR can fail on low-resolution or mixed-language\par
+\pard\qj\sa120\sl360\slmult1 images. The platform therefore communicates risk and evidence rather than issuing a\par
+\pard\qj\sa120\sl360\slmult1 legal or forensic verdict. Human verification remains important for high-impact\par
+\pard\qj\sa120\sl360\slmult1 decisions.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 41\par
+\pard\sb240\sa140\b\fs32 6 Result, Discussion and Conclusion\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6.5 Conclusion\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield extends URL analysis into a practical phishing-awareness platform for\par
+\pard\qj\sa120\sl360\slmult1 URLs, SMS/email text, and screenshots. Its contribution is not only the use of\par
+\pard\qj\sa120\sl360\slmult1 cybersecurity, NLP, and image processing, but also the way those methods are\par
+\pard\qj\sa120\sl360\slmult1 connected to safe input handling, transparent scoring, privacy controls, audit records,\par
+\pard\qj\sa120\sl360\slmult1 and user guidance. The documented baseline is suitable for iterative academic\par
+\pard\qj\sa120\sl360\slmult1 implementation and evaluation.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 42\par
+\pard\sb240\sa140\b\fs32 6 Result, Discussion and Conclusion\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6.6 Future Scope\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Future work may add multilingual models, email-header analysis, QR-code destination\par
+\pard\qj\sa120\sl360\slmult1 inspection, browser extension support, organization-specific brand profiles, analyst\par
+\pard\qj\sa120\sl360\slmult1 case management, and SOC or ticketing integration. Every enhancement should be\par
+\pard\qj\sa120\sl360\slmult1 assessed for new privacy, security, cost, and false-positive risks before it becomes part\par
+\pard\qj\sa120\sl360\slmult1 of the product.\par
+\pard\qj\sa120\sl360\slmult1 CyberShield treats this capability as a controlled pipeline rather than a single\par
+\pard\qj\sa120\sl360\slmult1 prediction. Input is validated, normalized, and routed only to the services required for\par
+\pard\qj\sa120\sl360\slmult1 the selected modality. Each analyzer returns versioned indicators with severity,\par
+\pard\qj\sa120\sl360\slmult1 evidence source, and confidence. The scoring layer removes duplicate evidence, applies\par
+\pard\qj\sa120\sl360\slmult1 a transparent policy, and records the limitations of unavailable services. This separation\par
+\pard\qj\sa120\sl360\slmult1 makes the behavior easier to test, protects sensitive content, and allows a future model\par
+\pard\qj\sa120\sl360\slmult1 or intelligence-feed change to be reviewed without changing the entire platform.\par
+\pard\qj\sa120\sl360\slmult1 The implementation is validated with representative benign, ambiguous, and synthetic\par
+\pard\qj\sa120\sl360\slmult1 phishing samples. Acceptance evidence includes correct input validation, a stable result\par
+\pard\qj\sa120\sl360\slmult1 schema, explainable indicators, safe user guidance, and protected audit records. A result\par
+\pard\qj\sa120\sl360\slmult1 is never described as guaranteed safe: where evidence is weak, stale, or unavailable, the\par
+\pard\qj\sa120\sl360\slmult1 interface states that uncertainty and directs the user to verify through an independently\par
+\pard\qj\sa120\sl360\slmult1 known official channel.\par
+\page
+\pard\qj\sa120\sl360\slmult1 CyberShield - Project Report\par
+\pard\qj\sa120\sl360\slmult1 43\par
+\pard\sb240\sa140\b\fs32 7 References\b0\fs24\par
+\pard\sb240\sa140\b\fs28 1. IEEE Computer Society. IEEE 830: Recommended Practice for Software\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Requirements Specifications.\par
+\pard\sb240\sa140\b\fs28 2. OWASP Foundation. Application Security Verification Standard and web\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 application security guidance.\par
+\pard\sb240\sa140\b\fs28 3. National Institute of Standards and Technology. Security and Privacy Controls for\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Information Systems and Organizations, SP 800-53.\par
+\pard\sb240\sa140\b\fs28 4. National Institute of Standards and Technology. Computer Security Incident\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Handling Guide, SP 800-61.\par
+\pard\sb240\sa140\b\fs26 5. Anti-Phishing Working Group. Phishing activity reports and educational resources.\b0\fs24\par
+\pard\sb240\sa140\b\fs28 6. College-provided Project Report Format document. Used as the required structure\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 for this report.\par
+\pard\sb240\sa140\b\fs28 7. SRS Report Formatting Guide. Used for A4 page setup, typography, captions, and\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 academic report formatting.\par
+\pard\qj\sa120\sl360\slmult1 End of Document\par
+}

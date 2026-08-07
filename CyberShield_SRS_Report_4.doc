@@ -1,0 +1,1133 @@
+{\rtf1\ansi\deff0{\fonttbl{\f0 Times New Roman;}}\paperw11907\paperh16840\margl1800\margr1440\margt1440\margb1440{\header\pard\f0\fs18 CyberShield - Software Requirements Specification\par}{\footer\pard\qc\f0\fs18\chpgn\par}\f0\fs24\pard\qj\sa120\sl360\slmult1 SOFTWARE REQUIREMENTS SPECIFICATION\par
+\pard\qj\sa120\sl360\slmult1 CyberShield\par
+\pard\qj\sa120\sl360\slmult1 Multi-Modal Phishing Detection Platform\par
+\pard\qj\sa120\sl360\slmult1 SRS Report\par
+\pard\qj\sa120\sl360\slmult1 Version 2.0\par
+\pard\qj\sa120\sl360\slmult1 Prepared for Academic Project Documentation\par
+\pard\qj\sa120\sl360\slmult1 CyberShield analyzes suspicious URLs, SMS/email text, and screenshots to help users\par
+\pard\qj\sa120\sl360\slmult1 identify phishing attempts before they act.\par
+\page
+\pard\sb240\sa140\b\fs32 Document Control\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 This Software Requirements Specification (SRS) defines the functional, quality,\par
+\pard\qj\sa120\sl360\slmult1 interface, data, security, and validation requirements for CyberShield. It is intended to\par
+\pard\qj\sa120\sl360\slmult1 guide design, development, testing, review, and future maintenance.\par
+\pard\qc\b\fs22 Table 1: Revision History\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Version\par
+\pard\qj\sa120\sl360\slmult1 Date\par
+\pard\qj\sa120\sl360\slmult1 Owner\par
+\pard\qj\sa120\sl360\slmult1 Description\par
+\pard\qj\sa120\sl360\slmult1 1.0\par
+\pard\qj\sa120\sl360\slmult1 Initial project\par
+\pard\qj\sa120\sl360\slmult1 phase\par
+\pard\qj\sa120\sl360\slmult1 CyberShield Team\par
+\pard\qj\sa120\sl360\slmult1 URL analysis requirements established.\par
+\pard\qj\sa120\sl360\slmult1 2.0\par
+\pard\qj\sa120\sl360\slmult1 Current revision\par
+\pard\qj\sa120\sl360\slmult1 CyberShield Team\par
+\pard\qj\sa120\sl360\slmult1 Adds SMS/email NLP analysis and\par
+\pard\qj\sa120\sl360\slmult1 screenshot phishing detection\par
+\pard\qj\sa120\sl360\slmult1 requirements.\par
+\pard\qj\sa120\sl360\slmult1 Document Status\par
+\pard\qj\sa120\sl360\slmult1 Baseline draft for implementation and academic review. Requirements marked\par
+\pard\qj\sa120\sl360\slmult1 mandatory are necessary for the proposed release; optional enhancements are planned\par
+\pard\qj\sa120\sl360\slmult1 only after the core workflow is stable.\par
+\pard\qj\sa120\sl360\slmult1 Approval Roles\par
+\pard\qj\sa120\sl360\slmult1  Project guide: validates academic scope and documentation quality.\par
+\pard\qj\sa120\sl360\slmult1  Development team: confirms technical feasibility and estimates.\par
+\pard\qj\sa120\sl360\slmult1  Test reviewer: confirms that acceptance criteria are measurable.\par
+\pard\qj\sa120\sl360\slmult1  Product owner: accepts the requirements baseline and priorities.\par
+\page
+\pard\sb240\sa140\b\fs32 Acknowledgement\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The CyberShield team gratefully acknowledges the guidance of its project mentor,\par
+\pard\qj\sa120\sl360\slmult1 faculty members, peers, and families whose feedback and encouragement support this\par
+\pard\qj\sa120\sl360\slmult1 work. The project is shaped by the practical need to make phishing warnings\par
+\pard\qj\sa120\sl360\slmult1 understandable and available before a user clicks a link, replies to a message, or shares\par
+\pard\qj\sa120\sl360\slmult1 sensitive information.\par
+\pard\qj\sa120\sl360\slmult1 The team also recognizes the security research community, standards bodies, and\par
+\pard\qj\sa120\sl360\slmult1 open-source contributors whose work in secure systems, natural-language processing,\par
+\pard\qj\sa120\sl360\slmult1 image analysis, and threat intelligence informs the proposed design.\par
+\pard\sb240\sa140\b\fs32 Abstract\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield is a multi-modal phishing detection platform. Its existing URL analysis\par
+\pard\qj\sa120\sl360\slmult1 capability is extended by two complementary services: text analysis for SMS and email\par
+\pard\qj\sa120\sl360\slmult1 content, and screenshot analysis for visual phishing indicators. The platform combines\par
+\pard\qj\sa120\sl360\slmult1 cybersecurity intelligence with natural-language processing (NLP) and image\par
+\pard\qj\sa120\sl360\slmult1 processing (IP) to provide a consistent, evidence-based risk assessment.\par
+\pard\qj\sa120\sl360\slmult1 A user can submit a URL, paste a message, or upload a screenshot. CyberShield\par
+\pard\qj\sa120\sl360\slmult1 normalizes the input, performs modality-specific analysis, generates a risk score and\par
+\pard\qj\sa120\sl360\slmult1 explanations, preserves a privacy-aware audit record, and provides safe next actions.\par
+\pard\qj\sa120\sl360\slmult1 The proposed system is web-based, role-aware, scalable, and designed to minimize the\par
+\pard\qj\sa120\sl360\slmult1 risk of overconfident or harmful automated advice.\par
+\page
+\pard\sb240\sa140\b\fs32 Table of Contents\b0\fs24\par
+\pard\sb240\sa140\b\fs26 1. Introduction ........................................................ 1\b0\fs24\par
+\pard\sb240\sa140\b\fs26 2. Overall Description .............................................. 4\b0\fs24\par
+\pard\sb240\sa140\b\fs26 3. Specific Requirements ......................................... 9\b0\fs24\par
+\pard\sb240\sa140\b\fs26 4. System Models .................................................. 22\b0\fs24\par
+\pard\sb240\sa140\b\fs26 5. Verification and Acceptance ................................ 26\b0\fs24\par
+\pard\sb240\sa140\b\fs26 6. Deployment and Operations ................................ 28\b0\fs24\par
+\pard\sb240\sa140\b\fs26 7. Appendices and References ................................ 30\b0\fs24\par
+\pard\sb240\sa140\b\fs32 List of Tables\b0\fs24\par
+\pard\qc\b\fs22 Table 1 Revision History; Table 2 User Classes; Table 3 Functional Requirements; Table 4\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Non-functional Requirements; Table 5 Data Entities; Table 6 Traceability Matrix.\par
+\pard\sb240\sa140\b\fs32 List of Figures\b0\fs24\par
+\pard\qc\b\fs22 Figure 1 Platform Context; Figure 2 Processing Pipeline; Figure 3 Data Flow; Figure 4 Entity\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Relationship View; Figure 5 Sequence View.\par
+\page
+\pard\sb240\sa140\b\fs32 1. Introduction\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield addresses the growing variety of phishing channels. A link-only tool is\par
+\pard\qj\sa120\sl360\slmult1 useful but incomplete: attackers also rely on persuasive SMS messages, email bodies,\par
+\pard\qj\sa120\sl360\slmult1 and images that imitate legitimate brands. CyberShield unifies these signals into a\par
+\pard\qj\sa120\sl360\slmult1 single user-facing risk assessment while preserving the evidence needed for later\par
+\pard\qj\sa120\sl360\slmult1 review.\par
+\pard\sb240\sa140\b\fs32 1.1 Purpose\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The purpose of this SRS is to define what CyberShield must do, its boundaries,\par
+\pard\qj\sa120\sl360\slmult1 interfaces, data behavior, and quality attributes. It is written for developers, testers,\par
+\pard\qj\sa120\sl360\slmult1 project reviewers, and future maintainers.\par
+\pard\sb240\sa140\b\fs32 1.2 Scope\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The system shall allow a registered or guest user to analyze a URL, text message, email\par
+\pard\qj\sa120\sl360\slmult1 content, or screenshot. It shall identify suspicious indicators, assign a transparent risk\par
+\pard\qj\sa120\sl360\slmult1 level, give safety guidance, retain records according to policy, and support\par
+\pard\qj\sa120\sl360\slmult1 administrative oversight. It does not guarantee that every threat is detected or replace\par
+\pard\qj\sa120\sl360\slmult1 organizational incident response.\par
+\pard\sb240\sa140\b\fs32 1.3 Goals\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1  Detect common phishing indicators across web, text, and image inputs.\par
+\pard\qj\sa120\sl360\slmult1  Explain findings in plain language without encouraging unsafe actions.\par
+\pard\qj\sa120\sl360\slmult1  Protect submitted content, especially personally identifiable information.\par
+\pard\qj\sa120\sl360\slmult1  Support continuous model and rule improvement using approved feedback.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 1.4 Definitions, Acronyms, and Abbreviations\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Phishing: a deceptive attempt to obtain credentials, money, or sensitive information.\par
+\pard\qj\sa120\sl360\slmult1 URL: a web address. NLP: computational processing of natural-language text. IP:\par
+\pard\qj\sa120\sl360\slmult1 image processing. OCR: optical character recognition. IOC: indicator of compromise.\par
+\pard\qj\sa120\sl360\slmult1 Risk score: a normalized estimate used to classify an input as low, medium, high, or\par
+\pard\qj\sa120\sl360\slmult1 critical risk.\par
+\pard\sb240\sa140\b\fs32 1.5 References\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1  IEEE 830, recommended practice for software requirements specifications.\par
+\pard\qj\sa120\sl360\slmult1  OWASP guidance on phishing, secure application design, and logging.\par
+\pard\qj\sa120\sl360\slmult1  NIST SP 800-53 security and privacy controls; NIST guidance on incident response.\par
+\pard\qj\sa120\sl360\slmult1  Project references: EXPIROCHAIN report structure and supplied SRS Formatting\par
+\pard\qj\sa120\sl360\slmult1 Guide.\par
+\pard\sb240\sa140\b\fs32 1.6 Document Overview\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Section 2 describes the product context and users. Section 3 contains requirements for\par
+\pard\qj\sa120\sl360\slmult1 each analysis mode, interfaces, quality attributes, and data. Section 4 provides system\par
+\pard\qj\sa120\sl360\slmult1 models. The final sections define verification, operations, appendices, and references.\par
+\pard\qc\b\fs22 Figure 1: CyberShield Platform Context\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 CyberShield\par
+\pard\qj\sa120\sl360\slmult1 Web Application\par
+\pard\qj\sa120\sl360\slmult1 Analysis\par
+\pard\qj\sa120\sl360\slmult1 Services\par
+\pard\qj\sa120\sl360\slmult1 Risk Result\par
+\pard\qj\sa120\sl360\slmult1 and Guidance\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 2. Overall Description\b0\fs24\par
+\pard\sb240\sa140\b\fs32 2.1 Product Perspective\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield is a web platform that coordinates a client interface, an application API, a\par
+\pard\qj\sa120\sl360\slmult1 URL intelligence service, an NLP service, an image/OCR service, a risk-scoring\par
+\pard\qj\sa120\sl360\slmult1 engine, and a protected data store. It can consume configurable reputation feeds and\par
+\pard\qj\sa120\sl360\slmult1 may later integrate an organization\u8217?s security operations workflow.\par
+\pard\qj\sa120\sl360\slmult1 The product is a new multi-modal layer rather than a browser replacement, mail\par
+\pard\qj\sa120\sl360\slmult1 gateway, or antivirus tool. It performs pre-action triage: it helps a user decide whether\par
+\pard\qj\sa120\sl360\slmult1 to avoid, verify, report, or safely continue.\par
+\pard\sb240\sa140\b\fs32 2.2 Product Functions\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1  Submit and normalize URLs for lexical, DNS/reputation, redirect, and\par
+\pard\qj\sa120\sl360\slmult1 certificate-related checks.\par
+\pard\qj\sa120\sl360\slmult1  Extract semantic and structural phishing cues from pasted SMS and email content.\par
+\pard\qj\sa120\sl360\slmult1  Extract visible text and visual cues from screenshots using OCR and image analysis.\par
+\pard\qj\sa120\sl360\slmult1  Fuse modality signals into an explainable classification and record an audit trail.\par
+\pard\qj\sa120\sl360\slmult1  Present recommendations, feedback controls, administrative configuration, and\par
+\pard\qj\sa120\sl360\slmult1 reports.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 2.3 User Classes\b0\fs24\par
+\pard\qc\b\fs22 Table 2: User Classes and Access\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Class\par
+\pard\qj\sa120\sl360\slmult1 Description\par
+\pard\qj\sa120\sl360\slmult1 Primary permissions\par
+\pard\qj\sa120\sl360\slmult1 Guest user\par
+\pard\qj\sa120\sl360\slmult1 Unregistered visitor\par
+\pard\qj\sa120\sl360\slmult1 Submit limited analyses; view current result only.\par
+\pard\qj\sa120\sl360\slmult1 Registered user\par
+\pard\qj\sa120\sl360\slmult1 Individual account holder\par
+\pard\qj\sa120\sl360\slmult1 Analyze, view history, submit feedback, manage\par
+\pard\qj\sa120\sl360\slmult1 privacy settings.\par
+\pard\qj\sa120\sl360\slmult1 Analyst\par
+\pard\qj\sa120\sl360\slmult1 Authorized security reviewer\par
+\pard\qj\sa120\sl360\slmult1 Review flagged cases and feedback; annotate\par
+\pard\qj\sa120\sl360\slmult1 disposition.\par
+\pard\qj\sa120\sl360\slmult1 Administrator\par
+\pard\qj\sa120\sl360\slmult1 Platform operator\par
+\pard\qj\sa120\sl360\slmult1 Manage users, policies, integrations, and model/rule\par
+\pard\qj\sa120\sl360\slmult1 releases.\par
+\pard\qj\sa120\sl360\slmult1 Auditor\par
+\pard\qj\sa120\sl360\slmult1 Read-only oversight role\par
+\pard\qj\sa120\sl360\slmult1 View security-relevant logs and compliance reports.\par
+\pard\sb240\sa140\b\fs32 2.4 Operating Environment\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The client shall support current desktop and mobile versions of major browsers. The\par
+\pard\qj\sa120\sl360\slmult1 server shall run in a hardened cloud or institutional environment using HTTPS.\par
+\pard\qj\sa120\sl360\slmult1 Processing services may use containerized Python/ML workloads and a relational\par
+\pard\qj\sa120\sl360\slmult1 database; object storage may retain approved screenshot artifacts.\par
+\pard\sb240\sa140\b\fs32 2.5 Design and Implementation Constraints\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1  All data in transit shall use TLS; insecure HTTP callbacks are prohibited.\par
+\pard\qj\sa120\sl360\slmult1  The UI shall never render a submitted URL as an automatically clickable link before\par
+\pard\qj\sa120\sl360\slmult1 warning the user.\par
+\pard\qj\sa120\sl360\slmult1  Analysis models must expose a version identifier with each result.\par
+\pard\qj\sa120\sl360\slmult1  Image size, file type, retention, and throughput shall be constrained to reduce abuse.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 2.6 Assumptions and Dependencies\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield assumes that users submit content they are authorized to inspect and that\par
+\pard\qj\sa120\sl360\slmult1 external reputation sources can be unavailable, stale, or incomplete. A network\par
+\pard\qj\sa120\sl360\slmult1 connection is required for intelligence lookups. OCR accuracy depends on screenshot\par
+\pard\qj\sa120\sl360\slmult1 resolution, language, compression, and visual complexity.\par
+\pard\qj\sa120\sl360\slmult1 Dependencies include an authentication provider, URL/domain reputation feeds, an\par
+\pard\qj\sa120\sl360\slmult1 OCR engine, an NLP classifier or ruleset, secure object storage, database backups, and\par
+\pard\qj\sa120\sl360\slmult1 operational monitoring. A failed dependency shall degrade a result with a visible\par
+\pard\qj\sa120\sl360\slmult1 limitation instead of silently producing certainty.\par
+\pard\sb240\sa140\b\fs32 2.7 Out of Scope\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1  Automatic clicking, visiting, or credential submission to suspicious websites.\par
+\pard\qj\sa120\sl360\slmult1  Forensic compromise confirmation on the user device.\par
+\pard\qj\sa120\sl360\slmult1  Blocking messages at a telecom carrier or enterprise email gateway.\par
+\pard\qj\sa120\sl360\slmult1  Legal adjudication or irreversible account actions based solely on a model score.\par
+\pard\sb240\sa140\b\fs32 2.8 Business Rules\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The system shall classify results as Low, Medium, High, or Critical. High and Critical\par
+\pard\qj\sa120\sl360\slmult1 results must display a prominent safety warning. A result can be \u8220?Inconclusive\u8221? when\par
+\pard\qj\sa120\sl360\slmult1 evidence is insufficient or a dependency is unavailable. Users may delete their history\par
+\pard\qj\sa120\sl360\slmult1 subject to legal and institutional retention requirements.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 3. Specific Requirements\b0\fs24\par
+\pard\sb240\sa140\b\fs32 3.1 Requirement Conventions\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Each mandatory requirement uses the form FR (functional requirement) or NFR\par
+\pard\qj\sa120\sl360\slmult1 (non-functional requirement). \u8220?Shall\u8221? indicates a required behavior. Priority labels are\par
+\pard\qj\sa120\sl360\slmult1 Must, Should, or Could. Acceptance statements are intentionally testable.\par
+\pard\sb240\sa140\b\fs32 3.2 URL Analysis Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 FR-URL-01 (Must): The system shall accept a single URL as text and reject\par
+\pard\qj\sa120\sl360\slmult1 malformed, empty, or oversize input with a clear message.\par
+\pard\qj\sa120\sl360\slmult1 FR-URL-02 (Must): The system shall normalize the URL, parse hostname and path\par
+\pard\qj\sa120\sl360\slmult1 components, and display the normalized value used for analysis.\par
+\pard\qj\sa120\sl360\slmult1 FR-URL-03 (Must): The system shall evaluate lexical indicators including misleading\par
+\pard\qj\sa120\sl360\slmult1 subdomains, IP-address hosts, excessive length, encoded characters, suspicious\par
+\pard\qj\sa120\sl360\slmult1 keywords, and homoglyph risk.\par
+\pard\qj\sa120\sl360\slmult1 FR-URL-04 (Must): The system shall query configured reputation and\par
+\pard\qj\sa120\sl360\slmult1 threat-intelligence sources without opening the target in the user\u8217?s browser.\par
+\pard\qj\sa120\sl360\slmult1 FR-URL-05 (Should): The system shall assess redirect-chain evidence through a\par
+\pard\qj\sa120\sl360\slmult1 sandboxed service where approved by policy.\par
+\pard\qj\sa120\sl360\slmult1 FR-URL-06 (Must): The result shall show risk level, confidence band, indicators,\par
+\pard\qj\sa120\sl360\slmult1 limitations, and safe next actions.\par
+\pard\qc\b\fs22 Figure 2: URL Processing Pipeline\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Input URL\par
+\pard\qj\sa120\sl360\slmult1 Normalize\par
+\pard\qj\sa120\sl360\slmult1 and Parse\par
+\pard\qj\sa120\sl360\slmult1 Threat\par
+\pard\qj\sa120\sl360\slmult1 Signals\par
+\pard\qj\sa120\sl360\slmult1 Score and\par
+\pard\qj\sa120\sl360\slmult1 Explain\par
+\page
+\pard\sb240\sa140\b\fs32 3.3 SMS and Email Text Analysis Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-01 (Must): The system shall accept pasted SMS text, email subject/body text,\par
+\pard\qj\sa120\sl360\slmult1 or structured email fields when available.\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-02 (Must): The system shall remove or mask configured personally sensitive\par
+\pard\qj\sa120\sl360\slmult1 fields before persistent storage while preserving sufficient evidence for scoring.\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-03 (Must): The NLP pipeline shall identify urgency, threats, reward promises,\par
+\pard\qj\sa120\sl360\slmult1 impersonation cues, credential/payment requests, suspicious links, and grammar or\par
+\pard\qj\sa120\sl360\slmult1 formatting anomalies.\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-04 (Must): The system shall extract embedded URLs, phone numbers, email\par
+\pard\qj\sa120\sl360\slmult1 addresses, currency/payment references, and named brands when present.\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-05 (Must): The system shall compare claimed sender identity with content\par
+\pard\qj\sa120\sl360\slmult1 claims and flag apparent brand impersonation when confidence exceeds the configured\par
+\pard\qj\sa120\sl360\slmult1 threshold.\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-06 (Should): The system shall support English initially and return a limitation\par
+\pard\qj\sa120\sl360\slmult1 notice for unsupported or mixed-language input.\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-07 (Must): The result shall quote only minimal, safely masked evidence\par
+\pard\qj\sa120\sl360\slmult1 snippets and shall not expose secrets detected in the submission.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: Text analysis must preserve the difference between a suspicious\par
+\pard\qj\sa120\sl360\slmult1 expression and a confirmed malicious event. The NLP service identifies cues such as\par
+\pard\qj\sa120\sl360\slmult1 urgency, impersonation, credential requests, payment pressure, and unusual sender\par
+\pard\qj\sa120\sl360\slmult1 claims, then links those cues to the exact masked evidence used in the explanation. It\par
+\pard\qj\sa120\sl360\slmult1 also records language and OCR confidence where applicable, allowing future\par
+\pard\qj\sa120\sl360\slmult1 evaluation to identify cases in which wording, dialect, or short message format affects\par
+\pard\qj\sa120\sl360\slmult1 reliability.\par
+\page
+\pard\sb240\sa140\b\fs32 3.4 Screenshot Phishing Detection Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-01 (Must): The system shall accept PNG, JPEG, and WEBP screenshots\par
+\pard\qj\sa120\sl360\slmult1 within configured size and resolution limits.\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-02 (Must): The system shall validate file signature and decode image pixels\par
+\pard\qj\sa120\sl360\slmult1 before analysis; files that fail validation shall be rejected.\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-03 (Must): The image pipeline shall run OCR to obtain visible text and route\par
+\pard\qj\sa120\sl360\slmult1 that text through the same text-analysis service where applicable.\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-04 (Must): The pipeline shall detect visual phishing signals including login\par
+\pard\qj\sa120\sl360\slmult1 forms, password/OTP prompts, payment prompts, brand-like logos, shortened/obscured\par
+\pard\qj\sa120\sl360\slmult1 links, QR codes, and urgency banners.\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-05 (Should): The system shall compare extracted domain/brand clues with\par
+\pard\qj\sa120\sl360\slmult1 known legitimate domain patterns and identify likely lookalikes.\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-06 (Must): The result shall identify which evidence originated from OCR,\par
+\pard\qj\sa120\sl360\slmult1 visual analysis, or linked text analysis, and shall state OCR confidence.\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-07 (Must): The system shall strip executable metadata and never execute\par
+\pard\qj\sa120\sl360\slmult1 embedded content.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: Image analysis is designed as a layered process. File validation\par
+\pard\qj\sa120\sl360\slmult1 occurs before OCR or visual classification; decoded pixels, not browser-rendered\par
+\pard\qj\sa120\sl360\slmult1 content, are used for analysis. OCR text, form-like layout, QR-code presence, and\par
+\pard\qj\sa120\sl360\slmult1 logo-like visual patterns are separate evidence sources. The final explanation names\par
+\pard\qj\sa120\sl360\slmult1 their origin and confidence so a user understands when a conclusion relies on clearly\par
+\pard\qj\sa120\sl360\slmult1 readable text versus a weaker visual resemblance.\par
+\page
+\pard\sb240\sa140\b\fs32 3.5 Cross-Modal Scoring and Results\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 FR-SCR-01 (Must): The scoring engine shall combine applicable indicators using\par
+\pard\qj\sa120\sl360\slmult1 configurable, versioned weights or an approved model.\par
+\pard\qj\sa120\sl360\slmult1 FR-SCR-02 (Must): The engine shall avoid double-counting the same extracted URL or\par
+\pard\qj\sa120\sl360\slmult1 claim across modalities.\par
+\pard\qj\sa120\sl360\slmult1 FR-SCR-03 (Must): Each result shall include a score from 0 to 100, risk label,\par
+\pard\qj\sa120\sl360\slmult1 confidence band, reasons, model/rule version, and analysis timestamp.\par
+\pard\qj\sa120\sl360\slmult1 FR-SCR-04 (Must): A Critical result shall recommend that the user avoid interacting\par
+\pard\qj\sa120\sl360\slmult1 with the content, verify through an independently known channel, and report according\par
+\pard\qj\sa120\sl360\slmult1 to local policy.\par
+\pard\qj\sa120\sl360\slmult1 FR-SCR-05 (Must): An Inconclusive result shall identify unavailable sources or\par
+\pard\qj\sa120\sl360\slmult1 low-quality evidence and recommend a safer verification path.\par
+\pard\qj\sa120\sl360\slmult1 FR-SCR-06 (Should): An authorized analyst may override a classification with an\par
+\pard\qj\sa120\sl360\slmult1 explanation; overrides shall be immutable audit events.\par
+\pard\qj\sa120\sl360\slmult1 Risk Interpretation\par
+\pard\qj\sa120\sl360\slmult1 0-24 Low: no strong known indicators. 25-49 Medium: caution warranted. 50-74 High:\par
+\pard\qj\sa120\sl360\slmult1 likely suspicious. 75-100 Critical: strong indicators or known malicious evidence.\par
+\pard\qj\sa120\sl360\slmult1 Scores are decision support, not proof of fraud.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 3.6 Account, History, and Feedback Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 FR-ACC-01 (Must): Registered users shall be able to create an account, sign in, sign\par
+\pard\qj\sa120\sl360\slmult1 out, reset credentials through the approved identity mechanism, and manage consent\par
+\pard\qj\sa120\sl360\slmult1 preferences.\par
+\pard\qj\sa120\sl360\slmult1 FR-ACC-02 (Must): The system shall display analysis history only to its owner or an\par
+\pard\qj\sa120\sl360\slmult1 authorized role.\par
+\pard\qj\sa120\sl360\slmult1 FR-ACC-03 (Must): A user shall be able to delete an individual history item or request\par
+\pard\qj\sa120\sl360\slmult1 deletion of eligible history records.\par
+\pard\qj\sa120\sl360\slmult1 FR-FDB-01 (Must): Users shall be able to mark a result as helpful, unhelpful, suspected\par
+\pard\qj\sa120\sl360\slmult1 false positive, or suspected false negative.\par
+\pard\qj\sa120\sl360\slmult1 FR-FDB-02 (Should): Feedback intended for learning shall be reviewed or\par
+\pard\qj\sa120\sl360\slmult1 de-identified before it is used to tune a model or rule.\par
+\pard\qj\sa120\sl360\slmult1 FR-RPT-01 (Must): The system shall generate a shareable incident summary containing\par
+\pard\qj\sa120\sl360\slmult1 safe, masked indicators and no raw credentials.\par
+\pard\qj\sa120\sl360\slmult1 FR-RPT-02 (Should): The system shall export authorized summaries in PDF or CSV\par
+\pard\qj\sa120\sl360\slmult1 format with an export audit event.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 3.7 Administration and Governance Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 FR-ADM-01 (Must): Administrators shall manage user roles, retention periods,\par
+\pard\qj\sa120\sl360\slmult1 permitted file types, maximum file sizes, and enabled intelligence sources.\par
+\pard\qj\sa120\sl360\slmult1 FR-ADM-02 (Must): Administrators shall manage scoring thresholds and model/rule\par
+\pard\qj\sa120\sl360\slmult1 releases through a change-controlled configuration process.\par
+\pard\qj\sa120\sl360\slmult1 FR-ADM-03 (Must): The system shall preserve a versioned audit event for\par
+\pard\qj\sa120\sl360\slmult1 administrative changes, analyst overrides, exports, deletion actions, and sign-in failures.\par
+\pard\qj\sa120\sl360\slmult1 FR-ADM-04 (Should): Administrators shall view aggregated metrics for volume, risk\par
+\pard\qj\sa120\sl360\slmult1 distribution, processing failures, feedback trend, and service latency.\par
+\pard\qj\sa120\sl360\slmult1 FR-ADM-05 (Must): Only authorized administrators shall access raw retained\par
+\pard\qj\sa120\sl360\slmult1 screenshots, and all such access shall be logged.\par
+\pard\qj\sa120\sl360\slmult1 FR-ADM-06 (Must): The administrative interface shall provide a health view that\par
+\pard\qj\sa120\sl360\slmult1 distinguishes service failure, rate limiting, model unavailability, and intelligence-feed\par
+\pard\qj\sa120\sl360\slmult1 degradation.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 3.8 External Interface Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 User Interface\par
+\pard\qj\sa120\sl360\slmult1 The interface shall offer clearly separated Analyze URL, Analyze Text, and Analyze\par
+\pard\qj\sa120\sl360\slmult1 Screenshot actions. Upload and submit buttons shall state what data will be processed.\par
+\pard\qj\sa120\sl360\slmult1 The result shall show a risk badge, an evidence list, limitations, and safe actions. Color\par
+\pard\qj\sa120\sl360\slmult1 shall not be the only way a risk level is conveyed.\par
+\pard\qj\sa120\sl360\slmult1 Software Interfaces\par
+\pard\qj\sa120\sl360\slmult1 The API shall expose authenticated endpoints for submission, result retrieval, history,\par
+\pard\qj\sa120\sl360\slmult1 feedback, and administration. It shall use JSON over HTTPS. External feeds shall be\par
+\pard\qj\sa120\sl360\slmult1 accessed through server-side adapters so credentials and provider-specific behavior are\par
+\pard\qj\sa120\sl360\slmult1 not exposed to clients.\par
+\pard\qj\sa120\sl360\slmult1 Hardware Interfaces\par
+\pard\qj\sa120\sl360\slmult1 No special client hardware is required. Camera capture is outside the baseline; users\par
+\pard\qj\sa120\sl360\slmult1 upload existing images. Servers may use CPU or approved GPU workers for OCR and\par
+\pard\qj\sa120\sl360\slmult1 image models.\par
+\pard\qj\sa120\sl360\slmult1 Communications Interfaces\par
+\pard\qj\sa120\sl360\slmult1 The service shall use HTTPS with modern TLS. SMTP is not required in the baseline.\par
+\pard\qj\sa120\sl360\slmult1 Notifications, if added, shall use a vetted provider and never include raw suspicious\par
+\pard\qj\sa120\sl360\slmult1 content in a notification preview.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 3.9 Performance Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 NFR-PERF-01 (Must): For a typical URL or text submission, the system shall return an\par
+\pard\qj\sa120\sl360\slmult1 initial result within 5 seconds at the 95th percentile under the defined baseline load.\par
+\pard\qj\sa120\sl360\slmult1 NFR-PERF-02 (Must): For a screenshot up to the configured maximum, the system\par
+\pard\qj\sa120\sl360\slmult1 shall return a result within 15 seconds at the 95th percentile, excluding a displayed\par
+\pard\qj\sa120\sl360\slmult1 external-feed timeout.\par
+\pard\qj\sa120\sl360\slmult1 NFR-PERF-03 (Must): The system shall support at least 50 concurrent interactive\par
+\pard\qj\sa120\sl360\slmult1 analyses in the academic deployment baseline without data cross-contamination.\par
+\pard\qj\sa120\sl360\slmult1 NFR-PERF-04 (Should): Long-running tasks shall be queued and expose a request\par
+\pard\qj\sa120\sl360\slmult1 status rather than holding a browser connection indefinitely.\par
+\pard\qj\sa120\sl360\slmult1 NFR-PERF-05 (Must): A result page shall render with accessible core content before\par
+\pard\qj\sa120\sl360\slmult1 optional charts or enrichment complete.\par
+\pard\qj\sa120\sl360\slmult1 Capacity and Limits\par
+\pard\qj\sa120\sl360\slmult1 Initial limits are: URL 4,096 characters; text 25,000 characters; screenshot 10 MB;\par
+\pard\qj\sa120\sl360\slmult1 history retention configurable from 0 to 180 days. Limits are configurable\par
+\pard\qj\sa120\sl360\slmult1 administrative controls and must be visible in the UI.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 3.10 Security and Privacy Requirements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 NFR-SEC-01 (Must): The system shall enforce role-based access control using least\par
+\pard\qj\sa120\sl360\slmult1 privilege.\par
+\pard\qj\sa120\sl360\slmult1 NFR-SEC-02 (Must): The system shall encrypt data in transit and encrypt stored\par
+\pard\qj\sa120\sl360\slmult1 sensitive data using approved platform controls.\par
+\pard\qj\sa120\sl360\slmult1 NFR-SEC-03 (Must): The system shall protect against common web threats including\par
+\pard\qj\sa120\sl360\slmult1 injection, cross-site scripting, request forgery, insecure file upload, and broken\par
+\pard\qj\sa120\sl360\slmult1 authorization.\par
+\pard\qj\sa120\sl360\slmult1 NFR-SEC-04 (Must): Credentials, API keys, session tokens, and detected secrets shall\par
+\pard\qj\sa120\sl360\slmult1 not appear in application logs or result pages.\par
+\pard\qj\sa120\sl360\slmult1 NFR-SEC-05 (Must): Screenshot uploads shall be malware-scanned where\par
+\pard\qj\sa120\sl360\slmult1 infrastructure permits, stored outside the web root, and accessed through time-limited\par
+\pard\qj\sa120\sl360\slmult1 authorization.\par
+\pard\qj\sa120\sl360\slmult1 NFR-PRV-01 (Must): The system shall minimize collection, explain retention at\par
+\pard\qj\sa120\sl360\slmult1 submission, and honor approved deletion requests.\par
+\pard\qj\sa120\sl360\slmult1 NFR-PRV-02 (Must): Analytics shall use aggregated or de-identified data where\par
+\pard\qj\sa120\sl360\slmult1 practical.\par
+\pard\qj\sa120\sl360\slmult1 NFR-SEC-06 (Should): High-risk administrator actions shall require re-authentication\par
+\pard\qj\sa120\sl360\slmult1 or multi-factor authentication.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: Security controls are evaluated as part of normal product\par
+\pard\qj\sa120\sl360\slmult1 behavior rather than treated as a final deployment task. Each access decision, sensitive\par
+\pard\qj\sa120\sl360\slmult1 export, analyst override, and configuration change must be attributable to an actor and a\par
+\pard\qj\sa120\sl360\slmult1 correlation identifier. Retention settings apply to raw input, derived indicators, assets,\par
+\pard\qj\sa120\sl360\slmult1 and backups separately. This design supports review without retaining more personal\par
+\pard\qj\sa120\sl360\slmult1 content than is necessary for the platform purpose.\par
+\page
+\pard\sb240\sa140\b\fs32 3.11 Reliability, Usability, and Accessibility\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 NFR-REL-01 (Must): The service shall fail safely. When a dependency fails, it shall\par
+\pard\qj\sa120\sl360\slmult1 identify the limitation and not label content safe solely because a lookup failed.\par
+\pard\qj\sa120\sl360\slmult1 NFR-REL-02 (Must): Daily backups of required structured data shall be verifiable, and\par
+\pard\qj\sa120\sl360\slmult1 restoration shall be tested at least once per release cycle.\par
+\pard\qj\sa120\sl360\slmult1 NFR-USE-01 (Must): The result explanation shall use concise, non-technical wording\par
+\pard\qj\sa120\sl360\slmult1 with expandable technical detail.\par
+\pard\qj\sa120\sl360\slmult1 NFR-USE-02 (Must): The system shall not use fear-inducing or absolute language such\par
+\pard\qj\sa120\sl360\slmult1 as \u8220?guaranteed safe.\u8221?\par
+\pard\qj\sa120\sl360\slmult1 NFR-ACC-01 (Must): Keyboard navigation, visible focus, text alternatives, sufficient\par
+\pard\qj\sa120\sl360\slmult1 contrast, and readable risk labels shall be supported.\par
+\pard\qj\sa120\sl360\slmult1 NFR-MNT-01 (Must): Rules, model artifacts, and integrations shall be versioned and\par
+\pard\qj\sa120\sl360\slmult1 traceable to a release record.\par
+\pard\qj\sa120\sl360\slmult1 NFR-LOC-01 (Could): Future releases may support additional languages, locale-aware\par
+\pard\qj\sa120\sl360\slmult1 phishing examples, and right-to-left layouts.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 3.12 Data Requirements\b0\fs24\par
+\pard\qc\b\fs22 Table 5: Core Data Entities\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Entity\par
+\pard\qj\sa120\sl360\slmult1 Key fields\par
+\pard\qj\sa120\sl360\slmult1 Purpose\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 user_id, role, consent, created_at\par
+\pard\qj\sa120\sl360\slmult1 Identity and authorization.\par
+\pard\qj\sa120\sl360\slmult1 AnalysisRequest\par
+\pard\qj\sa120\sl360\slmult1 request_id, modality, submitted_at, status\par
+\pard\qj\sa120\sl360\slmult1 Tracks an analysis job.\par
+\pard\qj\sa120\sl360\slmult1 AnalysisResult\par
+\pard\qj\sa120\sl360\slmult1 result_id, score, label, version, created_at\par
+\pard\qj\sa120\sl360\slmult1 Stores outcome and evidence summary.\par
+\pard\qj\sa120\sl360\slmult1 Indicator\par
+\pard\qj\sa120\sl360\slmult1 indicator_id, type, value_hash, severity\par
+\pard\qj\sa120\sl360\slmult1 Stores a normalized signal safely.\par
+\pard\qj\sa120\sl360\slmult1 ScreenshotAsset\par
+\pard\qj\sa120\sl360\slmult1 asset_id, object_ref, hash, OCR_confidence\par
+\pard\qj\sa120\sl360\slmult1 Controlled image metadata.\par
+\pard\qj\sa120\sl360\slmult1 Feedback\par
+\pard\qj\sa120\sl360\slmult1 feedback_id, result_id, category, note\par
+\pard\qj\sa120\sl360\slmult1 Captures user feedback.\par
+\pard\qj\sa120\sl360\slmult1 AuditEvent\par
+\pard\qj\sa120\sl360\slmult1 event_id, actor, action, timestamp\par
+\pard\qj\sa120\sl360\slmult1 Immutable governance evidence.\par
+\pard\qj\sa120\sl360\slmult1 Data Lifecycle\par
+\pard\qj\sa120\sl360\slmult1 Raw input is accepted, validated, analyzed, and either discarded or retained according\par
+\pard\qj\sa120\sl360\slmult1 to consent and policy. Derived indicators are preferred over raw content for analytical\par
+\pard\qj\sa120\sl360\slmult1 history. Screenshot storage uses a separate protected object reference; the database\par
+\pard\qj\sa120\sl360\slmult1 stores only the minimum link and integrity hash.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 4. System Models\b0\fs24\par
+\pard\sb240\sa140\b\fs32 4.1 Use Case Model\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Primary actor: User. Supporting actors: Analyst, Administrator, External Intelligence\par
+\pard\qj\sa120\sl360\slmult1 Provider, OCR Service. The user submits one of the three supported modalities and\par
+\pard\qj\sa120\sl360\slmult1 receives a result; the analyst reviews flagged cases; the administrator configures policy\par
+\pard\qj\sa120\sl360\slmult1 and inspects operational health.\par
+\pard\qc\b\fs22 Figure 3: High-Level Use Case Flow\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Submit\par
+\pard\qj\sa120\sl360\slmult1 Input\par
+\pard\qj\sa120\sl360\slmult1 Validate and\par
+\pard\qj\sa120\sl360\slmult1 Analyze\par
+\pard\qj\sa120\sl360\slmult1 View Risk\par
+\pard\qj\sa120\sl360\slmult1 Explanation\par
+\pard\qj\sa120\sl360\slmult1 Feedback or\par
+\pard\qj\sa120\sl360\slmult1 Report\par
+\pard\sb240\sa140\b\fs32 4.2 Model Assumptions\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Models identify information flow and responsibility; they do not prescribe a specific\par
+\pard\qj\sa120\sl360\slmult1 framework or database vendor. All inter-service calls are authenticated and observable.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 4.3 Data Flow Model\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The client sends input to the API gateway. The gateway validates identity, rate limits,\par
+\pard\qj\sa120\sl360\slmult1 and input type. It routes URL, text, and image requests to the relevant processor. The\par
+\pard\qj\sa120\sl360\slmult1 score engine aggregates normalized indicators; the result service stores an approved\par
+\pard\qj\sa120\sl360\slmult1 record and returns an explanation. External feeds provide enrichments but never receive\par
+\pard\qj\sa120\sl360\slmult1 unnecessary user identity data.\par
+\pard\qc\b\fs22 Figure 4: Data Flow\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Web Client\par
+\pard\qj\sa120\sl360\slmult1 API Gateway\par
+\pard\qj\sa120\sl360\slmult1 URL / NLP /\par
+\pard\qj\sa120\sl360\slmult1 Image Services\par
+\pard\qj\sa120\sl360\slmult1 Risk Engine\par
+\pard\qj\sa120\sl360\slmult1 Results and\par
+\pard\qj\sa120\sl360\slmult1 Audit Store\par
+\pard\sb240\sa140\b\fs32 4.4 Trust Boundaries\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The browser, application tier, worker tier, external feeds, and storage tier are distinct\par
+\pard\qj\sa120\sl360\slmult1 trust zones. Input validation occurs at the boundary. Secrets remain server-side. Raw\par
+\pard\qj\sa120\sl360\slmult1 assets never cross into public static hosting.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 4.5 Entity Relationship View\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 A User owns zero or more AnalysisRequests. Each request produces zero or one\par
+\pard\qj\sa120\sl360\slmult1 AnalysisResult during processing; a result contains one or more Indicators and can\par
+\pard\qj\sa120\sl360\slmult1 receive zero or more Feedback records. ScreenshotAsset is optional and linked only for\par
+\pard\qj\sa120\sl360\slmult1 image modality. AuditEvent references an actor and a protected action target.\par
+\pard\qc\b\fs22 Figure 5: Entity Relationship View\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 User\par
+\pard\qj\sa120\sl360\slmult1 Analysis\par
+\pard\qj\sa120\sl360\slmult1 Request\par
+\pard\qj\sa120\sl360\slmult1 Analysis\par
+\pard\qj\sa120\sl360\slmult1 Result\par
+\pard\qj\sa120\sl360\slmult1 Indicator\par
+\pard\qj\sa120\sl360\slmult1 Audit\par
+\pard\qj\sa120\sl360\slmult1 Event\par
+\pard\sb240\sa140\b\fs32 4.6 Sequence View\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The submit sequence is: user submits input; client receives a request identifier; gateway\par
+\pard\qj\sa120\sl360\slmult1 validates and dispatches; processors produce evidence; scoring creates the decision; the\par
+\pard\qj\sa120\sl360\slmult1 result is persisted; the client displays the explanation. If a source times out, the\par
+\pard\qj\sa120\sl360\slmult1 processor returns an explicit unavailable signal and scoring applies the uncertainty\par
+\pard\qj\sa120\sl360\slmult1 policy.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 4.7 State Model\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 AnalysisRequest states are Created, Validating, Queued, Processing, Completed,\par
+\pard\qj\sa120\sl360\slmult1 Inconclusive, Failed, and Deleted. A request may transition to Inconclusive after\par
+\pard\qj\sa120\sl360\slmult1 permitted enrichment timeouts; it may transition to Failed only for technical or\par
+\pard\qj\sa120\sl360\slmult1 invalid-input reasons. Completed results remain immutable except for an authorized\par
+\pard\qj\sa120\sl360\slmult1 analyst disposition or user feedback, each recorded separately.\par
+\pard\sb240\sa140\b\fs32 4.8 Error Handling Model\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Invalid input yields a client-safe validation error. A temporary service failure yields a\par
+\pard\qj\sa120\sl360\slmult1 retryable response with a correlation identifier. A policy violation yields a clear\par
+\pard\qj\sa120\sl360\slmult1 explanation without disclosing security-control internals. Security events are logged in\par
+\pard\qj\sa120\sl360\slmult1 a protected audit channel.\par
+\pard\sb240\sa140\b\fs32 4.9 Risk Decision Model\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The decision model uses evidence quality, severity, corroboration, and source\par
+\pard\qj\sa120\sl360\slmult1 reliability. It must distinguish absent evidence from unavailable evidence. A high score\par
+\pard\qj\sa120\sl360\slmult1 from one reliable malicious-domain source may be sufficient, whereas weak linguistic\par
+\pard\qj\sa120\sl360\slmult1 signals alone should yield cautious wording and appropriate confidence.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 5. Verification and Acceptance\b0\fs24\par
+\pard\sb240\sa140\b\fs32 5.1 Requirements Validation\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Validation shall combine review, automated tests, integration tests, security tests,\par
+\pard\qj\sa120\sl360\slmult1 usability checks, and controlled test datasets. Test data shall not include live malicious\par
+\pard\qj\sa120\sl360\slmult1 payloads, active credentials, or unauthorized personal information.\par
+\pard\qc\b\fs22 Table 6: Sample Traceability Matrix\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Requirement\par
+\pard\qj\sa120\sl360\slmult1 Verification method\par
+\pard\qj\sa120\sl360\slmult1 Acceptance evidence\par
+\pard\qj\sa120\sl360\slmult1 FR-URL-03\par
+\pard\qj\sa120\sl360\slmult1 Unit and integration tests\par
+\pard\qj\sa120\sl360\slmult1 Indicators returned for curated URLs.\par
+\pard\qj\sa120\sl360\slmult1 FR-TXT-03\par
+\pard\qj\sa120\sl360\slmult1 NLP test corpus and review\par
+\pard\qj\sa120\sl360\slmult1 Urgency and credential-request cues identified.\par
+\pard\qj\sa120\sl360\slmult1 FR-IMG-03\par
+\pard\qj\sa120\sl360\slmult1 OCR fixture tests\par
+\pard\qj\sa120\sl360\slmult1 Expected text and confidence recorded.\par
+\pard\qj\sa120\sl360\slmult1 FR-SCR-03\par
+\pard\qj\sa120\sl360\slmult1 API contract test\par
+\pard\qj\sa120\sl360\slmult1 Score, label, reasons, version returned.\par
+\pard\qj\sa120\sl360\slmult1 NFR-SEC-05\par
+\pard\qj\sa120\sl360\slmult1 Security review and test\par
+\pard\qj\sa120\sl360\slmult1 Rejected unsafe upload; protected asset path.\par
+\pard\qj\sa120\sl360\slmult1 NFR-PERF-02\par
+\pard\qj\sa120\sl360\slmult1 Load test\par
+\pard\qj\sa120\sl360\slmult1 95th percentile screenshot latency report.\par
+\pard\sb240\sa140\b\fs32 5.2 Acceptance Criteria\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1  All Must requirements have passing verification evidence or an approved,\par
+\pard\qj\sa120\sl360\slmult1 documented exception.\par
+\pard\qj\sa120\sl360\slmult1  No Critical or High result displays a clickable suspicious link by default.\par
+\pard\qj\sa120\sl360\slmult1  No test reveals raw credentials or secrets in UI, logs, or export.\par
+\pard\qj\sa120\sl360\slmult1  The final demo can analyze representative URL, text, and screenshot cases end to end.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: Verification evidence should demonstrate both successful and\par
+\pard\qj\sa120\sl360\slmult1 degraded behavior. Test cases therefore include valid samples, malformed inputs,\par
+\pard\qj\sa120\sl360\slmult1 unavailable feeds, low-quality screenshots, denied authorization requests, and\par
+\pard\qj\sa120\sl360\slmult1 scoring-policy changes. The team records expected result labels as well as expected\par
+\pard\qj\sa120\sl360\slmult1 limitations, because a system that explains an unavailable dependency correctly is safer\par
+\pard\qj\sa120\sl360\slmult1 than one that silently produces an apparently certain assessment.\par
+\page
+\pard\sb240\sa140\b\fs32 5.3 Test Strategy\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Unit tests cover parsers, normalizers, score calculations, masking, authorization rules,\par
+\pard\qj\sa120\sl360\slmult1 and storage adapters. Integration tests cover API-to-worker flow, feed timeouts, OCR\par
+\pard\qj\sa120\sl360\slmult1 handoff, and audit events. End-to-end tests use approved benign and synthetic phishing\par
+\pard\qj\sa120\sl360\slmult1 examples. Performance tests measure concurrent submissions and queue behavior.\par
+\pard\sb240\sa140\b\fs32 5.4 Security Testing\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Security testing includes dependency review, authentication and authorization tests,\par
+\pard\qj\sa120\sl360\slmult1 upload validation, API schema validation, rate-limit tests, logging inspection, and a\par
+\pard\qj\sa120\sl360\slmult1 review against relevant OWASP risks. Testing must be authorized and confined to\par
+\pard\qj\sa120\sl360\slmult1 owned systems.\par
+\pard\sb240\sa140\b\fs32 5.5 Model Evaluation\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The project shall record precision, recall, false-positive rate, false-negative rate, and\par
+\pard\qj\sa120\sl360\slmult1 latency for representative labeled datasets. Scores must be interpreted with dataset\par
+\pard\qj\sa120\sl360\slmult1 limitations. Model updates require regression testing against a held-out approved set\par
+\pard\qj\sa120\sl360\slmult1 and review of changed error patterns.\par
+\pard\sb240\sa140\b\fs32 5.6 Usability Evaluation\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 At least a small representative user review shall verify that users can submit each\par
+\pard\qj\sa120\sl360\slmult1 modality, understand the risk label, find the evidence, and identify a safe next step.\par
+\pard\qj\sa120\sl360\slmult1 Feedback must not be used to claim statistical validity unless the study design supports\par
+\pard\qj\sa120\sl360\slmult1 it.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: Verification evidence should demonstrate both successful and\par
+\pard\qj\sa120\sl360\slmult1 degraded behavior. Test cases therefore include valid samples, malformed inputs,\par
+\pard\qj\sa120\sl360\slmult1 unavailable feeds, low-quality screenshots, denied authorization requests, and\par
+\pard\qj\sa120\sl360\slmult1 scoring-policy changes. The team records expected result labels as well as expected\par
+\pard\qj\sa120\sl360\slmult1 limitations, because a system that explains an unavailable dependency correctly is safer\par
+\pard\qj\sa120\sl360\slmult1 than one that silently produces an apparently certain assessment.\par
+\page
+\pard\sb240\sa140\b\fs32 6. Deployment and Operations\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6.1 Deployment Architecture\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 A recommended deployment separates the browser client, application API,\par
+\pard\qj\sa120\sl360\slmult1 asynchronous worker queue, URL/NLP/image processors, database, protected object\par
+\pard\qj\sa120\sl360\slmult1 storage, and monitoring stack. Environment-specific configuration and secrets are\par
+\pard\qj\sa120\sl360\slmult1 injected securely; they are never committed to source control.\par
+\pard\sb240\sa140\b\fs32 6.2 Monitoring and Logging\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Operational metrics include request count by modality, success/error rate, latency\par
+\pard\qj\sa120\sl360\slmult1 percentiles, queue depth, dependency status, model version distribution, and storage\par
+\pard\qj\sa120\sl360\slmult1 growth. Security logs include authentication failures, authorization denials,\par
+\pard\qj\sa120\sl360\slmult1 administrative changes, sensitive exports, and protected asset access. Logs must be\par
+\pard\qj\sa120\sl360\slmult1 integrity protected and retention limited.\par
+\pard\sb240\sa140\b\fs32 6.3 Incident Handling\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 When CyberShield itself is suspected of compromise, administrators shall contain\par
+\pard\qj\sa120\sl360\slmult1 access, preserve authorized evidence, rotate relevant credentials, assess affected data,\par
+\pard\qj\sa120\sl360\slmult1 restore service safely, and document the event. Users should be informed through\par
+\pard\qj\sa120\sl360\slmult1 approved channels when disclosure is required.\par
+\pard\sb240\sa140\b\fs32 6.4 Maintenance\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Routine maintenance covers dependency patches, threat-feed health, model drift\par
+\pard\qj\sa120\sl360\slmult1 checks, backup verification, capacity review, and periodic access review. A rollback\par
+\pard\qj\sa120\sl360\slmult1 path is required for scoring rules and model releases.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 7. Appendices\b0\fs24\par
+\pard\sb240\sa140\b\fs32 Appendix A: Sample Result Structure\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 A result contains: request identifier; modality; normalized input summary; risk score\par
+\pard\qj\sa120\sl360\slmult1 and label; confidence; detected indicators with severity and evidence source; safe\par
+\pard\qj\sa120\sl360\slmult1 recommendations; limitations; created time; rule/model version; and retention/deletion\par
+\pard\qj\sa120\sl360\slmult1 controls.\par
+\pard\sb240\sa140\b\fs32 Appendix B: Safe User Guidance\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1  Do not click or reply when a message demands urgent credential, OTP, or payment\par
+\pard\qj\sa120\sl360\slmult1 action.\par
+\pard\qj\sa120\sl360\slmult1  Verify using a trusted official app, bookmarked site, or independently known phone\par
+\pard\qj\sa120\sl360\slmult1 number.\par
+\pard\qj\sa120\sl360\slmult1  Do not share passwords, one-time codes, recovery codes, or card details.\par
+\pard\qj\sa120\sl360\slmult1  Report suspicious content through the appropriate organization or service channel.\par
+\pard\sb240\sa140\b\fs32 Appendix C: Future Enhancements\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Potential future work includes multilingual NLP, QR-code destination analysis,\par
+\pard\qj\sa120\sl360\slmult1 email-header parsing, explainability improvements, organization-specific brand\par
+\pard\qj\sa120\sl360\slmult1 profiles, browser extension integration, and SOC/ticketing integration. Each\par
+\pard\qj\sa120\sl360\slmult1 enhancement requires a separate privacy and security assessment.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 Appendix D: Functional Requirement Summary\b0\fs24\par
+\pard\qc\b\fs22 Table 7: Requirement Groups\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Group\par
+\pard\qj\sa120\sl360\slmult1 Purpose\par
+\pard\qj\sa120\sl360\slmult1 Priority\par
+\pard\qj\sa120\sl360\slmult1 URL analysis\par
+\pard\qj\sa120\sl360\slmult1 Detect technical and reputation-based URL risk indicators.\par
+\pard\qj\sa120\sl360\slmult1 Must\par
+\pard\qj\sa120\sl360\slmult1 Text analysis\par
+\pard\qj\sa120\sl360\slmult1 Identify phishing intent and entities in SMS/email text.\par
+\pard\qj\sa120\sl360\slmult1 Must\par
+\pard\qj\sa120\sl360\slmult1 Screenshot analysis\par
+\pard\qj\sa120\sl360\slmult1 Combine OCR and visual cues to assess phishing\par
+\pard\qj\sa120\sl360\slmult1 screenshots.\par
+\pard\qj\sa120\sl360\slmult1 Must\par
+\pard\qj\sa120\sl360\slmult1 Scoring\par
+\pard\qj\sa120\sl360\slmult1 Produce an explainable, calibrated risk decision.\par
+\pard\qj\sa120\sl360\slmult1 Must\par
+\pard\qj\sa120\sl360\slmult1 Governance\par
+\pard\qj\sa120\sl360\slmult1 Control roles, configuration, audit, and retention.\par
+\pard\qj\sa120\sl360\slmult1 Must\par
+\pard\qj\sa120\sl360\slmult1 Reporting\par
+\pard\qj\sa120\sl360\slmult1 Provide safe summaries, exports, and user feedback.\par
+\pard\qj\sa120\sl360\slmult1 Should\par
+\pard\qj\sa120\sl360\slmult1 Interpretation Note\par
+\pard\qj\sa120\sl360\slmult1 The requirements are deliberately layered: validation and safe storage are prerequisites\par
+\pard\qj\sa120\sl360\slmult1 for analysis; modality-specific evidence is normalized before it reaches scoring; the\par
+\pard\qj\sa120\sl360\slmult1 result experience then explains uncertainty and recommends a safe action. This\par
+\pard\qj\sa120\sl360\slmult1 approach makes each component testable without treating any one signal as definitive.\par
+\pard\qj\sa120\sl360\slmult1 Configuration Baseline\par
+\pard\qj\sa120\sl360\slmult1 Thresholds, enabled feeds, retention duration, supported languages, maximum inputs,\par
+\pard\qj\sa120\sl360\slmult1 and model versions are configuration values. They must be change controlled and\par
+\pard\qj\sa120\sl360\slmult1 recorded with each analysis result so the behavior can be reproduced during review.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 Appendix E: Example Indicators\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 URL Indicators\par
+\pard\qj\sa120\sl360\slmult1  Domain contains a suspicious lookalike of a known brand.\par
+\pard\qj\sa120\sl360\slmult1  Hostname is a raw IP address or uses misleading nested subdomains.\par
+\pard\qj\sa120\sl360\slmult1  URL includes excessive encoding, unusual path structure, or credential/payment\par
+\pard\qj\sa120\sl360\slmult1 terms.\par
+\pard\qj\sa120\sl360\slmult1  Configured intelligence source reports a malicious or suspicious reputation.\par
+\pard\qj\sa120\sl360\slmult1 Text Indicators\par
+\pard\qj\sa120\sl360\slmult1  Artificial urgency, account threat, prize, refund, or unexpected payment language.\par
+\pard\qj\sa120\sl360\slmult1  Request for password, OTP, recovery code, card detail, or remote-access action.\par
+\pard\qj\sa120\sl360\slmult1  Impersonation claim that conflicts with sender clues or embedded domain.\par
+\pard\qj\sa120\sl360\slmult1  Obscured link, unusual contact channel, or abrupt instruction to move conversation.\par
+\pard\qj\sa120\sl360\slmult1 Image Indicators\par
+\pard\qj\sa120\sl360\slmult1  OCR extracts a login form, password/OTP request, or payment prompt.\par
+\pard\qj\sa120\sl360\slmult1  Visual structure imitates a brand while domains or text show mismatches.\par
+\pard\qj\sa120\sl360\slmult1  QR code or shortened link attempts to conceal destination information.\par
+\pard\qj\sa120\sl360\slmult1  Low image quality reduces OCR confidence and must reduce certainty.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 Appendix F: Risk Communication Examples\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Low Risk\par
+\pard\qj\sa120\sl360\slmult1 \u8220?No strong phishing indicators were found in this analysis. This does not confirm that\par
+\pard\qj\sa120\sl360\slmult1 the content is safe. Continue only if you expected it and can verify the sender or website\par
+\pard\qj\sa120\sl360\slmult1 independently.\u8221?\par
+\pard\qj\sa120\sl360\slmult1 Medium Risk\par
+\pard\qj\sa120\sl360\slmult1 \u8220?This content includes signals often used in scams, such as urgency or an unfamiliar\par
+\pard\qj\sa120\sl360\slmult1 link. Do not provide credentials or payment information. Verify through an official\par
+\pard\qj\sa120\sl360\slmult1 channel before taking action.\u8221?\par
+\pard\qj\sa120\sl360\slmult1 High / Critical Risk\par
+\pard\qj\sa120\sl360\slmult1 \u8220?Multiple strong phishing indicators were detected. Avoid clicking, replying, scanning\par
+\pard\qj\sa120\sl360\slmult1 a QR code, or sharing information. Use a known official website or contact method to\par
+\pard\qj\sa120\sl360\slmult1 verify the request and report it if appropriate.\u8221?\par
+\pard\qj\sa120\sl360\slmult1 Inconclusive\par
+\pard\qj\sa120\sl360\slmult1 \u8220?The analysis could not use one or more evidence sources, or the image/text quality\par
+\pard\qj\sa120\sl360\slmult1 was limited. Treat the content cautiously and verify through an independently trusted\par
+\pard\qj\sa120\sl360\slmult1 channel.\u8221?\par
+\pard\qj\sa120\sl360\slmult1 These examples are guidance templates, not legal or incident-response instructions. The\par
+\pard\qj\sa120\sl360\slmult1 final user interface shall show the specific reasons behind each classification.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 8. Detailed Architecture Requirements\b0\fs24\par
+\pard\sb240\sa140\b\fs32 8.1 Client and API Layer\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The browser client is responsible for collecting input, presenting consent language,\par
+\pard\qj\sa120\sl360\slmult1 showing progress, and rendering the completed assessment. It must not execute URLs,\par
+\pard\qj\sa120\sl360\slmult1 decode unknown files through browser plug-ins, or embed untrusted submitted content\par
+\pard\qj\sa120\sl360\slmult1 as active HTML. The API layer is responsible for authentication, validation, rate\par
+\pard\qj\sa120\sl360\slmult1 limiting, request identifiers, routing, response shaping, and audit correlation. It is\par
+\pard\qj\sa120\sl360\slmult1 deliberately kept separate from resource-intensive analysis workers so a high-cost\par
+\pard\qj\sa120\sl360\slmult1 screenshot cannot prevent normal account or result operations.\par
+\pard\sb240\sa140\b\fs32 8.2 Asynchronous Worker Layer\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Analysis workers consume validated jobs from a queue. A job contains a request\par
+\pard\qj\sa120\sl360\slmult1 identifier, an input reference, a modality, a privacy policy identifier, and a trace\par
+\pard\qj\sa120\sl360\slmult1 context; it does not require the worker to know the user password or browser session.\par
+\pard\qj\sa120\sl360\slmult1 Workers return normalized indicators, evidence confidence, processing status, and an\par
+\pard\qj\sa120\sl360\slmult1 analyzer version. The score engine receives these normalized outputs and applies a\par
+\pard\qj\sa120\sl360\slmult1 consistent decision policy. This separation permits independent scaling of URL, NLP,\par
+\pard\qj\sa120\sl360\slmult1 and image workloads.\par
+\pard\sb240\sa140\b\fs32 8.3 Storage Layer\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Structured records are kept in the database with foreign-key and authorization controls.\par
+\pard\qj\sa120\sl360\slmult1 Large image assets are stored in protected object storage under an opaque object\par
+\pard\qj\sa120\sl360\slmult1 reference. Access to an object must be mediated by an authorization check and a\par
+\pard\qj\sa120\sl360\slmult1 short-lived retrieval mechanism. A content hash supports integrity checks and duplicate\par
+\pard\qj\sa120\sl360\slmult1 detection without retaining unnecessary copies. Backups must be encrypted, tested, and\par
+\pard\qj\sa120\sl360\slmult1 governed by the same retention schedule as the primary store.\par
+\pard\qj\sa120\sl360\slmult1 Implementation Notes\par
+\pard\qj\sa120\sl360\slmult1 Implementation note: This requirement group is implemented through explicit\par
+\pard\qj\sa120\sl360\slmult1 interfaces, versioned configuration, and measurable acceptance criteria. The design\par
+\pard\qj\sa120\sl360\slmult1 keeps input validation, evidence collection, risk scoring, explanation, and audit\par
+\pard\qj\sa120\sl360\slmult1 recording distinct so that a change in one component can be reviewed and tested\par
+\pard\qj\sa120\sl360\slmult1 without unintentionally changing every result. Where uncertainty exists, the platform\par
+\pard\qj\sa120\sl360\slmult1 states the limitation and provides a safe verification action instead of presenting a\par
+\pard\qj\sa120\sl360\slmult1 binary assurance.\par
+\page
+\pard\sb240\sa140\b\fs32 8.4 URL Analysis Design Detail\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 URL analysis begins with deterministic parsing. The system records scheme, hostname,\par
+\pard\qj\sa120\sl360\slmult1 effective top-level domain, path, query, port, and selected normalized forms. It\par
+\pard\qj\sa120\sl360\slmult1 identifies transformations that conceal intent, such as percent-encoding, repeated\par
+\pard\qj\sa120\sl360\slmult1 delimiters, embedded user-info fields, punycode, or a long path crafted to hide the real\par
+\pard\qj\sa120\sl360\slmult1 host. The parser shall not treat a visual resemblance as an established identity; it reports\par
+\pard\qj\sa120\sl360\slmult1 it as a lookalike indicator with an explanation.\par
+\pard\qj\sa120\sl360\slmult1 The reputation adapter queries approved sources by domain, URL, hash, or IP\par
+\pard\qj\sa120\sl360\slmult1 according to the source contract. Timeouts and provider errors are represented as\par
+\pard\qj\sa120\sl360\slmult1 source-unavailable indicators. A provider response has a source name, fetch time,\par
+\pard\qj\sa120\sl360\slmult1 policy-approved confidence, and response classification. Cached reputation data is\par
+\pard\qj\sa120\sl360\slmult1 marked with age so a user and analyst can understand whether evidence is fresh. The\par
+\pard\qj\sa120\sl360\slmult1 platform must never transmit a user identifier, personal note, or full unrelated message\par
+\pard\qj\sa120\sl360\slmult1 body to a URL intelligence provider.\par
+\pard\qj\sa120\sl360\slmult1 When sandboxed redirect evaluation is enabled, the worker uses isolated networking\par
+\pard\qj\sa120\sl360\slmult1 and strict time, size, and hop limits. The returned output contains only the final\par
+\pard\qj\sa120\sl360\slmult1 normalized domains, redirect count, and selected safety indicators. It must not\par
+\pard\qj\sa120\sl360\slmult1 download unknown executable content, interact with forms, or attempt credential\par
+\pard\qj\sa120\sl360\slmult1 submission. These controls make URL enrichment an observation process rather than\par
+\pard\qj\sa120\sl360\slmult1 an active browsing action.\par
+\page
+\pard\sb240\sa140\b\fs32 8.5 NLP Analysis Design Detail\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The text service first separates message parts into subject, sender label, body, quoted\par
+\pard\qj\sa120\sl360\slmult1 reply, and attachment description when those fields are present. It normalizes\par
+\pard\qj\sa120\sl360\slmult1 whitespace, common obfuscation, Unicode variants, and repeated punctuation while\par
+\pard\qj\sa120\sl360\slmult1 retaining an original protected copy only when policy permits. Tokenization and\par
+\pard\qj\sa120\sl360\slmult1 sentence segmentation provide input to rules and classifier features. The service detects\par
+\pard\qj\sa120\sl360\slmult1 requests for secrets, money, account verification, delivery confirmation, remote access,\par
+\pard\qj\sa120\sl360\slmult1 or rapid action; it also detects coercive language such as threats of account closure.\par
+\pard\qj\sa120\sl360\slmult1 Entity extraction identifies URLs, email addresses, telephone numbers, payment\par
+\pard\qj\sa120\sl360\slmult1 handles, organization names, dates, and amounts. A claimed organization is compared\par
+\pard\qj\sa120\sl360\slmult1 with text surrounding the request and any embedded domains. The comparison\par
+\pard\qj\sa120\sl360\slmult1 produces an explanation such as \u8220?message claims to be from a bank but directs you to\par
+\pard\qj\sa120\sl360\slmult1 an unrelated domain,\u8221? rather than an unsupported accusation. Where confidence is low,\par
+\pard\qj\sa120\sl360\slmult1 the result says that the wording is unusual or cannot be verified.\par
+\pard\qj\sa120\sl360\slmult1 NLP output is not a substitute for human language understanding in every context.\par
+\pard\qj\sa120\sl360\slmult1 Legitimate operational messages may use urgent wording, and phishing messages may\par
+\pard\qj\sa120\sl360\slmult1 be grammatically polished. Therefore, the engine combines linguistic evidence with\par
+\pard\qj\sa120\sl360\slmult1 link, sender, or image evidence, applies conservative labels to isolated weak cues, and\par
+\pard\qj\sa120\sl360\slmult1 captures evaluation metrics by language and content type.\par
+\page
+\pard\sb240\sa140\b\fs32 8.6 Image and OCR Analysis Design Detail\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Screenshot analysis starts with file validation and pixel decoding. The service checks\par
+\pard\qj\sa120\sl360\slmult1 the declared type against the file signature, measures dimensions, and rejects image\par
+\pard\qj\sa120\sl360\slmult1 bombs or unsupported color formats. It removes nonessential metadata from the\par
+\pard\qj\sa120\sl360\slmult1 working derivative. The protected original is retained only if consent and retention\par
+\pard\qj\sa120\sl360\slmult1 policy allow it. A thumbnail used by analysts must be generated from the safe decoded\par
+\pard\qj\sa120\sl360\slmult1 pixels rather than served directly from the original upload.\par
+\pard\qj\sa120\sl360\slmult1 OCR produces text blocks, confidence values, and approximate coordinates. The text\par
+\pard\qj\sa120\sl360\slmult1 blocks feed the NLP service, while layout logic uses coordinates to recognize forms,\par
+\pard\qj\sa120\sl360\slmult1 input labels, submit buttons, QR codes, browser-like address bars, and warning\par
+\pard\qj\sa120\sl360\slmult1 banners. Visual detection may also estimate whether a logo or color pattern appears\par
+\pard\qj\sa120\sl360\slmult1 brand-like; it cannot establish ownership or authenticity by itself. Such cues are scored\par
+\pard\qj\sa120\sl360\slmult1 as corroborative observations.\par
+\pard\qj\sa120\sl360\slmult1 The user result shall make the provenance of each signal clear. For example, \u8220?OCR\par
+\pard\qj\sa120\sl360\slmult1 detected the phrase \u8216?enter your one-time code\u8217? with high text confidence\u8221? is distinct\par
+\pard\qj\sa120\sl360\slmult1 from \u8220?the image contains a logo-like graphic.\u8221? If OCR confidence is poor, the platform\par
+\pard\qj\sa120\sl360\slmult1 lowers the certainty of text-derived conclusions and prompts the user to verify\par
+\pard\qj\sa120\sl360\slmult1 manually rather than creating a falsely precise score.\par
+\page
+\pard\sb240\sa140\b\fs32 8.7 Risk-Scoring Methodology\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The scoring service is an explicit policy component. It receives normalized indicators\par
+\pard\qj\sa120\sl360\slmult1 with source reliability, severity, freshness, modality, and confidence. Before calculation\par
+\pard\qj\sa120\sl360\slmult1 it merges duplicate evidence: a URL extracted from a screenshot and the same URL\par
+\pard\qj\sa120\sl360\slmult1 pasted in the text is one indicator with multi-modal corroboration, not two unrelated\par
+\pard\qj\sa120\sl360\slmult1 threats. Severity weights represent potential harm and evidence reliability; confidence\par
+\pard\qj\sa120\sl360\slmult1 reflects how well a signal was observed.\par
+\pard\qj\sa120\sl360\slmult1 A rules-first baseline is suitable for the academic release because it can be reviewed and\par
+\pard\qj\sa120\sl360\slmult1 tested deterministically. A future trained model may provide a bounded score\par
+\pard\qj\sa120\sl360\slmult1 contribution when it has documented training data, evaluation results, drift monitoring,\par
+\pard\qj\sa120\sl360\slmult1 and a rollback path. In either approach, thresholds are versioned configuration. A\par
+\pard\qj\sa120\sl360\slmult1 decision record must preserve the score inputs, the applied policy version, and the final\par
+\pard\qj\sa120\sl360\slmult1 label so retrospective review is possible.\par
+\pard\qj\sa120\sl360\slmult1 Calibration checks are required. A score of 70 must have a stable meaning across\par
+\pard\qj\sa120\sl360\slmult1 modalities and must not result merely from a long message containing many weak\par
+\pard\qj\sa120\sl360\slmult1 features. The team shall review false positives and false negatives by modality, adjust\par
+\pard\qj\sa120\sl360\slmult1 thresholds under change control, and test representative clean, ambiguous, and\par
+\pard\qj\sa120\sl360\slmult1 malicious examples before release.\par
+\page
+\pard\sb240\sa140\b\fs32 8.8 User Experience and Safety Content\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The first screen should explain that CyberShield analyzes submitted material for signs\par
+\pard\qj\sa120\sl360\slmult1 of phishing and that no automated tool can prove complete safety. The three analysis\par
+\pard\qj\sa120\sl360\slmult1 methods are presented as equal choices so users are not led to assume phishing exists\par
+\pard\qj\sa120\sl360\slmult1 only in URLs. Submission controls include clear examples, input limits, privacy\par
+\pard\qj\sa120\sl360\slmult1 information, and a visible option to remove an uploaded asset after the current analysis\par
+\pard\qj\sa120\sl360\slmult1 when policy allows.\par
+\pard\qj\sa120\sl360\slmult1 A result page has four reading levels: the risk label and immediate safe action; a short\par
+\pard\qj\sa120\sl360\slmult1 explanation; a detailed list of indicators; and technical metadata for authorized users.\par
+\pard\qj\sa120\sl360\slmult1 High-risk pages keep the safe action near the top: avoid clicking, do not enter\par
+\pard\qj\sa120\sl360\slmult1 credentials or codes, verify using an independently known channel, and report through\par
+\pard\qj\sa120\sl360\slmult1 a suitable process. The visual design uses text labels and icons as well as color. It does\par
+\pard\qj\sa120\sl360\slmult1 not use panic language, flashing warnings, or a false \u8220?safe\u8221? badge.\par
+\pard\qj\sa120\sl360\slmult1 When a user supplies feedback, the form distinguishes \u8220?the explanation was unclear\u8221?\par
+\pard\qj\sa120\sl360\slmult1 from \u8220?the classification seems wrong.\u8221? It warns users not to add passwords, OTPs,\par
+\pard\qj\sa120\sl360\slmult1 banking information, or personal identity documents in the feedback note. This avoids\par
+\pard\qj\sa120\sl360\slmult1 turning an improvement pathway into a secondary data-collection risk.\par
+\page
+\pard\sb240\sa140\b\fs32 8.9 Authorization and Audit Detail\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Authorization is evaluated on every server-side action. A registered user can see only\par
+\pard\qj\sa120\sl360\slmult1 their own current and historical analyses. An analyst can access assigned or\par
+\pard\qj\sa120\sl360\slmult1 policy-authorized flagged cases but does not automatically receive administration\par
+\pard\qj\sa120\sl360\slmult1 rights. Administrators configure the system but are still subject to audit when viewing\par
+\pard\qj\sa120\sl360\slmult1 sensitive artifacts. Auditors receive a read-only view of permitted logs and reports. The\par
+\pard\qj\sa120\sl360\slmult1 role model must deny access by default and use server-side checks, not only hidden\par
+\pard\qj\sa120\sl360\slmult1 user-interface controls.\par
+\pard\qj\sa120\sl360\slmult1 Audit events record the actor identifier or service identity, event type, target type, target\par
+\pard\qj\sa120\sl360\slmult1 identifier, time, correlation identifier, result, and limited contextual metadata. They do\par
+\pard\qj\sa120\sl360\slmult1 not record passwords, raw session tokens, or unrestricted original message content.\par
+\pard\qj\sa120\sl360\slmult1 Events are append-only from the application point of view; changes to audit storage are\par
+\pard\qj\sa120\sl360\slmult1 restricted and monitored. The audit trail supports investigation of configuration\par
+\pard\qj\sa120\sl360\slmult1 changes, access to raw screenshots, exports, deletions, analyst overrides, and repeated\par
+\pard\qj\sa120\sl360\slmult1 sign-in failures.\par
+\pard\qj\sa120\sl360\slmult1 The service accounts used by OCR, reputation, and storage adapters have minimum\par
+\pard\qj\sa120\sl360\slmult1 permissions. Secrets are stored in an approved secret manager or protected deployment\par
+\pard\qj\sa120\sl360\slmult1 configuration and are rotated on a planned schedule or immediately after suspected\par
+\pard\qj\sa120\sl360\slmult1 exposure.\par
+\page
+\pard\sb240\sa140\b\fs32 8.10 Privacy, Retention, and Ethical Use\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 CyberShield processes content that can contain private conversations, contact details,\par
+\pard\qj\sa120\sl360\slmult1 financial references, and screenshots of accounts. The product therefore uses data\par
+\pard\qj\sa120\sl360\slmult1 minimization: only input required for the selected analysis is collected, raw data is\par
+\pard\qj\sa120\sl360\slmult1 retained only when permitted, and derived evidence is preferred for history and metrics.\par
+\pard\qj\sa120\sl360\slmult1 A clear notice explains that submitted content may be inspected by authorized\par
+\pard\qj\sa120\sl360\slmult1 personnel if the user consents or policy requires it.\par
+\pard\qj\sa120\sl360\slmult1 Retention is a configurable policy rather than a hidden implementation detail. The\par
+\pard\qj\sa120\sl360\slmult1 baseline distinguishes transient processing artifacts, user-visible history, aggregated\par
+\pard\qj\sa120\sl360\slmult1 metrics, and protected security audit records. Each class has a purpose, owner, retention\par
+\pard\qj\sa120\sl360\slmult1 duration, deletion method, and approved exceptions. On expiration, stored raw assets\par
+\pard\qj\sa120\sl360\slmult1 and content are deleted or irreversibly de-identified. Backup expiration is documented\par
+\pard\qj\sa120\sl360\slmult1 so deletion requests are handled consistently.\par
+\pard\qj\sa120\sl360\slmult1 The project must avoid using private user submissions to train models by default. If a\par
+\pard\qj\sa120\sl360\slmult1 future learning program is approved, it should use de-identified, consented, reviewed\par
+\pard\qj\sa120\sl360\slmult1 data with access restrictions. Human reviewers should see the least information\par
+\pard\qj\sa120\sl360\slmult1 required to evaluate a case and should receive guidance on handling sensitive or\par
+\pard\qj\sa120\sl360\slmult1 distressing content.\par
+\page
+\pard\sb240\sa140\b\fs32 8.11 Detailed Test Cases\b0\fs24\par
+\pard\qc\b\fs22 Table 8: Representative Acceptance Cases\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Case\par
+\pard\qj\sa120\sl360\slmult1 Input and action\par
+\pard\qj\sa120\sl360\slmult1 Expected outcome\par
+\pard\qj\sa120\sl360\slmult1 TC-01\par
+\pard\qj\sa120\sl360\slmult1 Paste a malformed URL.\par
+\pard\qj\sa120\sl360\slmult1 Validation message; no analysis job is created.\par
+\pard\qj\sa120\sl360\slmult1 TC-02\par
+\pard\qj\sa120\sl360\slmult1 Submit a known-safe synthetic domain.\par
+\pard\qj\sa120\sl360\slmult1 Low or inconclusive result with stated limitations;\par
+\pard\qj\sa120\sl360\slmult1 no automatic navigation.\par
+\pard\qj\sa120\sl360\slmult1 TC-03\par
+\pard\qj\sa120\sl360\slmult1 Submit synthetic SMS requesting an OTP via\par
+\pard\qj\sa120\sl360\slmult1 a suspicious link.\par
+\pard\qj\sa120\sl360\slmult1 Text cues, extracted link, High/Critical guidance,\par
+\pard\qj\sa120\sl360\slmult1 masked evidence.\par
+\pard\qj\sa120\sl360\slmult1 TC-04\par
+\pard\qj\sa120\sl360\slmult1 Upload a synthetic login screenshot with a QR\par
+\pard\qj\sa120\sl360\slmult1 code.\par
+\pard\qj\sa120\sl360\slmult1 File validates; OCR and visual indicators reported\par
+\pard\qj\sa120\sl360\slmult1 with confidence.\par
+\pard\qj\sa120\sl360\slmult1 TC-05\par
+\pard\qj\sa120\sl360\slmult1 Force a reputation adapter timeout.\par
+\pard\qj\sa120\sl360\slmult1 Result is inconclusive or reduced-confidence;\par
+\pard\qj\sa120\sl360\slmult1 timeout is explained.\par
+\pard\qj\sa120\sl360\slmult1 TC-06\par
+\pard\qj\sa120\sl360\slmult1 Attempt cross-user history access.\par
+\pard\qj\sa120\sl360\slmult1 Server returns authorization denial and audit\par
+\pard\qj\sa120\sl360\slmult1 event.\par
+\pard\qj\sa120\sl360\slmult1 Test data will use fictional domains, synthetic messages, and authorized image fixtures.\par
+\pard\qj\sa120\sl360\slmult1 No test shall distribute active malicious links, credential harvesters, or private user data.\par
+\pard\qj\sa120\sl360\slmult1 Regression suites should run for every scoring-policy, model, parser, or dependency\par
+\pard\qj\sa120\sl360\slmult1 update.\par
+\page
+\pard\sb240\sa140\b\fs32 8.12 Deployment, Release, and Rollback\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 The release process separates development, test, staging, and production-like\par
+\pard\qj\sa120\sl360\slmult1 environments. Configuration values and external credentials differ by environment and\par
+\pard\qj\sa120\sl360\slmult1 must never be copied into source code. Before release, the team reviews unit and\par
+\pard\qj\sa120\sl360\slmult1 integration results, dependency vulnerabilities, schema migrations, model/rule version,\par
+\pard\qj\sa120\sl360\slmult1 performance evidence, backup status, and operational runbook updates.\par
+\pard\qj\sa120\sl360\slmult1 A release is reversible. Rule and model updates are labeled with a unique version,\par
+\pard\qj\sa120\sl360\slmult1 tested against an approved regression set, and deployed in a way that allows the prior\par
+\pard\qj\sa120\sl360\slmult1 version to be restored. Database migrations include a backup and rollback decision.\par
+\pard\qj\sa120\sl360\slmult1 Monitoring thresholds are checked immediately after deployment for request errors,\par
+\pard\qj\sa120\sl360\slmult1 latency, queue depth, unexpected score distribution, and external-feed failures.\par
+\pard\qj\sa120\sl360\slmult1 Changes that affect personal-data retention, analyst access, or third-party sharing\par
+\pard\qj\sa120\sl360\slmult1 require privacy and security review before deployment. Emergency changes follow a\par
+\pard\qj\sa120\sl360\slmult1 documented exception path, including a post-change review and complete audit record.\par
+\page
+\pard\sb240\sa140\b\fs32 8.13 Operational Runbook Summary\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Normal operations begin with health checks for the API, queue, processors, database,\par
+\pard\qj\sa120\sl360\slmult1 object storage, and intelligence adapters. A degraded external feed is not automatically\par
+\pard\qj\sa120\sl360\slmult1 a platform outage; the system continues with a visible limitation if the remaining\par
+\pard\qj\sa120\sl360\slmult1 evidence is sufficient. A database, authentication, or storage authorization failure is\par
+\pard\qj\sa120\sl360\slmult1 handled as a service-impacting event because it may affect safety or privacy.\par
+\pard\qj\sa120\sl360\slmult1 When a worker backlog grows, operators check input volume, processing latency, error\par
+\pard\qj\sa120\sl360\slmult1 rate, worker availability, and unusually large image submissions. Capacity can be\par
+\pard\qj\sa120\sl360\slmult1 increased by adding isolated worker instances subject to rate limits and cost controls.\par
+\pard\qj\sa120\sl360\slmult1 Operators do not inspect raw user inputs unless that access is necessary, authorized, and\par
+\pard\qj\sa120\sl360\slmult1 logged.\par
+\pard\qj\sa120\sl360\slmult1 The runbook includes contacts, escalation conditions, backup restoration steps,\par
+\pard\qj\sa120\sl360\slmult1 model/rule rollback steps, security incident handling, and a user-facing status\par
+\pard\qj\sa120\sl360\slmult1 communication template. Periodic drills validate that the team can restore a backup,\par
+\pard\qj\sa120\sl360\slmult1 disable a faulty intelligence adapter, and recover from a failed model release without\par
+\pard\qj\sa120\sl360\slmult1 exposing data or returning misleading \u8220?safe\u8221? decisions.\par
+\page
+\pard\sb240\sa140\b\fs32 8.14 Expanded Glossary\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Brand impersonation: use of a name, image, or wording intended to appear associated\par
+\pard\qj\sa120\sl360\slmult1 with an organization. Confidence: an estimate of evidence quality, not the probability\par
+\pard\qj\sa120\sl360\slmult1 that a user will be harmed. Domain: the registered internet name used to identify a host.\par
+\pard\qj\sa120\sl360\slmult1 Homoglyph: a character that visually resembles another character. Lookalike domain: a\par
+\pard\qj\sa120\sl360\slmult1 domain crafted to resemble a legitimate one. OCR confidence: the engine\u8217?s estimate\par
+\pard\qj\sa120\sl360\slmult1 that extracted image text is correct.\par
+\pard\qj\sa120\sl360\slmult1 Protected asset: a stored uploaded image available only through authorized retrieval.\par
+\pard\qj\sa120\sl360\slmult1 Reputation feed: an external source that provides reported risk information about an\par
+\pard\qj\sa120\sl360\slmult1 indicator. Risk label: the user-facing category derived from score and policy.\par
+\pard\qj\sa120\sl360\slmult1 Sandboxed evaluation: constrained inspection performed in an isolated environment.\par
+\pard\qj\sa120\sl360\slmult1 Signal provenance: the source and method through which evidence was obtained.\par
+\pard\qj\sa120\sl360\slmult1 Threat intelligence: curated data about malicious infrastructure or behavior.\par
+\pard\qj\sa120\sl360\slmult1 User-visible explanation: short wording that states why the result was produced and\par
+\pard\qj\sa120\sl360\slmult1 what to do next. Versioned policy: a named, immutable release of thresholds, weights,\par
+\pard\qj\sa120\sl360\slmult1 and decision rules. This glossary is normative where a term is used in a requirement;\par
+\pard\qj\sa120\sl360\slmult1 implementation documentation may add vendor-specific definitions without changing\par
+\pard\qj\sa120\sl360\slmult1 these meanings.\par
+\page
+\pard\sb240\sa140\b\fs32 References\b0\fs24\par
+\pard\sb240\sa140\b\fs32 1. IEEE Computer Society, IEEE 830: Recommended Practice for Software\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Requirements Specifications.\par
+\pard\sb240\sa140\b\fs32 2. OWASP Foundation, OWASP Application Security Verification Standard and\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 OWASP web application security guidance.\par
+\pard\sb240\sa140\b\fs32 3. National Institute of Standards and Technology, Security and Privacy Controls for\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Information Systems and Organizations (SP 800-53).\par
+\pard\sb240\sa140\b\fs32 4. National Institute of Standards and Technology, Computer Security Incident\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 Handling Guide (SP 800-61).\par
+\pard\sb240\sa140\b\fs28 5. Anti-Phishing Working Group, phishing activity reports and educational resources.\b0\fs24\par
+\pard\sb240\sa140\b\fs32 6. Project reference: EXPIROCHAIN report, supplied as a structural reference for\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 academic documentation.\par
+\pard\sb240\sa140\b\fs32 7. Project reference: SRS Report Formatting Guide, supplied for A4 layout,\b0\fs24\par
+\pard\qj\sa120\sl360\slmult1 typography, headings, captions, and IEEE-based structure.\par
+\pard\qj\sa120\sl360\slmult1 End of Document\par
+}

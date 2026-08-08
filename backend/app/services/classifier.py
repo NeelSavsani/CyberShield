@@ -24,14 +24,14 @@ class EvidenceClassifier:
     def __init__(self) -> None:
         self.trained_model: dict[str, Any] | None = None
         model_path: Path = settings.model_path
-        if model_path.exists():
+        if settings.use_trained_model and model_path.exists():
             try:
                 candidate = joblib.load(model_path)
                 if candidate.get("schema_version") == "evidence-v1":
                     self.trained_model = candidate
             except Exception:
-                # A corrupt or incompatible model must never prevent evidence
-                # collection; the explainable baseline remains available.
+                # A corrupt or incompatible opt-in model must never prevent
+                # evidence collection; the explainable baseline remains available.
                 self.trained_model = None
 
     def predict(self, features: dict[str, Any]) -> dict[str, Any]:

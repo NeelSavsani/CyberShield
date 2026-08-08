@@ -214,6 +214,12 @@ async function flagItem() {
 // (API base URL comes from main.js, loaded before this file —
 // see the note in dashboard.js for why it isn't redeclared here.)
 const resultRaw = sessionStorage.getItem('cs_result');
+const resultSource = sessionStorage.getItem('cs_result_source');
+const historyBackButton = document.getElementById('history-back-btn');
+
+if (resultSource === 'history') {
+  historyBackButton.hidden = false;
+}
 
 if (resultRaw) {
   renderResult(JSON.parse(resultRaw));

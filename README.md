@@ -23,6 +23,10 @@ For the college demo, `backend/models/phishing_model.joblib` is generated from
 a clearly labelled synthetic dataset. See [COLLEGE_DEMO.md](COLLEGE_DEMO.md)
 for the correct way to present its limits.
 
+CyberShield uses the explainable `evidence-baseline-v1` classifier by default.
+A trained model is opt-in only: set `CYBERSHIELD_USE_TRAINED_MODEL=true` after
+it has been validated on representative labelled phishing and benign data.
+
 ## Run locally first time
 
 ```powershell

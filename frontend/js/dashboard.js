@@ -148,6 +148,7 @@ function viewResult(id) {
   const item = history.find(entry => entry.id === id);
   if (!item) return;
   sessionStorage.setItem('cs_result', JSON.stringify({ risk_score: item.riskScore, verdict: item.verdict, indicators: item.indicators, input_type: item.inputType, content: item.content, analyzed_at: item.analyzedAt, features: item.features || {}, screenshot_url: item.screenshotUrl || null, analysis_id: item.id }));
+  sessionStorage.setItem('cs_result_source', 'dashboard');
   location.href = 'result.html';
 }
 
@@ -165,6 +166,7 @@ async function analyzeUrl() {
     const result = normalizeResult(body, content);
     result.analysis_id = await saveAnalysis(result, content);
     sessionStorage.setItem('cs_result', JSON.stringify(result));
+    sessionStorage.setItem('cs_result_source', 'dashboard');
     await refreshHistory();
     stopProgress('complete');
     window.setTimeout(() => { window.location.href = 'result.html'; }, 250);
@@ -182,6 +184,11 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', (
   tab.classList.add('active'); byId(`tab-${tab.dataset.tab}`).classList.add('active');
 }));
 byId('url-analyze-btn')?.addEventListener('click', analyzeUrl);
+byId('url-input')?.addEventListener('keydown', event => {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  analyzeUrl();
+});
 byId('url-paste-btn')?.addEventListener('click', async () => {
   try {
     const clipboardText = await navigator.clipboard.readText();

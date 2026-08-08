@@ -19,6 +19,9 @@ class Settings:
     virus_total_api_key: str | None = os.getenv("VIRUSTOTAL_API_KEY")
     google_safe_browsing_api_key: str | None = os.getenv("GOOGLE_SAFE_BROWSING_API_KEY")
     model_path: Path = Path(os.getenv("CYBERSHIELD_MODEL_PATH", "models/phishing_model.joblib"))
+    # The bundled model is synthetic and must never silently replace the
+    # explainable live-evidence baseline. Enable only after model validation.
+    use_trained_model: bool = os.getenv("CYBERSHIELD_USE_TRAINED_MODEL", "false").lower() == "true"
 
 
 settings = Settings()

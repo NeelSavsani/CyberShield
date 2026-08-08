@@ -29,6 +29,7 @@ class DecisionPipelineTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertGreater(suspicious["phishing_probability"], benign["phishing_probability"])
         self.assertNotEqual(suspicious["risk"], "Safe")
+        self.assertEqual(suspicious["model_version"], "evidence-baseline-v1")
 
     async def test_localhost_is_rejected(self):
         with self.assertRaises(UnsafeTargetError):

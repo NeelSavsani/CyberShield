@@ -31,6 +31,63 @@ function toggleTheme() {
 // flash of the wrong theme on page load.
 applyTheme(localStorage.getItem('cs_theme') || 'light');
 
+function initSidebarToggle() {
+  const topbar = document.querySelector('.topbar');
+  const sidebar = document.querySelector('.sidebar');
+  if (!topbar || !sidebar) return;
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'sidebar-toggle';
+  toggle.setAttribute('aria-label', 'Toggle navigation menu');
+  toggle.setAttribute('aria-expanded', 'true');
+  toggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+
+  const right = topbar.querySelector('.topbar-right');
+  let left = topbar.querySelector('.topbar-left');
+  if (!left) {
+    const title = topbar.querySelector('.topbar-title');
+    left = document.createElement('div');
+    left.className = 'topbar-left';
+    topbar.insertBefore(left, right || topbar.firstChild);
+    if (title) left.appendChild(title);
+  }
+  left.prepend(toggle);
+
+  const backdrop = document.createElement('button');
+  backdrop.type = 'button';
+  backdrop.className = 'sidebar-backdrop';
+  backdrop.setAttribute('aria-label', 'Close navigation menu');
+  document.body.appendChild(backdrop);
+
+  const isMobile = () => window.matchMedia('(max-width: 660px)').matches;
+  const closeMobileMenu = () => document.documentElement.classList.remove('sidebar-mobile-open');
+  const syncButton = () => {
+    const expanded = isMobile()
+      ? document.documentElement.classList.contains('sidebar-mobile-open')
+      : !document.documentElement.classList.contains('sidebar-collapsed');
+    toggle.setAttribute('aria-expanded', String(expanded));
+  };
+
+  if (localStorage.getItem('cs_sidebar_collapsed') === 'true' && !isMobile()) {
+    document.documentElement.classList.add('sidebar-collapsed');
+  }
+  syncButton();
+  toggle.addEventListener('click', () => {
+    if (isMobile()) {
+      document.documentElement.classList.toggle('sidebar-mobile-open');
+    } else {
+      document.documentElement.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('cs_sidebar_collapsed', String(document.documentElement.classList.contains('sidebar-collapsed')));
+    }
+    syncButton();
+  });
+  backdrop.addEventListener('click', () => { closeMobileMenu(); syncButton(); });
+  window.addEventListener('resize', () => { closeMobileMenu(); syncButton(); });
+}
+
+initSidebarToggle();
+
 // ── Session check ────────────────────────────────────────────
 // Firebase Authentication is the sole session source.
 (async function checkSession() {

@@ -34,22 +34,31 @@
    consistent. Applied by adding data-theme="dark" to <html>,
    see js/main.js → initThemeToggle(). ──────────────────────── */
 html[data-theme="dark"] {
-  --white:     #131C31;
-  --slate:     #E2E8F0;
-  --gray:      #94A3B8;
-  --gray-lt:   #475569;
-  --off-white: #0A1220;
-  --border:    #253248;
+  --white:     #111C31;
+  --slate:     #E8F0FA;
+  --gray:      #9FB2CC;
+  --gray-lt:   #C3D1E3;
+  --off-white: #08111F;
+  --border:    #263957;
 }
-html[data-theme="dark"] body { background: var(--off-white); }
-html[data-theme="dark"] .topbar { background: var(--white); border-bottom-color: var(--border); }
+html[data-theme="dark"] body { background: radial-gradient(circle at 84% -12%, #112d4c 0, transparent 32%), var(--off-white); }
+html[data-theme="dark"] .topbar { background: rgba(17,28,49,.94); border-bottom-color: var(--border); box-shadow: 0 1px 0 rgba(255,255,255,.025); }
 html[data-theme="dark"] .panel,
 html[data-theme="dark"] .stat-card,
-html[data-theme="dark"] .auth-card { background: var(--white); border-color: var(--border); }
+html[data-theme="dark"] .auth-card { background: linear-gradient(145deg, #14213a, #101a2d); border-color: var(--border); box-shadow: 0 14px 32px rgba(0,0,0,.16); }
 html[data-theme="dark"] .form-input,
 html[data-theme="dark"] .filter-select,
 html[data-theme="dark"] .search-input,
-html[data-theme="dark"] .select-pill { background: var(--off-white); border-color: var(--border); color: var(--slate); }
+html[data-theme="dark"] .select-pill,
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="url"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] textarea { background: #091629; border-color: #2b4264; color: var(--slate); }
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder { color: #7086a4; }
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] textarea:focus { background: #0c1b30; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,200,255,.13); }
 html[data-theme="dark"] .data-table tr:hover td,
 html[data-theme="dark"] .reset-link-box { background: rgba(255,255,255,0.03); }
 /* Some components use the navy brand token for text in light mode. Keep the
@@ -64,6 +73,30 @@ html[data-theme="dark"] .auth-title { color: #F8FAFC; }
 html[data-theme="dark"] .analysis-progress-head,
 html[data-theme="dark"] .analysis-step.active { color: #E2E8F0; }
 html[data-theme="dark"] .topbar-btn-outline { color: var(--slate); }
+html[data-theme="dark"] .sidebar-logo-text,
+html[data-theme="dark"] .user-name { color: #F8FAFC; }
+html[data-theme="dark"] .user-role { color: #A9BCD5; }
+html[data-theme="dark"] .nav-item { color: rgba(226,232,240,.78); }
+html[data-theme="dark"] .nav-item.active { background: linear-gradient(90deg, rgba(0,200,255,.22), rgba(0,200,255,.08)); color: #38D6FF; box-shadow: inset 3px 0 0 var(--cyan); }
+html[data-theme="dark"] .theme-toggle { background: #162440; border-color: #30476b; color: #8DCEF0; }
+html[data-theme="dark"] .tab { background: #0B172A; color: #AFC1D8; }
+html[data-theme="dark"] .tab:hover:not(.active) { background: #162642; color: #E8F0FA; }
+html[data-theme="dark"] .tab.active,
+html[data-theme="dark"] .analyze-btn,
+html[data-theme="dark"] .btn-navy,
+html[data-theme="dark"] .btn-report,
+html[data-theme="dark"] .topbar-btn-primary { background: linear-gradient(135deg, #00BCEB, #0786BD); color: #061321; box-shadow: 0 8px 18px rgba(0,200,255,.12); }
+html[data-theme="dark"] .analyze-btn:hover,
+html[data-theme="dark"] .btn-navy:hover,
+html[data-theme="dark"] .btn-report:hover,
+html[data-theme="dark"] .topbar-btn-primary:hover { background: #20D2FB; }
+html[data-theme="dark"] thead th { background: #0B172A; color: #AFC1D8; }
+html[data-theme="dark"] tbody tr:hover td { background: #16243D; }
+html[data-theme="dark"] .action-btn,
+html[data-theme="dark"] .topbar-btn-outline { background: rgba(12,27,48,.72); border-color: #30476b; }
+html[data-theme="dark"] .indicator.red { color: #FCA5A5; }
+html[data-theme="dark"] .indicator.amber { color: #FCD34D; }
+html[data-theme="dark"] .indicator.green { color: #6EE7B7; }
 
 /* ── Theme toggle button ─────────────────────────────────────── */
 .theme-toggle {
@@ -102,10 +135,17 @@ body { font-family: var(--font-body); background: var(--off-white); color: var(-
 
 /* ── Main area ───────────────────────────────────────────── */
 .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+html.sidebar-collapsed .sidebar { transform:translateX(-100%); }
+html.sidebar-collapsed .main { margin-left:0; }
+html.sidebar-collapsed .sidebar-toggle i { transform:rotate(180deg); }
+.sidebar-toggle i { transition:transform .2s ease; }
+.sidebar-backdrop { display:none; }
 
 /* ── Topbar ──────────────────────────────────────────────── */
 .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
 .topbar-left { display: flex; align-items: center; gap: 12px; }
+.sidebar-toggle { width:30px; height:30px; padding:0; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--border); border-radius:7px; background:var(--white); color:var(--navy); cursor:pointer; font-size:15px; transition:background .15s, color .15s, border-color .15s; }
+.sidebar-toggle:hover { background:var(--off-white); border-color:var(--cyan-dim); color:var(--cyan-dim); }
 .topbar-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--navy); }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
 .topbar-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all .15s; font-family: var(--font-body); }
@@ -143,4 +183,7 @@ body { font-family: var(--font-body); background: var(--off-white); color: var(-
   .sidebar { display: none; }
   .main { margin-left: 0; }
   .content { padding: 16px; }
+  .sidebar-toggle { width:32px; height:32px; }
+  html.sidebar-mobile-open .sidebar { display:flex; width:min(280px,82vw); box-shadow:18px 0 42px rgba(2,8,23,.38); }
+  html.sidebar-mobile-open .sidebar-backdrop { display:block; position:fixed; inset:0; z-index:49; background:rgba(2,8,23,.48); }
 }

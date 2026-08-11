@@ -5,6 +5,43 @@
  */
 
 // ── Render result ─────────────────────────────────────────────
+const featureDetails = {
+  domain_age_days: ['Domain age', 'How many days the domain has existed. Very new domains deserve extra scrutiny because phishing campaigns often use newly registered addresses.'],
+  certificate_age_days: ['Certificate age', 'How many days ago the site TLS certificate was issued. A new certificate is common for legitimate new or renewed sites, but is useful context when combined with other warnings.'],
+  domain_age_risk: ['Domain age risk', 'A 0 to 1 score derived from domain age. Higher values mean the domain is newer and may require more verification.'],
+  certificate_age_risk: ['Certificate age risk', 'A 0 to 1 score derived from certificate age. Higher values indicate a more recently issued certificate.'],
+  dnssec_enabled: ['DNSSEC enabled', 'DNSSEC helps protect DNS records from being forged. 1 means it is enabled; 0 means the check did not find it. Its absence alone does not make a site unsafe.'],
+  http_reachable: ['HTTP reachable', 'Whether CyberShield could successfully reach the website. 1 means reachable; 0 means it could not be reached during the scan.'],
+  redirect_count: ['Redirect count', 'How many times the site sent the browser to another address. A few redirects can be normal, but many can be used to hide the final destination.'],
+  has_valid_tls: ['Valid TLS', 'Whether the site presented a usable HTTPS security certificate. 1 means a certificate was available; 0 means HTTPS protection was not confirmed.'],
+  password_field_count: ['Password fields', 'The number of password-entry fields found. Password forms are common on real login pages but are especially important to inspect on an unfamiliar site.'],
+  otp_field_count: ['One-time-password fields', 'The number of fields asking for a verification or one-time code. Unexpected requests for these codes can be a sign of account takeover attempts.'],
+  credit_card_field_count: ['Credit card fields', 'The number of payment-card fields found. Only provide card details after independently confirming that a website and checkout process are legitimate.'],
+  cross_domain_form_actions: ['Cross-domain form actions', 'Forms that submit your information to a different domain. This can be legitimate for payment providers, but it can also send credentials to an attacker-controlled site.'],
+  insecure_form_actions: ['Insecure form actions', 'Forms that submit data without HTTPS protection. Information entered there could be exposed while it is sent.'],
+  get_login_forms: ['GET login forms', 'Login forms that put submitted values in the web address rather than the protected request body. This can expose sensitive data in browser history or logs.'],
+  hidden_iframe_count: ['Hidden iframes', 'Invisible embedded pages found in the site. They can be harmless, but are sometimes used to load unwanted content or conceal activity.'],
+  meta_refresh_present: ['Meta refresh', 'Whether the page uses an automatic refresh or redirect. It can be used legitimately, but attackers sometimes use it to move visitors to another page.'],
+  popup_count: ['Popups', 'The number of browser pop-up windows opened during the scan. Unexpected pop-ups can pressure users or lead them away from the original site.'],
+  download_count: ['Downloads', 'The number of files the page attempted to download. Unexpected downloads should be treated carefully, especially from an untrusted site.'],
+  permission_request_count: ['Permission requests', 'The number of browser permissions requested, such as notifications, camera, or location. Unexpected requests can be used for spam or data collection.'],
+  javascript_error_count: ['JavaScript errors', 'The number of script errors seen while loading the page. Errors are not automatically malicious but can indicate a poorly functioning or suspicious page.'],
+  obfuscated_script_count: ['Obfuscated scripts', 'The number of scripts intentionally made hard to read. Obfuscation can protect legitimate code, but it is also often used to conceal malicious behavior.'],
+  reputation_detection_count: ['Reputation detections', 'How many reputation sources flagged this site or content. More detections generally increase confidence that it may be unsafe.'],
+  safe_browsing_flagged: ['Safe Browsing flag', 'Whether a Safe Browsing-style reputation source flagged the site. 1 means it was flagged and should be avoided; 0 means no flag was returned.']
+};
+
+function openFeatureInfo(key, value) {
+  const [title, description] = featureDetails[key] || [key.replace(/_/g, ' '), 'This is a signal collected by CyberShield during the analysis. Review it together with the verdict and other evidence.'];
+  document.getElementById('feature-info-title').textContent = title;
+  document.getElementById('feature-info-description').textContent = description;
+  document.getElementById('feature-info-value').textContent = value ?? 'Not available';
+  document.getElementById('feature-info-note').textContent = 'No single feature decides whether a website is safe. CyberShield considers multiple signals together.';
+  document.getElementById('feature-info-modal').hidden = false;
+}
+
+function closeFeatureInfo() { document.getElementById('feature-info-modal').hidden = true; }
+
 function renderResult(result) {
   const score      = result.risk_score   ?? 0;
   const verdict    = result.verdict      ?? 'safe';
@@ -197,7 +234,7 @@ function renderResult(result) {
   };
 
   if (!featureKeys.length) {
-    featureBody.innerHTML = '<tr><td colspan="3" style="color:var(--gray);padding:16px">Feature data not available for this input type.</td></tr>';
+    featureBody.innerHTML = '<tr><td colspan="4" style="color:var(--gray);padding:16px">Feature data not available for this input type.</td></tr>';
   } else {
     featureBody.innerHTML = featureKeys.map(key => {
       const val   = features[key];
@@ -207,8 +244,10 @@ function renderResult(result) {
         <td>${label}</td>
         <td><span class="feature-val">${val}</span></td>
         <td><span class="feature-risk ${cls}">${lbl}</span></td>
+        <td><button class="feature-info-btn" type="button" data-feature-key="${key}" data-feature-value="${String(val)}" aria-label="Explain ${label}" title="Explain ${label}"><i class="fa-solid fa-circle-info"></i></button></td>
       </tr>`;
     }).join('');
+    featureBody.querySelectorAll('[data-feature-key]').forEach(button => button.addEventListener('click', () => openFeatureInfo(button.dataset.featureKey, button.dataset.featureValue)));
   }
 }
 
@@ -248,6 +287,9 @@ async function flagItem() {
 const resultRaw = sessionStorage.getItem('cs_result');
 const resultSource = sessionStorage.getItem('cs_result_source');
 const historyBackButton = document.getElementById('history-back-btn');
+
+document.querySelectorAll('[data-close-feature-info]').forEach(button => button.addEventListener('click', closeFeatureInfo));
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeFeatureInfo(); });
 
 if (resultSource === 'history') {
   historyBackButton.hidden = false;

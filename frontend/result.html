@@ -131,11 +131,24 @@
         </div>
         <div class="panel-body" style="padding:0">
           <table class="feature-table">
-            <thead><tr><th>Feature</th><th>Value</th><th>Risk weight</th></tr></thead>
+            <thead><tr><th>Feature</th><th>Value</th><th>Risk weight</th><th aria-label="Feature information">Info</th></tr></thead>
             <tbody id="feature-body">
-              <tr><td colspan="3" style="color:var(--gray);padding:16px">No feature data available.</td></tr>
+              <tr><td colspan="4" style="color:var(--gray);padding:16px">No feature data available.</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div class="feature-info-modal" id="feature-info-modal" hidden role="dialog" aria-modal="true" aria-labelledby="feature-info-title">
+        <div class="feature-info-backdrop" data-close-feature-info></div>
+        <div class="feature-info-dialog">
+          <button class="feature-info-close" type="button" data-close-feature-info aria-label="Close feature details"><i class="fa-solid fa-xmark"></i></button>
+          <div class="feature-info-icon"><i class="fa-solid fa-circle-info"></i></div>
+          <p class="feature-info-kicker">Feature explanation</p>
+          <h2 id="feature-info-title">Feature</h2>
+          <p id="feature-info-description"></p>
+          <div class="feature-info-value"><span>Current value</span><strong id="feature-info-value"></strong></div>
+          <p class="feature-info-note" id="feature-info-note"></p>
         </div>
       </div>
 

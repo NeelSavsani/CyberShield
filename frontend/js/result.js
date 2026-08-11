@@ -63,7 +63,16 @@ function renderResult(result) {
   contentEl.textContent = content;
   contentEl.title = content;
   if (inputType === 'url') {
-    contentEl.href = content;
+    // A bare domain (for example, "ldrp.ac.in") is otherwise treated as a
+    // relative path by the browser and opens under the local frontend host.
+    const externalUrl = /^https?:\/\//i.test(content) ? content : `https://${String(content).trim()}`;
+    try {
+      const parsedUrl = new URL(externalUrl);
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error('Unsupported protocol');
+      contentEl.href = parsedUrl.href;
+    } catch {
+      contentEl.removeAttribute('href');
+    }
   } else {
     contentEl.removeAttribute('href');
   }

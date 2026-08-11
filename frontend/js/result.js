@@ -137,6 +137,28 @@ function renderResult(result) {
     'Logo resembles brand but is not identical':  'A slightly altered logo is a common visual phishing technique.',
   };
 
+  // Plain-language explanations make each technical signal actionable.
+  const explanations = [
+    ['recently issued tls certificate', 'This website certificate was created recently. New certificates are normal for new or renewed sites, but phishing sites can obtain them quickly too. Treat this as context, not proof that the site is unsafe.'],
+    ['no https', 'The website does not encrypt information sent between your browser and the site. Someone on the network could potentially read or change data such as passwords or payment details.'],
+    ['ip address used instead of domain', 'The link uses a numeric server address instead of a normal website name. Attackers sometimes do this to hide who operates the site and avoid domain reputation checks.'],
+    ['multiple brand names', 'The address includes one or more well-known brand names. Scammers often add these names to make a fake page look connected to a trusted company.'],
+    ['suspicious top-level domain', 'The ending of this web address is commonly seen in phishing campaigns. It does not make every site with this ending dangerous, but it deserves extra verification.'],
+    ['excessive hyphens', 'The address uses several hyphens, which can make a fake domain resemble a real brand or service name at a quick glance.'],
+    ['urgency language', 'The message uses pressure or a tight deadline. This is a common tactic intended to make you act before you can verify the request.'],
+    ['brand impersonation', 'The content appears to claim it is from a known company. Verify the sender and website independently before signing in or sharing information.'],
+    ['sensitive personal information', 'The content asks for information such as a password, card number, or identity details. Legitimate organisations rarely ask for these through an unexpected message or link.'],
+    ['logo resembles brand', 'The logo looks similar to a trusted brand but is not an exact match. Small visual changes are often used to make fraudulent pages appear legitimate.']
+  ];
+  const explainIndicator = (text, level) => {
+    const match = explanations.find(([term]) => text.toLowerCase().includes(term));
+    if (match) return match[1];
+    if (level === 'red') return 'This signal is strongly associated with phishing or unsafe content. Do not enter information or download files until you have verified the source independently.';
+    if (level === 'amber') return 'This signal can occur on legitimate sites, but it is also used in scams. Check the website address and source carefully before continuing.';
+    return 'This is additional context from the security scan. On its own it does not prove the site is dangerous, but it can help you make a safer decision.';
+  };
+  const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+
   if (!indicators.length) {
     grid.innerHTML = '<p style="color:var(--gray);font-size:14px">No threat indicators detected.</p>';
   } else {
@@ -145,13 +167,14 @@ function renderResult(result) {
       (levelOrder[a.level] ?? 2) - (levelOrder[b.level] ?? 2)
     );
     grid.innerHTML = sorted.map(ind => {
-      const desc = Object.entries(descs).find(([k]) => ind.text.toLowerCase().includes(k.toLowerCase()));
+      const text = String(ind.text || 'Unspecified security signal');
+      const description = explainIndicator(text, ind.level);
       return `
         <div class="indicator-row ${ind.level}">
           <div class="indicator-dot"></div>
           <div class="indicator-content">
-            <div class="indicator-text">${ind.text}</div>
-            ${desc ? `<div class="indicator-desc">${desc[1]}</div>` : ''}
+            <div class="indicator-text">${escapeHtml(text)}</div>
+            <div class="indicator-desc">${escapeHtml(description)}</div>
           </div>
           <span class="indicator-badge">${ind.level === 'red' ? 'HIGH' : ind.level === 'amber' ? 'MEDIUM' : 'INFO'}</span>
         </div>`;

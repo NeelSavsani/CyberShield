@@ -47,6 +47,43 @@ class BrowserAnalyzer:
 
         self.manager = BrowserManager()
 
+    async def _activate_scroll_content(self, page) -> None:
+        """Visit scroll-triggered sections before creating a full-page capture.
+
+        Many modern sites use IntersectionObserver, lazy-loading, or scroll
+        animation libraries.  A direct ``full_page`` screenshot does not make
+        those sections visible first, leaving their reserved space blank.
+        """
+        await page.evaluate(
+            """async () => {
+                const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+                const root = document.documentElement;
+                const step = Math.max(Math.floor(window.innerHeight * 0.75), 400);
+                const maxSteps = 60;
+
+                // Avoid a site-defined smooth-scroll animation masking the
+                // actual scroll events needed by lazy loaders and observers.
+                const originalBehavior = root.style.scrollBehavior;
+                root.style.scrollBehavior = 'auto';
+
+                for (let index = 0; index < maxSteps; index += 1) {
+                    const before = Math.max(root.scrollHeight, document.body.scrollHeight);
+                    window.scrollBy(0, step);
+                    await pause(140);
+                    const after = Math.max(root.scrollHeight, document.body.scrollHeight);
+                    const atBottom = window.scrollY + window.innerHeight >= after - 2;
+                    if (atBottom && after <= before) break;
+                }
+
+                // Let the final viewport finish loading. Keep this scroll
+                // position: some animation libraries reverse elements when
+                // returning to the top, which would make a full-page capture
+                // blank again.
+                await pause(350);
+                root.style.scrollBehavior = originalBehavior;
+            }"""
+        )
+
     async def analyze(self, url: str) -> BrowserSession:
         """
         Analyze webpage using Playwright.
@@ -400,6 +437,11 @@ class BrowserAnalyzer:
             # site preview.
             screenshot_name = f"{uuid4().hex}.png"
             screenshot_file = screenshot_dir / screenshot_name
+
+            # Trigger lazy-loaded and scroll-animated content before a
+            # full-page capture, otherwise the preview can contain large
+            # empty sections for sites that animate on scroll.
+            await self._activate_scroll_content(page)
 
             # Save screenshot to disk
 

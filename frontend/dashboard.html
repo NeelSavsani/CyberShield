@@ -590,7 +590,7 @@
         <div class="tabs">
           <button class="tab active" data-tab="url"><i class="fa-solid fa-link"></i> URL</button>
           <button class="tab" data-tab="email"><i class="fa-solid fa-envelope"></i> Email / Text</button>
-          <button class="tab" data-tab="image"><i class="fa-solid fa-image"></i> Screenshot</button>
+          <button class="tab" data-tab="image"><i class="fa-solid fa-qrcode"></i> QR Code</button>
         </div>
 
         <!-- Tab: URL -->
@@ -628,18 +628,18 @@ Example: Dear customer, your account has been suspended. Click here immediately 
 
         <!-- Tab: Image -->
         <div class="tab-content" id="tab-image">
-          <label class="form-label">Upload screenshot</label>
-          <p class="form-desc">Upload a screenshot of a suspicious email or login page. OpenCV will extract and compare logo regions.</p>
+          <label class="form-label">Upload a QR code</label>
+          <p class="form-desc">Upload a QR code that contains a website address. CyberShield will decode the URL, then run the full website analysis.</p>
           <div class="file-drop" id="file-drop">
             <div class="file-drop-icon"><i class="fa-solid fa-folder"></i></div>
-            <p>Drag and drop an image here, or click to browse</p>
-            <span>PNG, JPG, JPEG up to 5MB</span>
+            <p>Drag and drop a QR image here, or click to browse</p>
+            <span>PNG, JPG, JPEG, or WebP up to 5MB</span>
             <div id="file-name"></div>
           </div>
-          <input type="file" id="file-input" accept="image/*" style="display:none" />
-          <button class="analyze-btn" id="image-analyze-btn">
+          <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" style="display:none" />
+          <button class="analyze-btn" id="image-analyze-btn" type="button">
             <span class="spinner-sm" id="image-spinner"></span>
-            <span id="image-btn-label">Analyze Screenshot</span>
+            <span id="image-btn-label">Decode and Analyze QR</span>
           </button>
         </div>
 

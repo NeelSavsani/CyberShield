@@ -59,6 +59,16 @@ Open browser and go to `http://localhost:5173/`
 Then submit a URL to `POST /analyze` or use the interactive API at
 `http://127.0.0.1:8000/docs`.
 
+## QR code URL analysis
+
+The dashboard's **QR Code** tab accepts a PNG, JPEG, or WebP image up to 5 MB.
+CyberShield decodes exactly one QR code and sends its website URL through the
+same URL-analysis pipeline, including the isolated Chromium screenshot. QR
+values that are not valid website URLs are decoded but rejected by the URL
+admission checks; support for non-web QR payloads is planned separately.
+
+The API endpoint is `POST /analyze/qr` with multipart form field `image`.
+
 In a second terminal, serve the multi-page dashboard:
 
 ```powershell

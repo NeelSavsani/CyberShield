@@ -30,7 +30,7 @@ function normalizeResult(response, content) {
   return {
     risk_score: score,
     verdict,
-    input_type: 'url',
+    input_type: response.data?.qr ? 'qr' : 'url',
     content,
     analyzed_at: new Date().toISOString(),
     screenshot_url: screenshotUrl(response.data?.browser?.screenshot),
@@ -46,6 +46,18 @@ function setLoading(loading) {
   byId('url-analyze-btn').disabled = loading;
   byId('url-spinner').style.display = loading ? 'block' : 'none';
   byId('url-btn-label').textContent = loading ? 'Analyzing…' : 'Analyze URL';
+}
+
+function setQrLoading(loading) {
+  byId('image-analyze-btn').disabled = loading;
+  byId('image-spinner').style.display = loading ? 'block' : 'none';
+  byId('image-btn-label').textContent = loading ? 'Decoding and analyzing' : 'Decode and Analyze QR';
+}
+
+function placeProgressBelow(tabName) {
+  const panel = byId('analysis-progress');
+  const tab = byId(`tab-${tabName}`);
+  if (panel && tab) tab.appendChild(panel);
 }
 
 function renderProgress(activeIndex, state = 'running') {
@@ -104,7 +116,7 @@ function renderHistory() {
   // archive remains on the History page. Guest sessions keep every entry here.
   const displayedHistory = isGuest() ? history : history.slice(0, dashboardHistoryLimit);
   tbody.innerHTML = displayedHistory.map(item => `<tr>
-    <td><span class="type-badge type-url"><i class="fa-solid fa-link"></i> URL</span></td>
+    <td><span class="type-badge ${item.inputType === 'qr' ? 'type-image' : 'type-url'}"><i class="fa-solid ${item.inputType === 'qr' ? 'fa-qrcode' : 'fa-link'}"></i> ${item.inputType === 'qr' ? 'QR code' : 'URL'}</span></td>
     <td title="${escapeHtml(item.content)}" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(item.content)}</td>
     <td><span class="risk-pill ${item.riskScore >= 70 ? 'risk-high' : item.riskScore >= 40 ? 'risk-medium' : 'risk-low'}">${item.riskScore}</span></td>
     <td>${escapeHtml(item.verdict)}</td><td style="color:var(--gray);font-size:12px">${formatDate(item.createdAt || item.analyzedAt)}</td>
@@ -155,6 +167,7 @@ function viewResult(id) {
 async function analyzeUrl() {
   const content = byId('url-input').value.trim();
   if (!content) return showToast('Please enter a URL first.', 'warning');
+  placeProgressBelow('url');
   setLoading(true);
   startProgress();
   try {
@@ -176,6 +189,42 @@ async function analyzeUrl() {
     showToast(message, 'error');
   }
   finally { setLoading(false); }
+}
+
+async function analyzeQr() {
+  const file = byId('file-input')?.files?.[0];
+  if (!file) return showToast('Choose a QR code image first.', 'warning');
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return showToast('Use a PNG, JPEG, or WebP image.', 'warning');
+  if (file.size > 5 * 1024 * 1024) return showToast('QR code images must be 5 MB or smaller.', 'warning');
+
+  placeProgressBelow('image');
+  setQrLoading(true);
+  startProgress();
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await fetch(`${ANALYZER_API}/analyze/qr`, { method: 'POST', body: formData });
+    const body = await response.json();
+    if (!response.ok || !body.success || body.exists === false) {
+      throw new Error(body.detail || body.message || 'QR code analysis failed.');
+    }
+    const decodedUrl = body.data?.qr?.decoded_value;
+    if (!decodedUrl) throw new Error('The QR code was decoded, but no website URL was returned.');
+    const result = normalizeResult(body, decodedUrl);
+    result.input_type = 'qr';
+    result.analysis_id = await saveAnalysis(result, decodedUrl);
+    sessionStorage.setItem('cs_result', JSON.stringify(result));
+    sessionStorage.setItem('cs_result_source', 'dashboard');
+    await refreshHistory();
+    stopProgress('complete');
+    window.setTimeout(() => { window.location.href = 'result.html'; }, 250);
+  } catch (error) {
+    const message = error.message || 'QR code analysis failed.';
+    stopProgress('failed', message);
+    showToast(message, 'error');
+  } finally {
+    setQrLoading(false);
+  }
 }
 
 document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
@@ -201,7 +250,26 @@ byId('url-paste-btn')?.addEventListener('click', async () => {
   }
 });
 byId('email-analyze-btn')?.addEventListener('click', () => showToast('URL analysis is currently available.', 'info'));
-byId('image-analyze-btn')?.addEventListener('click', () => showToast('URL analysis is currently available.', 'info'));
+byId('image-analyze-btn')?.addEventListener('click', analyzeQr);
+byId('file-drop')?.addEventListener('click', () => byId('file-input')?.click());
+byId('file-input')?.addEventListener('change', event => {
+  const file = event.target.files?.[0];
+  byId('file-name').textContent = file ? file.name : '';
+  byId('file-name').style.display = file ? 'block' : 'none';
+});
+byId('file-drop')?.addEventListener('dragover', event => { event.preventDefault(); byId('file-drop').classList.add('drag-over'); });
+byId('file-drop')?.addEventListener('dragleave', () => byId('file-drop').classList.remove('drag-over'));
+byId('file-drop')?.addEventListener('drop', event => {
+  event.preventDefault();
+  const file = event.dataTransfer.files?.[0];
+  if (file) {
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    byId('file-input').files = transfer.files;
+    byId('file-input').dispatchEvent(new Event('change'));
+  }
+  byId('file-drop').classList.remove('drag-over');
+});
 byId('clear-history-btn')?.addEventListener('click', async () => {
   if (!history.length || !confirm('Clear all saved analyses?')) return;
   if (isGuest()) sessionStorage.removeItem(guestHistoryKey);

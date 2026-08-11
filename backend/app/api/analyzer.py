@@ -1,11 +1,12 @@
 import asyncio
 import sys
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.models.request import URLRequest
 from app.models.response import AnalysisResponse
 from app.orchestrator import analyze_url
+from app.services.qr_decoder import QRDecodeError, decode_qr_image
 
 router = APIRouter(
     prefix="/analyze",
@@ -74,3 +75,28 @@ async def analyze(request: URLRequest):
             status_code=500,
             detail=str(e)
         )
+
+
+@router.post(
+    "/qr",
+    response_model=AnalysisResponse,
+    summary="Decode and analyze a QR code URL",
+)
+async def analyze_qr(image: UploadFile = File(...)):
+    """Decode one QR image, then run its website URL through the normal pipeline."""
+    if image.content_type not in {"image/png", "image/jpeg", "image/webp"}:
+        raise HTTPException(status_code=415, detail="Upload a PNG, JPEG, or WebP QR code image.")
+
+    try:
+        decoded_url = decode_qr_image(await image.read())
+    except QRDecodeError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    finally:
+        await image.close()
+
+    try:
+        result = await asyncio.to_thread(_analyze_on_worker_loop, decoded_url)
+        result.data["qr"] = {"decoded_value": decoded_url, "filename": image.filename}
+        return result
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error)) from error

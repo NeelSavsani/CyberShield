@@ -93,7 +93,7 @@ function renderResult(result) {
   setTimeout(() => { bar.style.width = score + '%'; }, 150);
 
   // ── Meta row ────────────────────────────────────────────────
-  const typeLabels = { url: '<i class="fa-solid fa-link"></i> URL', email: '<i class="fa-solid fa-envelope"></i> Email / Text', image: '<i class="fa-solid fa-image"></i> Screenshot' };
+  const typeLabels = { url: '<i class="fa-solid fa-link"></i> URL', qr: '<i class="fa-solid fa-qrcode"></i> QR code URL', email: '<i class="fa-solid fa-envelope"></i> Email / Text', image: '<i class="fa-solid fa-image"></i> Screenshot' };
   document.getElementById('meta-type').innerHTML      = typeLabels[inputType] || inputType;
   document.getElementById('meta-time').textContent    = time;
   const contentEl = document.getElementById('meta-content');

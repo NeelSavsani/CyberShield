@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import cv2
+import zxingcpp
 
 
 class QRDecodeError(ValueError):
@@ -42,6 +43,20 @@ def decode_qr_image(raw_image: bytes) -> str:
         value, _, _ = detector.detectAndDecode(image)
         if value and value.strip():
             decoded_values = [value.strip()]
+
+    # ZXing is substantially more tolerant of rounded modules, embedded logos,
+    # and other branded QR artwork than OpenCV's QRCodeDetector.
+    if not decoded_values:
+        try:
+            decoded_values = [
+                barcode.text.strip()
+                for barcode in zxingcpp.read_barcodes(image)
+                if barcode.text and barcode.text.strip()
+            ]
+        except Exception:
+            # Keep the endpoint's error stable if a decoder rejects malformed
+            # pixel data; the user only needs to know the QR could not be read.
+            decoded_values = []
 
     if not decoded_values:
         raise QRDecodeError("No readable QR code was found in this image.")

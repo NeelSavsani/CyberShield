@@ -406,6 +406,7 @@
     const submitBtn = document.getElementById('submit-btn');
     const spinner   = document.getElementById('spinner');
     const btnLabel  = document.getElementById('btn-label');
+    const rememberEl = document.getElementById('remember');
 
     document.getElementById('guest-login-btn').addEventListener('click', async () => {
       const fb = await window.firebaseReady;
@@ -458,6 +459,10 @@
         localStorage.removeItem('cs_guest');
         // ── REAL PHP BACKEND CALL ──────────────────────────
         const fb = await window.firebaseReady;
+        await fb.setPersistence(
+          fb.auth,
+          rememberEl.checked ? fb.browserLocalPersistence : fb.browserSessionPersistence
+        );
         const credential = await fb.signInWithEmailAndPassword(fb.auth, email, password);
         const name = credential.user.displayName || credential.user.email;
         sessionStorage.setItem('cs_user', JSON.stringify({ id: credential.user.uid, name, email: credential.user.email }));
@@ -474,6 +479,14 @@
     });
   </script>
   <script src="js/firebase.js"></script>
+  <script>
+    // A remembered Firebase session should take the user straight back to the app.
+    window.firebaseReady.then(fb => {
+      fb.onAuthStateChanged(fb.auth, user => {
+        if (user) window.location.replace('dashboard.html');
+      });
+    });
+  </script>
 
 </body>
 </html>

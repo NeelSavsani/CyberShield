@@ -252,22 +252,39 @@ byId('url-paste-btn')?.addEventListener('click', async () => {
 byId('email-analyze-btn')?.addEventListener('click', () => showToast('URL analysis is currently available.', 'info'));
 byId('image-analyze-btn')?.addEventListener('click', analyzeQr);
 byId('file-drop')?.addEventListener('click', () => byId('file-input')?.click());
+function setQrFile(file) {
+  if (file) {
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    byId('file-input').files = transfer.files;
+  }
+  byId('file-name').textContent = file ? file.name : '';
+  byId('file-name').style.display = file ? 'block' : 'none';
+}
 byId('file-input')?.addEventListener('change', event => {
   const file = event.target.files?.[0];
   byId('file-name').textContent = file ? file.name : '';
   byId('file-name').style.display = file ? 'block' : 'none';
+});
+byId('qr-paste-btn')?.addEventListener('click', async () => {
+  try {
+    const items = await navigator.clipboard.read();
+    const imageItem = items.find(item => item.types.some(type => ['image/png', 'image/jpeg', 'image/webp'].includes(type)));
+    const imageType = imageItem?.types.find(type => ['image/png', 'image/jpeg', 'image/webp'].includes(type));
+    if (!imageItem || !imageType) return showToast('No supported QR image was found in your clipboard.', 'warning');
+    const blob = await imageItem.getType(imageType);
+    setQrFile(new File([blob], `pasted-qr.${imageType.split('/')[1]}`, { type: imageType }));
+    showToast('QR image pasted. Select Decode and Analyze QR to continue.', 'success');
+  } catch (error) {
+    showToast('Clipboard image access was blocked. Allow clipboard access or upload the QR image instead.', 'warning');
+  }
 });
 byId('file-drop')?.addEventListener('dragover', event => { event.preventDefault(); byId('file-drop').classList.add('drag-over'); });
 byId('file-drop')?.addEventListener('dragleave', () => byId('file-drop').classList.remove('drag-over'));
 byId('file-drop')?.addEventListener('drop', event => {
   event.preventDefault();
   const file = event.dataTransfer.files?.[0];
-  if (file) {
-    const transfer = new DataTransfer();
-    transfer.items.add(file);
-    byId('file-input').files = transfer.files;
-    byId('file-input').dispatchEvent(new Event('change'));
-  }
+  if (file) setQrFile(file);
   byId('file-drop').classList.remove('drag-over');
 });
 byId('clear-history-btn')?.addEventListener('click', async () => {

@@ -306,6 +306,8 @@
       margin-bottom: 4px;
     }
     .file-drop span { font-size: 12px; color: var(--gray-lt); }
+    .qr-paste-btn { margin:0 0 12px; padding:7px 11px; border:1px solid var(--border); border-radius:7px; background:var(--off-white); color:var(--cyan-dim); cursor:pointer; font:600 12px var(--font-body); }
+    .qr-paste-btn:hover { border-color:var(--cyan-dim); background:var(--white); }
     #file-name {
       font-size: 13px; color: var(--teal);
       margin-top: 8px; font-weight: 600; display: none;
@@ -630,6 +632,7 @@ Example: Dear customer, your account has been suspended. Click here immediately 
         <div class="tab-content" id="tab-image">
           <label class="form-label">Upload a QR code</label>
           <p class="form-desc">Upload a QR code that contains a website address. CyberShield will decode the URL, then run the full website analysis.</p>
+          <button class="qr-paste-btn" id="qr-paste-btn" type="button"><i class="fa-regular fa-clipboard"></i> Paste QR image</button>
           <div class="file-drop" id="file-drop">
             <div class="file-drop-icon"><i class="fa-solid fa-folder"></i></div>
             <p>Drag and drop a QR image here, or click to browse</p>

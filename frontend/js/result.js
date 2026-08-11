@@ -181,13 +181,13 @@ function renderResult(result) {
 }
 
 // ── Download report ──────────────────────────────────────────
-function downloadReport() {
+function downloadReport(event) {
   const result = JSON.parse(sessionStorage.getItem('cs_result') || '{}');
-  const id     = result.analysis_id;
-  if (id) {
-    window.print();
+  if (Object.keys(result).length) {
+    window.cyberShieldReport.download(result, event?.currentTarget)
+      .catch(() => showToast('Could not generate the PDF report. Please try again.', 'error'));
   } else {
-    showToast('Save the analysis first to generate a report.', 'warning');
+    showToast('Run an analysis first to generate a report.', 'warning');
   }
 }
 

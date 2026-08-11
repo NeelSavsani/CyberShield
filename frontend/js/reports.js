@@ -16,7 +16,7 @@ function render(rows) {
     <td><button class="action-btn-lg btn-report" data-report="${row.id}"><i class="fa-solid fa-download"></i> Download</button></td></tr>`).join('');
   document.querySelectorAll('[data-report]').forEach(button => button.addEventListener('click', () => {
     const row = allReports.find(entry => entry.id === button.dataset.report);
-    if (row) downloadReport(row);
+    if (row) window.cyberShieldReport.download(row, button).catch(() => showToast('Could not generate the PDF report.', 'error'));
   }));
 }
 
@@ -29,7 +29,9 @@ function applyFilters() {
   ));
 }
 
+/* Legacy fallback retained for direct integrations that call downloadReport(row). */
 function downloadReport(row) {
+  if (window.cyberShieldReport) return window.cyberShieldReport.download(row);
   const lines = [
     'CyberShield Analysis Report',
     '',

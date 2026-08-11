@@ -48,7 +48,7 @@
       </div>
       <div class="topbar-right">
         <a href="dashboard.html" class="topbar-btn btn-outline">← Back to dashboard</a>
-        <button class="topbar-btn btn-navy" onclick="downloadReport()"><i class="fa-solid fa-download"></i> Download report</button>
+        <button class="topbar-btn btn-navy" onclick="downloadReport(event)"><i class="fa-solid fa-download"></i> Download report</button>
       </div>
     </header>
 
@@ -142,7 +142,7 @@
       <!-- Actions -->
       <div class="actions-row">
         <a href="dashboard.html" class="action-btn-lg btn-back">← Run another scan</a>
-        <button class="action-btn-lg btn-report" onclick="downloadReport()"><i class="fa-solid fa-download"></i> Download PDF report</button>
+        <button class="action-btn-lg btn-report" onclick="downloadReport(event)"><i class="fa-solid fa-download"></i> Download PDF report</button>
         <button class="action-btn-lg btn-flag" onclick="flagItem()"><i class="fa-solid fa-flag"></i> Report as phishing</button>
       </div>
 
@@ -151,6 +151,7 @@
 
   <script src="js/firebase.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/report-generator.js"></script>
   <script src="js/result.js"></script>
 </body>
 </html>

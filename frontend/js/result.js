@@ -99,14 +99,15 @@ function renderResult(result) {
   const contentEl = document.getElementById('meta-content');
   contentEl.textContent = content;
   contentEl.title = content;
-  if (inputType === 'url') {
-    // A bare domain (for example, "ldrp.ac.in") is otherwise treated as a
-    // relative path by the browser and opens under the local frontend host.
-    const externalUrl = /^https?:\/\//i.test(content) ? content : `https://${String(content).trim()}`;
+  if (inputType === 'url' || inputType === 'qr') {
+    // QR values often contain a bare domain. Prefix it before assigning href,
+    // otherwise the browser treats it as a local relative path.
+    const externalUrl = /^[a-z][a-z\d+.-]*:\/\//i.test(content) ? content : `https://${String(content).trim()}`;
     try {
       const parsedUrl = new URL(externalUrl);
-      if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error('Unsupported protocol');
       contentEl.href = parsedUrl.href;
+      contentEl.target = '_blank';
+      contentEl.rel = 'noopener noreferrer';
     } catch {
       contentEl.removeAttribute('href');
     }

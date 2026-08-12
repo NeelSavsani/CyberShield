@@ -449,6 +449,12 @@ class BrowserAnalyzer:
                 full_page=True
             )
 
+            # Some QR short links complete their redirect through client-side
+            # JavaScript after the first navigation. Record the URL at the
+            # same point as the capture so result pages identify the website
+            # actually shown in the screenshot.
+            session.final_url = page.url
+
             with screenshot_file.open("wb") as f:
                 f.write(session.screenshot_bytes)
 

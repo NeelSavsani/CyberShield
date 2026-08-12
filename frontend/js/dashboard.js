@@ -210,9 +210,12 @@ async function analyzeQr() {
     }
     const decodedUrl = body.data?.qr?.decoded_value;
     if (!decodedUrl) throw new Error('The QR code was decoded, but no website URL was returned.');
-    const result = normalizeResult(body, decodedUrl);
+    // A QR often points at a short-link service. Show and save the final page
+    // Chromium actually opened, which is also the source of the screenshot.
+    const renderedUrl = body.data?.browser?.final_url || body.normalized_url || decodedUrl;
+    const result = normalizeResult(body, renderedUrl);
     result.input_type = 'qr';
-    result.analysis_id = await saveAnalysis(result, decodedUrl);
+    result.analysis_id = await saveAnalysis(result, renderedUrl);
     sessionStorage.setItem('cs_result', JSON.stringify(result));
     sessionStorage.setItem('cs_result_source', 'dashboard');
     await refreshHistory();

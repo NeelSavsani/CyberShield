@@ -379,6 +379,7 @@
       <div class="card-footer">
         Don't have an account?
         <a href="register.html">Create one free</a>
+        <br><span style="font-size:12px">Administrators sign in here with their assigned account.</span>
       </div>
 
     </div>
@@ -465,8 +466,10 @@
         );
         const credential = await fb.signInWithEmailAndPassword(fb.auth, email, password);
         const name = credential.user.displayName || credential.user.email;
-        sessionStorage.setItem('cs_user', JSON.stringify({ id: credential.user.uid, name, email: credential.user.email }));
-        window.location.href = 'dashboard.html';
+        const token = await fb.getIdTokenResult(credential.user, true);
+        const role = token.claims.admin === true ? 'admin' : 'user';
+        sessionStorage.setItem('cs_user', JSON.stringify({ id: credential.user.uid, name, email: credential.user.email, role }));
+        window.location.href = role === 'admin' ? 'admin.html' : 'dashboard.html';
 
       } catch (err) {
         alertMsg.textContent = err.message || 'Something went wrong. Try again.';
@@ -482,8 +485,10 @@
   <script>
     // A remembered Firebase session should take the user straight back to the app.
     window.firebaseReady.then(fb => {
-      fb.onAuthStateChanged(fb.auth, user => {
-        if (user) window.location.replace('dashboard.html');
+      fb.onAuthStateChanged(fb.auth, async user => {
+        if (!user) return;
+        const token = await fb.getIdTokenResult(user);
+        window.location.replace(token.claims.admin === true ? 'admin.html' : 'dashboard.html');
       });
     });
   </script>

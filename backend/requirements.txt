@@ -46,6 +46,7 @@ pyOpenSSL==25.2.0
 python-dotenv==1.1.1
 python-dateutil==2.9.0.post0
 loguru==0.7.3
+firebase-admin==7.1.0
 
 # Model training (used by ml/train.py; not required to run the API baseline)
 scikit-learn==1.7.1

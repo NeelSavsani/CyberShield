@@ -11,7 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <script>document.documentElement.classList.add('admin-access-pending');</script>
   <style>
+    html.admin-access-pending body{visibility:hidden;}
     .admin-tabs{display:flex;gap:6px;padding:0 28px;background:var(--white);border-bottom:1px solid var(--border);}
     .admin-tab{padding:14px 20px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--gray);border-bottom:3px solid transparent;transition:all .15s;}
     .admin-tab.active{color:var(--navy);border-bottom-color:var(--cyan);}
@@ -69,10 +71,10 @@
     <a href="settings.html" class="nav-item"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span>Settings</a>
     <div class="sidebar-bottom">
       <div class="user-chip">
-        <div class="user-avatar">A</div>
+        <div class="user-avatar" id="user-avatar">A</div>
         <div>
-          <div class="user-name">Admin</div>
-          <div class="user-role">Administrator</div>
+          <div class="user-name" id="user-name">Admin</div>
+          <div class="user-role" id="user-role">Administrator</div>
         </div>
       </div>
       <a href="login.html" data-logout class="nav-item" style="margin-top:4px"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>Log out</a>
@@ -223,6 +225,9 @@
   <script src="js/firebase-data.js"></script>
   <script src="js/main.js"></script>
   <script>
+    /* Legacy Flask admin loader retained for reference, but disabled. The
+       active panel is backed by Firebase in js/admin.js. */
+    if (false) {
     // API base URL comes from main.js (loaded just above) — redeclaring
     // it here with `const` used to throw a SyntaxError the instant this
     // script was parsed, silently killing the ENTIRE admin panel (every
@@ -438,6 +443,7 @@
     // ── Init ───────────────────────────────────────────────
     loadOverview();
     document.getElementById('total-flagged').textContent = 3;
+    }
   </script>
   <script src="js/admin.js"></script>
 </body>

@@ -91,6 +91,25 @@ function initSidebarToggle() {
 
 initSidebarToggle();
 
+function updateAdminNavigation(isAdmin, page) {
+  // The link is created only after Firebase confirms the custom claim. This
+  // keeps the normal navigation clean and avoids treating a client-side field
+  // as an authorization source.
+  document.querySelectorAll('[data-admin-nav]').forEach(link => link.remove());
+  if (!isAdmin || page === 'admin.html') return;
+
+  const accountSection = Array.from(document.querySelectorAll('.sidebar-section'))
+    .find(section => section.textContent.trim().toLowerCase() === 'account');
+  if (!accountSection) return;
+
+  const adminLink = document.createElement('a');
+  adminLink.href = 'admin.html';
+  adminLink.className = 'nav-item';
+  adminLink.dataset.adminNav = 'true';
+  adminLink.innerHTML = '<span class="nav-icon"><i class="fa-solid fa-shield-halved"></i></span>Admin Panel';
+  accountSection.parentNode.insertBefore(adminLink, accountSection);
+}
+
 // ── Session check ────────────────────────────────────────────
 // Firebase Authentication is the sole session source.
 (async function checkSession() {
@@ -98,12 +117,12 @@ initSidebarToggle();
   const page = window.location.pathname.split('/').pop();
   const isGuest = localStorage.getItem('cs_guest') === 'true';
   if (isGuest) {
-    const guestRestrictedPages = ['profile.html', 'history.html', 'reports.html'];
+    const guestRestrictedPages = ['profile.html', 'history.html', 'reports.html', 'admin.html'];
     if (guestRestrictedPages.includes(page)) {
       window.location.replace('dashboard.html');
       return;
     }
-    sessionStorage.setItem('cs_user', JSON.stringify({ id: 'guest', name: 'Guest User', email: '' }));
+    sessionStorage.setItem('cs_user', JSON.stringify({ id: 'guest', name: 'Guest User', email: '', role: 'guest' }));
     const avatarEl = document.getElementById('user-avatar');
     const nameEl = document.getElementById('user-name');
     if (avatarEl) avatarEl.textContent = 'G';
@@ -120,14 +139,40 @@ initSidebarToggle();
   }
   const fb = await window.firebaseReady;
   await new Promise(resolve => fb.onAuthStateChanged(fb.auth, resolve));
-  if (!fb.auth.currentUser && !publicPages.includes(page)) window.location.href = 'login.html';
-  if (fb.auth.currentUser) {
-    const name = fb.auth.currentUser.displayName || fb.auth.currentUser.email || 'User';
-    sessionStorage.setItem('cs_user', JSON.stringify({ id: fb.auth.currentUser.uid, name, email: fb.auth.currentUser.email }));
+  const user = fb.auth.currentUser;
+  if (!user) {
+    if (!publicPages.includes(page)) window.location.replace('login.html');
+    return;
+  }
+
+  let isAdmin = false;
+  try {
+    const token = await fb.getIdTokenResult(user);
+    isAdmin = token.claims.admin === true;
+  } catch (error) {
+    console.error('Could not verify the Firebase role claim.', error);
+    if (page === 'admin.html') window.location.replace('login.html');
+    return;
+  }
+
+  if (page === 'admin.html' && !isAdmin) {
+    window.location.replace('dashboard.html');
+    return;
+  }
+
+  updateAdminNavigation(isAdmin, page);
+  if (page === 'admin.html') document.documentElement.classList.remove('admin-access-pending');
+
+  {
+    const name = user.displayName || user.email || 'User';
+    const role = isAdmin ? 'admin' : 'user';
+    sessionStorage.setItem('cs_user', JSON.stringify({ id: user.uid, name, email: user.email, role }));
     const avatarEl = document.getElementById('user-avatar');
     const nameEl = document.getElementById('user-name');
     if (avatarEl) avatarEl.textContent = name[0].toUpperCase();
     if (nameEl) nameEl.textContent = name;
+    const roleEl = document.getElementById('user-role');
+    if (roleEl) roleEl.textContent = isAdmin ? 'Administrator' : 'Free account';
   }
 })();
 

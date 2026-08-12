@@ -47,8 +47,8 @@
         <span class="topbar-title">Analysis Result</span>
       </div>
       <div class="topbar-right">
-        <a href="dashboard.html" class="topbar-btn btn-outline">← Back to dashboard</a>
         <button class="topbar-btn btn-navy" onclick="downloadReport(event)"><i class="fa-solid fa-download"></i> Download report</button>
+        <button class="topbar-btn btn-flag" onclick="flagItem()"><i class="fa-solid fa-flag"></i> Report as phishing</button>
       </div>
     </header>
 
@@ -150,13 +150,6 @@
           <div class="feature-info-value"><span>Current value</span><strong id="feature-info-value"></strong></div>
           <p class="feature-info-note" id="feature-info-note"></p>
         </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="actions-row">
-        <a href="dashboard.html" class="action-btn-lg btn-back">← Run another scan</a>
-        <button class="action-btn-lg btn-report" onclick="downloadReport(event)"><i class="fa-solid fa-download"></i> Download PDF report</button>
-        <button class="action-btn-lg btn-flag" onclick="flagItem()"><i class="fa-solid fa-flag"></i> Report as phishing</button>
       </div>
 
     </div>

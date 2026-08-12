@@ -36,23 +36,26 @@ function initSidebarToggle() {
   const sidebar = document.querySelector('.sidebar');
   if (!topbar || !sidebar) return;
 
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'sidebar-toggle';
-  toggle.setAttribute('aria-label', 'Toggle navigation menu');
-  toggle.setAttribute('aria-expanded', 'true');
-  toggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+  let toggle = topbar.querySelector('.sidebar-toggle');
+  if (!toggle) {
+    toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'sidebar-toggle';
+    toggle.setAttribute('aria-label', 'Toggle navigation menu');
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
 
-  const right = topbar.querySelector('.topbar-right');
-  let left = topbar.querySelector('.topbar-left');
-  if (!left) {
-    const title = topbar.querySelector('.topbar-title');
-    left = document.createElement('div');
-    left.className = 'topbar-left';
-    topbar.insertBefore(left, right || topbar.firstChild);
-    if (title) left.appendChild(title);
+    const right = topbar.querySelector('.topbar-right');
+    let left = topbar.querySelector('.topbar-left');
+    if (!left) {
+      const title = topbar.querySelector('.topbar-title');
+      left = document.createElement('div');
+      left.className = 'topbar-left';
+      topbar.insertBefore(left, right || topbar.firstChild);
+      if (title) left.appendChild(title);
+    }
+    left.prepend(toggle);
   }
-  left.prepend(toggle);
 
   const backdrop = document.createElement('button');
   backdrop.type = 'button';

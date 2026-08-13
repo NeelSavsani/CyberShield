@@ -90,6 +90,7 @@ function renderProgress(activeIndex, state = 'running') {
 
 function startProgress() {
   const panel = byId('analysis-progress');
+  if (panel.classList.contains('text-progress')) return;
   panel.classList.remove('error');
   byId('analysis-progress-list').hidden = false;
   panel.classList.add('show');
@@ -216,7 +217,6 @@ async function analyzeQr() {
 
   placeProgressBelow('image');
   setQrLoading(true);
-  startProgress();
   try {
     const formData = new FormData();
     formData.append('image', file);
@@ -252,6 +252,12 @@ async function analyzeEmail() {
   if (!content) return showToast('Paste an email or message first.', 'warning');
   if (content.length < 10) return showToast('Enter at least 10 characters to analyze.', 'warning');
   placeProgressBelow('email');
+  const progressPanel = byId('analysis-progress');
+  progressPanel.classList.add('text-progress');
+  progressPanel.classList.remove('error');
+  progressPanel.classList.add('show');
+  byId('analysis-progress-list').hidden = true;
+  byId('analysis-progress-title').textContent = 'Analyzing email or message text…';
   byId('email-analyze-btn').disabled = true;
   byId('email-spinner').style.display = 'block';
   byId('email-btn-label').textContent = 'Analyzing…';
@@ -266,9 +272,11 @@ async function analyzeEmail() {
     sessionStorage.setItem('cs_result_source', 'dashboard');
     await refreshHistory();
     stopProgress('complete');
+    progressPanel.classList.remove('text-progress');
     window.setTimeout(() => { window.location.href = 'result.html'; }, 250);
   } catch (error) {
     stopProgress('failed', error.message || 'Text analysis failed.');
+    progressPanel.classList.remove('text-progress');
     showToast(error.message || 'Text analysis failed.', 'error');
   } finally {
     byId('email-analyze-btn').disabled = false;
@@ -300,6 +308,17 @@ byId('url-paste-btn')?.addEventListener('click', async () => {
   }
 });
 byId('email-analyze-btn')?.addEventListener('click', analyzeEmail);
+byId('email-paste-btn')?.addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) return showToast('Your clipboard is empty.', 'warning');
+    byId('email-input').value = text;
+    byId('email-input').focus();
+    showToast('Text pasted from clipboard.', 'success');
+  } catch (error) {
+    showToast('Clipboard access was blocked. Paste with Ctrl+V instead.', 'warning');
+  }
+});
 byId('image-analyze-btn')?.addEventListener('click', analyzeQr);
 byId('file-drop')?.addEventListener('click', () => byId('file-input')?.click());
 function setQrFile(file) {

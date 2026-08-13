@@ -52,6 +52,9 @@
     .search-bar input{flex:1;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:var(--font-body);}
     .search-bar input:focus{border-color:var(--cyan-dim);}
     .empty-state{padding:40px;text-align:center;color:var(--gray);}
+    .pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--border);font-size:13px;color:var(--gray);}
+    .pagination button,.pagination select{border:1px solid var(--border);background:var(--white);border-radius:6px;padding:6px 10px;color:var(--slate);cursor:pointer;}
+    .pagination button:disabled{opacity:.45;cursor:not-allowed;}
     .empty-icon{font-size:36px;margin-bottom:12px;}
     @media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
   </style>
@@ -128,7 +131,7 @@
           <span class="panel-title">Recent Analyses — All Users</span>
         </div>
         <table>
-          <thead><tr><th>User</th><th>Type</th><th>Content</th><th>Risk</th><th>Verdict</th><th>Date</th></tr></thead>
+          <thead><tr><th>Sr. No.</th><th>User</th><th>Type</th><th>Content</th><th>Risk</th><th>Verdict</th><th>Date</th></tr></thead>
           <tbody id="overview-table"><tr><td colspan="6" class="empty-state">Loading…</td></tr></tbody>
         </table>
       </div>
@@ -160,15 +163,18 @@
         </div>
         <div class="search-bar">
           <input type="text" id="analysis-search" placeholder="Search by content or user…" oninput="filterAnalyses()" />
+          <select id="type-filter" onchange="filterAnalyses()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">All types</option><option value="url">URL</option><option value="qr">QR</option><option value="email">Email / Text</option></select>
           <select id="verdict-filter" onchange="filterAnalyses()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
             <option value="">All verdicts</option>
             <option value="phishing">Phishing</option>
             <option value="suspicious">Suspicious</option>
             <option value="safe">Safe</option>
           </select>
+          <input type="date" id="date-filter" onchange="filterAnalyses()" title="Filter by date" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;" />
         </div>
+        <div class="pagination" id="analysis-pagination" aria-label="Analysis pagination"></div>
         <table>
-          <thead><tr><th>User</th><th>Type</th><th>Content</th><th>Risk</th><th>Verdict</th><th>Date</th><th>Action</th></tr></thead>
+          <thead><tr><th>Sr. No.</th><th>User</th><th>Type</th><th>Content</th><th>Risk</th><th>Verdict</th><th>Date</th><th>Action</th></tr></thead>
           <tbody id="analyses-table"><tr><td colspan="7" class="empty-state">Loading…</td></tr></tbody>
         </table>
       </div>

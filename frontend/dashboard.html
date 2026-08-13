@@ -287,6 +287,10 @@
       box-shadow: 0 0 0 3px rgba(0,200,255,0.1);
     }
     textarea { padding-left: 14px; min-height: 100px; }
+    .textarea-wrap { position: relative; }
+    .textarea-wrap textarea { padding-right: 84px; }
+    .textarea-paste-btn { position:absolute; right:8px; top:8px; border:0; border-radius:6px; padding:6px 9px; background:var(--cyan-dim); color:var(--white); cursor:pointer; font:700 12px var(--font-body); }
+    .textarea-paste-btn:hover { background:var(--teal); }
 
     /* File upload */
     .file-drop {
@@ -464,6 +468,8 @@
     .analysis-progress-head i { color:var(--cyan-dim); }
     .analysis-progress.error .analysis-progress-head { color:var(--danger); font-size:16px; }
     .analysis-progress.error .analysis-progress-head i { color:var(--danger); }
+    .analysis-progress.text-progress .analysis-progress-head { color:var(--navy); }
+    .analysis-progress.text-progress .analysis-progress-list { display:none; }
     .analysis-progress-list { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:9px; padding:14px 16px; }
     .analysis-step { display:flex; align-items:center; gap:7px; color:var(--gray); font-size:12px; }
     .analysis-step i { width:15px; text-align:center; color:var(--gray-lt); }
@@ -619,9 +625,12 @@
         <div class="tab-content" id="tab-email">
           <label class="form-label" for="email-input">Paste email or message content</label>
           <p class="form-desc">Paste the full email text. Our NLP pipeline checks for urgency language, impersonation, and phishing patterns.</p>
+          <div class="textarea-wrap">
           <textarea id="email-input"
             placeholder="Paste email content here…
 Example: Dear customer, your account has been suspended. Click here immediately to verify your details: http://paypal-secure-login.net"></textarea>
+            <button type="button" class="textarea-paste-btn" id="email-paste-btn"><i class="fa-solid fa-clipboard"></i> Paste</button>
+          </div>
           <button class="analyze-btn" id="email-analyze-btn">
             <span class="spinner-sm" id="email-spinner"></span>
             <span id="email-btn-label">Analyze Text</span>

@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 # Import API routers
 from app.api.analyzer import router as analyzer_router
 from app.api.platform import router as platform_router
+from app.api.admin import router as admin_router
 from app.services.database import initialize_database
 
 
@@ -66,6 +67,7 @@ app.add_middleware(
 # Include API Routes
 app.include_router(analyzer_router)
 app.include_router(platform_router)
+app.include_router(admin_router)
 app.mount("/reports", StaticFiles(directory="reports"), name="reports")
 
 

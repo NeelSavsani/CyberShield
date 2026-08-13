@@ -101,7 +101,40 @@
       try { await navigator.clipboard.writeText(button.dataset.copyEmail); showToast('Email copied.', 'success'); } catch { showToast('Could not copy the email.', 'warning'); }
     }));
   };
-  window.filterUsers = () => { const query = document.getElementById('user-search').value.toLowerCase(); window.renderUsers(allUsers.filter(entry => `${entry.displayName || ''} ${entry.email || ''}`.toLowerCase().includes(query))); };
+  let userPage = 1;
+  const userPageSize = 10;
+  const ADMIN_API = 'http://127.0.0.1:8000';
+  window.renderUsers = users => {
+    const totalPages = Math.max(1, Math.ceil(users.length / userPageSize));
+    userPage = Math.min(userPage, totalPages);
+    const start = (userPage - 1) * userPageSize;
+    const pageUsers = users.slice(start, start + userPageSize);
+    const tbody = document.getElementById('users-table');
+    tbody.innerHTML = pageUsers.length ? pageUsers.map((entry, index) => {
+      const isCurrentAdmin = entry.id === user.uid && token?.claims.admin === true;
+      const label = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
+      const role = entry.role || (isCurrentAdmin ? 'admin' : 'user');
+      return `<tr><td>${start + index + 1}</td><td><strong>${escapeHtml(label)}</strong></td><td>${escapeHtml(entry.email || '—')}</td><td><span class="badge ${role === 'admin' ? 'badge-purple' : 'badge-info'}">${role}</span></td><td><span class="badge badge-success">Active</span></td><td>${formatDate(entry.createdAt)}</td><td>${formatDate(entry.lastLogin || entry.last_login)}</td><td><button class="action-btn" data-role-user="${escapeHtml(entry.id)}" data-role="${role}">${role === 'admin' ? 'Remove admin' : 'Make admin'}</button> <button class="action-btn" data-view-user="${escapeHtml(entry.id)}">View scans</button> <button class="action-btn" data-copy-email="${escapeHtml(entry.email || '')}"><i class="fa-solid fa-copy"></i></button></td></tr>`;
+    }).join('') : '<tr><td colspan="8" class="empty-state">No users found.</td></tr>';
+    document.getElementById('user-pagination').innerHTML = `<span>Showing ${pageUsers.length ? start + 1 : 0}–${Math.min(start + pageUsers.length, users.length)} of ${users.length}</span><button ${userPage <= 1 ? 'disabled' : ''} onclick="userPageChange(${userPage - 1})">Previous</button><span>Page ${userPage} of ${totalPages}</span><button ${userPage >= totalPages ? 'disabled' : ''} onclick="userPageChange(${userPage + 1})">Next</button>`;
+    tbody.querySelectorAll('[data-role-user]').forEach(button => button.addEventListener('click', () => updateRole(button.dataset.roleUser, button.dataset.role === 'admin' ? 'user' : 'admin')));
+    tbody.querySelectorAll('[data-view-user]').forEach(button => button.addEventListener('click', () => { const account = users.find(item => item.id === button.dataset.viewUser); document.getElementById('analysis-search').value = account?.email || account?.displayName || button.dataset.viewUser; window.switchTab('analyses'); window.filterAnalyses(); }));
+    tbody.querySelectorAll('[data-copy-email]').forEach(button => button.addEventListener('click', async () => { try { await navigator.clipboard.writeText(button.dataset.copyEmail); showToast('Email copied.', 'success'); } catch { showToast('Could not copy the email.', 'warning'); } }));
+  };
+  window.userPageChange = page => { userPage = page; window.filterUsers(false); };
+  window.filterUsers = (resetPage = true) => {
+    if (resetPage) userPage = 1;
+    const query = document.getElementById('user-search').value.toLowerCase();
+    const roleFilter = document.getElementById('user-role-filter')?.value || '';
+    const sort = document.getElementById('user-sort')?.value || 'registered_desc';
+    const list = allUsers.filter(entry => { const role = entry.role || (entry.id === user.uid && token?.claims.admin === true ? 'admin' : 'user'); return (!roleFilter || role === roleFilter) && `${entry.displayName || ''} ${entry.email || ''}`.toLowerCase().includes(query); });
+    list.sort((a, b) => { if (sort === 'role') return String(a.role || 'user').localeCompare(String(b.role || 'user')); const av = timestampMs(sort.startsWith('login') ? a.lastLogin : a.createdAt); const bv = timestampMs(sort.startsWith('login') ? b.lastLogin : b.createdAt); return sort.endsWith('asc') ? av - bv : bv - av; });
+    window.renderUsers(list);
+  };
+  async function updateRole(uid, role) {
+    if (uid === user.uid && role === 'user') return showToast('You cannot remove your own admin role.', 'warning');
+    try { const idToken = await user.getIdToken(); const response = await fetch(`${ADMIN_API}/admin/users/${encodeURIComponent(uid)}/role?role=${role}`, { method: 'PATCH', headers: { Authorization: `Bearer ${idToken}` } }); const body = await response.json(); if (!response.ok) throw new Error(body.detail || 'Role update failed.'); showToast(`User role changed to ${role}. Sign out and in again for the user to receive it.`, 'success'); await window.loadUsers(); } catch (error) { showToast(error.message, 'error'); }
+  }
   window.renderAnalyses = analyses => {
     const totalPages = Math.max(1, Math.ceil(analyses.length / analysisPageSize));
     analysisPage = Math.min(analysisPage, totalPages);

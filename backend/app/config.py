@@ -22,6 +22,7 @@ class Settings:
     # The bundled model is synthetic and must never silently replace the
     # explainable live-evidence baseline. Enable only after model validation.
     use_trained_model: bool = os.getenv("CYBERSHIELD_USE_TRAINED_MODEL", "false").lower() == "true"
+    firebase_service_account: Path | None = Path(os.getenv("FIREBASE_SERVICE_ACCOUNT")) if os.getenv("FIREBASE_SERVICE_ACCOUNT") else None
 
 
 settings = Settings()

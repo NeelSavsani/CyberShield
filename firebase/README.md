@@ -20,3 +20,13 @@ Sign out and sign in again after granting the claim, then publish the updated
 in `frontend/`.
 
 The Firebase project configuration is not a secret. Never add an Admin SDK service-account file to the frontend or Git.
+
+The Admin Panel's Make admin / Remove admin actions require the backend to have
+the service-account path configured:
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT = 'C:\safe\service-account.json'
+```
+
+Start the FastAPI backend after setting this variable. Role changes update the
+Firebase custom claim; the affected user must sign out and sign in again.

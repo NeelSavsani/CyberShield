@@ -166,6 +166,14 @@ function updateAdminNavigation(isAdmin, page) {
   {
     const name = user.displayName || user.email || 'User';
     const role = isAdmin ? 'admin' : 'user';
+    // Keep the signed-in account's activity visible to the admin console.
+    // This is best-effort so a temporary Firestore permission/network issue
+    // never prevents the user from entering the application.
+    fb.setDoc(fb.doc(fb.db, 'users', user.uid), {
+      email: user.email,
+      displayName: name,
+      lastLogin: user.metadata?.lastSignInTime || new Date().toISOString()
+    }, { merge: true }).catch(error => console.warn('Could not update last login:', error));
     sessionStorage.setItem('cs_user', JSON.stringify({ id: user.uid, name, email: user.email, role }));
     const avatarEl = document.getElementById('user-avatar');
     const nameEl = document.getElementById('user-name');

@@ -466,6 +466,11 @@
         );
         const credential = await fb.signInWithEmailAndPassword(fb.auth, email, password);
         const name = credential.user.displayName || credential.user.email;
+        await fb.setDoc(fb.doc(fb.db, 'users', credential.user.uid), {
+          email: credential.user.email,
+          displayName: name,
+          lastLogin: new Date().toISOString()
+        }, { merge: true });
         const token = await fb.getIdTokenResult(credential.user, true);
         const role = token.claims.admin === true ? 'admin' : 'user';
         sessionStorage.setItem('cs_user', JSON.stringify({ id: credential.user.uid, name, email: credential.user.email, role }));

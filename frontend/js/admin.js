@@ -23,7 +23,10 @@
     ...doc.data(),
     docId: doc.id,
     id: doc.id,
-    legacyId: doc.data().legacyId || doc.data().legacy_id || doc.data().id || null
+    legacyId: doc.data().legacyId || doc.data().legacy_id || doc.data().id || null,
+    // Firebase Web exposes metadata for the currently signed-in account.
+    // Use it as a fallback until that user's next login writes lastLogin.
+    lastLogin: doc.id === user.uid ? (doc.data().lastLogin || user.metadata?.lastSignInTime || null) : doc.data().lastLogin
   }));
   const getAnalyses = async () => (await fb.getDocs(fb.query(fb.collectionGroup(fb.db, 'analyses'), fb.limit(200)))).docs.map(doc => {
     const data = doc.data();
@@ -81,7 +84,23 @@
   };
   window.loadUsers = async () => { window.allUsers = await getUsers(); document.getElementById('user-count').textContent = `${allUsers.length} users`; window.renderUsers?.(allUsers); };
   window.loadAnalyses = async () => { try { if (!window.allUsers) window.allUsers = await getUsers(); window.allAnalyses = await getAnalyses(); document.getElementById('analyses-count').textContent = `${allAnalyses.length} records`; window.renderAnalyses?.(allAnalyses); } catch (error) { document.getElementById('analyses-table').innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`; } };
-  window.renderUsers = users => { document.getElementById('users-table').innerHTML = users.length ? users.map(entry => { const isCurrentAdmin = entry.id === user.uid && token?.claims.admin === true; return `<tr><td><strong>${escapeHtml(entry.displayName || '—')}</strong></td><td>${escapeHtml(entry.email)}</td><td><span class="badge ${isCurrentAdmin ? 'badge-purple' : 'badge-info'}">${isCurrentAdmin ? 'admin' : 'user'}</span></td><td><span class="badge badge-success">Active</span></td><td>${formatDate(entry.createdAt)}</td><td>—</td><td>—</td></tr>`; }).join('') : '<tr><td colspan="7" class="empty-state">No users found.</td></tr>'; };
+  window.renderUsers = users => {
+    const tbody = document.getElementById('users-table');
+    tbody.innerHTML = users.length ? users.map(entry => {
+      const isCurrentAdmin = entry.id === user.uid && token?.claims.admin === true;
+      const label = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
+      return `<tr><td><strong>${escapeHtml(label)}</strong></td><td>${escapeHtml(entry.email || '—')}</td><td><span class="badge ${isCurrentAdmin ? 'badge-purple' : 'badge-info'}">${isCurrentAdmin ? 'admin' : 'user'}</span></td><td><span class="badge badge-success">Active</span></td><td>${formatDate(entry.createdAt)}</td><td>${formatDate(entry.lastLogin || entry.last_login)}</td><td><button class="action-btn" data-view-user="${escapeHtml(entry.id)}" title="View this user's analyses">View scans</button> <button class="action-btn" data-copy-email="${escapeHtml(entry.email || '')}" title="Copy email"><i class="fa-solid fa-copy"></i></button></td></tr>`;
+    }).join('') : '<tr><td colspan="7" class="empty-state">No users found.</td></tr>';
+    tbody.querySelectorAll('[data-view-user]').forEach(button => button.addEventListener('click', () => {
+      const account = users.find(item => item.id === button.dataset.viewUser);
+      document.getElementById('analysis-search').value = account?.email || account?.displayName || button.dataset.viewUser;
+      window.switchTab('analyses');
+      window.filterAnalyses();
+    }));
+    tbody.querySelectorAll('[data-copy-email]').forEach(button => button.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(button.dataset.copyEmail); showToast('Email copied.', 'success'); } catch { showToast('Could not copy the email.', 'warning'); }
+    }));
+  };
   window.filterUsers = () => { const query = document.getElementById('user-search').value.toLowerCase(); window.renderUsers(allUsers.filter(entry => `${entry.displayName || ''} ${entry.email || ''}`.toLowerCase().includes(query))); };
   window.renderAnalyses = analyses => {
     const totalPages = Math.max(1, Math.ceil(analyses.length / analysisPageSize));
@@ -102,7 +121,7 @@
     window.renderAnalyses(allAnalyses.filter(scan => {
       const scanType = String(scan.inputType || '').toLowerCase();
       const scanDate = scan.createdAt ? new Date(timestampMs(scan.createdAt)).toISOString().slice(0, 10) : '';
-      return (!verdict || String(scan.verdict).toLowerCase() === verdict) && (!type || scanType === type) && (!date || scanDate === date) && `${scan.content || ''} ${scan.userId || ''} ${scan.userEmail || ''} ${scan.userName || ''}`.toLowerCase().includes(query);
+      return (!verdict || String(scan.verdict).toLowerCase() === verdict) && (!type || scanType === type) && (!date || scanDate === date) && `${scan.content || ''} ${scan.userId || ''} ${scan.userEmail || ''} ${scan.userName || ''} ${userName(scan, allUsers || [])}`.toLowerCase().includes(query);
     }));
   };
   window.loadFlagged = async () => {
@@ -112,6 +131,16 @@
   };
   window.addFlaggedItem = async () => { const type = document.getElementById('flag-type').value; const value = document.getElementById('flag-value').value.trim(); const reason = document.getElementById('flag-reason').value.trim(); if (!value) return alert('Enter a value to flag.'); await fb.addDoc(fb.collection(fb.db, 'flaggedItems'), { type, value, reason, createdAt: fb.serverTimestamp(), addedBy: user.uid }); document.getElementById('flag-value').value = ''; document.getElementById('flag-reason').value = ''; loadFlagged(); loadOverview(); };
   window.loadLogs = async () => { const logs = (await fb.getDocs(fb.query(fb.collection(fb.db, 'systemLogs'), fb.orderBy('createdAt', 'desc'), fb.limit(100)))).docs.map(doc => doc.data()); document.getElementById('logs-count').textContent = `${logs.length} entries`; document.getElementById('logs-table').innerHTML = logs.length ? logs.map(log => `<tr><td>${escapeHtml(log.level || 'info')}</td><td>${escapeHtml(log.source || 'app')}</td><td>${escapeHtml(log.message)}</td><td>${formatDate(log.createdAt)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">No log entries yet.</td></tr>'; };
-  window.refreshAll = () => { window.loadOverview(); window.loadUsers(); window.loadAnalyses(); window.loadFlagged(); window.loadLogs(); };
+  window.refreshAll = async () => {
+    const button = document.getElementById('admin-refresh-btn');
+    if (button) { button.disabled = true; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing…'; }
+    try {
+      window.allUsers = null;
+      await Promise.all([window.loadOverview(), window.loadUsers(), window.loadAnalyses(), window.loadFlagged(), window.loadLogs()]);
+      if (typeof showToast === 'function') showToast('Admin data refreshed.', 'success');
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh'; }
+    }
+  };
   window.refreshAll();
 })().catch(error => { console.error(error); document.getElementById('overview-table').innerHTML = `<tr><td colspan="6" class="empty-state">${error.message}</td></tr>`; });

@@ -42,6 +42,23 @@ function normalizeResult(response, content) {
   };
 }
 
+function normalizeTextResult(response, content) {
+  const score = Math.round(response.phishing_probability || 0);
+  return {
+    risk_score: score,
+    verdict: score >= 70 ? 'phishing' : score >= 40 ? 'suspicious' : 'safe',
+    input_type: 'email',
+    content,
+    analyzed_at: new Date().toISOString(),
+    screenshot_url: null,
+    indicators: (response.data?.indicators || []).map(item => ({
+      text: item.reason || 'Risk signal detected',
+      level: item.impact === 'high' ? 'red' : item.impact === 'medium' ? 'amber' : 'green'
+    })),
+    features: response.data?.features || {}
+  };
+}
+
 function setLoading(loading) {
   byId('url-analyze-btn').disabled = loading;
   byId('url-spinner').style.display = loading ? 'block' : 'none';
@@ -230,6 +247,36 @@ async function analyzeQr() {
   }
 }
 
+async function analyzeEmail() {
+  const content = byId('email-input')?.value.trim();
+  if (!content) return showToast('Paste an email or message first.', 'warning');
+  if (content.length < 10) return showToast('Enter at least 10 characters to analyze.', 'warning');
+  placeProgressBelow('email');
+  byId('email-analyze-btn').disabled = true;
+  byId('email-spinner').style.display = 'block';
+  byId('email-btn-label').textContent = 'Analyzing…';
+  startProgress();
+  try {
+    const response = await fetch(`${ANALYZER_API}/analyze/text`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: content }) });
+    const body = await response.json();
+    if (!response.ok || !body.success) throw new Error(body.detail || body.message || 'Text analysis failed.');
+    const result = normalizeTextResult(body, content);
+    result.analysis_id = await saveAnalysis(result, content);
+    sessionStorage.setItem('cs_result', JSON.stringify(result));
+    sessionStorage.setItem('cs_result_source', 'dashboard');
+    await refreshHistory();
+    stopProgress('complete');
+    window.setTimeout(() => { window.location.href = 'result.html'; }, 250);
+  } catch (error) {
+    stopProgress('failed', error.message || 'Text analysis failed.');
+    showToast(error.message || 'Text analysis failed.', 'error');
+  } finally {
+    byId('email-analyze-btn').disabled = false;
+    byId('email-spinner').style.display = 'none';
+    byId('email-btn-label').textContent = 'Analyze Text';
+  }
+}
+
 document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(item => item.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(item => item.classList.remove('active'));
@@ -252,7 +299,7 @@ byId('url-paste-btn')?.addEventListener('click', async () => {
     showToast('Clipboard access was blocked. Please paste with Ctrl+V.', 'warning');
   }
 });
-byId('email-analyze-btn')?.addEventListener('click', () => showToast('URL analysis is currently available.', 'info'));
+byId('email-analyze-btn')?.addEventListener('click', analyzeEmail);
 byId('image-analyze-btn')?.addEventListener('click', analyzeQr);
 byId('file-drop')?.addEventListener('click', () => byId('file-input')?.click());
 function setQrFile(file) {

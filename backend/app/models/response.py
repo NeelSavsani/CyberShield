@@ -49,3 +49,12 @@ class AnalysisResponse(BaseModel):
         default_factory=dict,
         description="Combined output from all analyzers."
     )
+
+
+class TextAnalysisResponse(BaseModel):
+    success: bool
+    text: str
+    phishing_probability: Optional[float] = Field(default=None, ge=0, le=100)
+    risk: str = "Unknown"
+    message: str = "Analysis completed successfully."
+    data: Dict[str, Any] = Field(default_factory=dict)

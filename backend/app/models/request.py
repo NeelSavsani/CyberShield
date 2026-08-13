@@ -33,3 +33,15 @@ class URLRequest(BaseModel):
             raise ValueError("Unsupported URL scheme.")
 
         return value
+
+
+class TextAnalysisRequest(BaseModel):
+    text: str = Field(..., min_length=10, max_length=50000, description="Email or message content")
+
+    @field_validator("text")
+    @classmethod
+    def validate_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Text content cannot be empty or solely whitespace.")
+        return value

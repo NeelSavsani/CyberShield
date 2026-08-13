@@ -14,14 +14,39 @@
     return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString('en-IN');
   };
   const escapeHtml = value => { const div = document.createElement('div'); div.textContent = value ?? ''; return div.innerHTML; };
-  const getUsers = async () => (await fb.getDocs(fb.collection(fb.db, 'users'))).docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const getUsers = async () => (await fb.getDocs(fb.collection(fb.db, 'users'))).docs.map(doc => ({
+    ...doc.data(),
+    docId: doc.id,
+    id: doc.id,
+    legacyId: doc.data().legacyId || doc.data().legacy_id || doc.data().id || null
+  }));
   const getAnalyses = async () => (await fb.getDocs(fb.query(fb.collectionGroup(fb.db, 'analyses'), fb.limit(200)))).docs.map(doc => {
     const data = doc.data();
     const owner = doc.ref.parent?.parent;
-    return { ...data, id: doc.id, userId: owner?.id || data.userId || 'unknown' };
+    const pathParts = doc.ref.path.split('/');
+    // Expected path: users/{uid}/analyses/{analysisId}. The path fallback
+    // also handles documents returned by older SDKs without parent refs.
+    const pathOwner = pathParts.length >= 4 && pathParts[0] === 'users' ? pathParts[1] : null;
+    return {
+      ...data,
+      id: doc.id,
+      userId: owner?.id || pathOwner || data.userId || data.user_id || data.uid || 'unknown',
+      userEmail: data.userEmail || data.user_email || data.ownerEmail || data.owner_email || data.email || null,
+      userName: data.userName || data.user_name || data.ownerName || data.owner_name || data.name || (typeof data.user === 'string' ? data.user : null),
+      inputType: data.inputType || data.input_type || 'URL',
+      riskScore: data.riskScore ?? data.risk_score ?? data.score ?? null,
+      createdAt: data.createdAt || data.created_at || data.analyzedAt || data.analyzed_at || null
+    };
   });
   const getFlags = async () => (await fb.getDocs(fb.collection(fb.db, 'flaggedItems'))).docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  const userName = (scan, users) => users.find(user => user.id === scan.userId)?.displayName || users.find(user => user.id === scan.userId)?.email || String(scan.userId || 'Unknown').slice(0, 8);
+  const userName = (scan, users) => {
+    if (scan.userId === 'guest') return 'Guest';
+    if (scan.userName || scan.userEmail) return scan.userName || scan.userEmail;
+    const account = users.find(entry => entry.id === scan.userId || entry.docId === scan.userId || entry.userId === scan.userId || entry.legacyId === scan.userId || String(entry.accountId || '') === String(scan.userId))
+      || users.find(entry => entry.email && entry.email.toLowerCase() === String(scan.userEmail || '').toLowerCase());
+    if (!account) return String(scan.userId || 'Unknown').slice(0, 8);
+    return account.displayName || [account.firstName, account.lastName].filter(Boolean).join(' ') || account.email || 'Unknown';
+  };
   const badge = verdict => verdict === 'phishing' ? 'badge-danger' : verdict === 'safe' ? 'badge-success' : 'badge-warning';
 
   window.switchTab = name => {

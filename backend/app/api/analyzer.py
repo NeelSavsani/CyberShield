@@ -3,10 +3,11 @@ import sys
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
-from app.models.request import URLRequest
-from app.models.response import AnalysisResponse
+from app.models.request import URLRequest, TextAnalysisRequest
+from app.models.response import AnalysisResponse, TextAnalysisResponse
 from app.orchestrator import analyze_url
 from app.services.qr_decoder import QRDecodeError, decode_qr_image
+from app.analyzers.nlp import TextAnalyzer
 
 router = APIRouter(
     prefix="/analyze",
@@ -100,3 +101,33 @@ async def analyze_qr(image: UploadFile = File(...)):
         return result
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error)) from error
+
+
+@router.post("/text", response_model=TextAnalysisResponse, summary="Analyze email or message text")
+async def analyze_text(request: TextAnalysisRequest):
+    """Run explainable text heuristics and analyze up to three embedded URLs."""
+    try:
+        text_result = TextAnalyzer().analyze(request.text)
+        if not text_result["success"]:
+            raise HTTPException(status_code=400, detail=text_result["error"])
+        url_analyses = {}
+        urls = text_result.get("urls_found", [])[:3]
+        results = await asyncio.gather(*(asyncio.to_thread(_analyze_on_worker_loop, url) for url in urls), return_exceptions=True)
+        max_probability = text_result["phishing_probability"]
+        final_risk = text_result["risk"]
+        for url, result in zip(urls, results):
+            if isinstance(result, Exception):
+                url_analyses[url] = {"success": False, "risk": "Unknown", "message": str(result)}
+                continue
+            data = result.model_dump()
+            url_analyses[url] = data
+            probability = data.get("phishing_probability") or 0
+            if probability > max_probability:
+                max_probability, final_risk = probability, data.get("risk", final_risk)
+            if data.get("risk") in {"Medium", "High", "Critical"}:
+                text_result["indicators"].append({"reason": f"Contains suspicious link ({data['risk']} risk): {url}", "impact": "high" if data["risk"] in {"High", "Critical"} else "medium", "value": 1})
+        return TextAnalysisResponse(success=True, text=request.text, phishing_probability=max_probability, risk=final_risk, data={"indicators": text_result["indicators"], "features": text_result["features"], "urls_found": text_result["urls_found"], "url_analyses": url_analyses, "classification": {"model_version": "text-heuristics-v1", "contributors": text_result["indicators"]}})
+    except HTTPException:
+        raise
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Text analysis failed: {error}") from error

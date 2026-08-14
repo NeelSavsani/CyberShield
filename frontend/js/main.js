@@ -6,6 +6,18 @@
 
 const API = 'http://localhost:5000';
 
+function applySidebarAvatar(element, photo, fallback) {
+  if (!element) return;
+  element.replaceChildren();
+  if (photo) {
+    const image = document.createElement('img');
+    image.src = photo;
+    image.alt = 'Profile photo';
+    image.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;display:block';
+    element.appendChild(image);
+  } else element.textContent = fallback;
+}
+
 // ── Dark mode toggle ─────────────────────────────────────────
 // Applies/removes data-theme="dark" on <html>, which the CSS in
 // css/style.css uses to swap the content-area color tokens (see
@@ -177,7 +189,15 @@ function updateAdminNavigation(isAdmin, page) {
     sessionStorage.setItem('cs_user', JSON.stringify({ id: user.uid, name, email: user.email, role }));
     const avatarEl = document.getElementById('user-avatar');
     const nameEl = document.getElementById('user-name');
-    if (avatarEl) avatarEl.textContent = name[0].toUpperCase();
+    const cachedAvatar = sessionStorage.getItem('cs_avatar') || '';
+    applySidebarAvatar(avatarEl, cachedAvatar, name[0].toUpperCase());
+    // Load the saved photo for a fresh tab/page, while keeping the sidebar
+    // usable immediately from the session cache.
+    fb.getDoc(fb.doc(fb.db, 'users', user.uid)).then(snapshot => {
+      const photo = snapshot.exists() ? snapshot.data().photoDataUrl : null;
+      if (photo) sessionStorage.setItem('cs_avatar', photo);
+      applySidebarAvatar(avatarEl, photo || cachedAvatar, name[0].toUpperCase());
+    }).catch(() => {});
     if (nameEl) nameEl.textContent = name;
     const roleEl = document.getElementById('user-role');
     if (roleEl) roleEl.textContent = isAdmin ? 'Administrator' : 'Free account';
@@ -215,7 +235,7 @@ document.querySelectorAll('[data-logout]').forEach(link => link.addEventListener
   const el = document.getElementById('greeting');
   if (!el) return;
   const h = new Date().getHours();
-  el.innerHTML = h < 12 ? 'Good morning <i class="fa-solid fa-hand"></i>' : h < 18 ? 'Good afternoon <i class="fa-solid fa-hand"></i>' : 'Good evening <i class="fa-solid fa-hand"></i>';
+  el.innerHTML = h < 12 ? 'Good morning ' : h < 18 ? 'Good afternoon ' : 'Good evening ';
 })();
 
 // ── Utility: show toast notification ────────────────────────

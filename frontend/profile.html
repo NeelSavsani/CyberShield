@@ -62,12 +62,20 @@
       <div class="panel">
         <div class="panel-body" style="padding-top:22px;">
           <div class="profile-header">
-            <div class="profile-avatar-lg" id="profile-avatar">U</div>
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar-lg" id="profile-avatar">U</div>
+              <label class="avatar-upload-btn" for="avatar-input" title="Choose profile photo"><i class="fa-solid fa-camera"></i></label>
+              <input id="avatar-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+            </div>
             <div>
               <div class="profile-name" id="profile-name">Loading…</div>
               <div class="profile-email" id="profile-email">—</div>
               <span class="badge badge-info profile-role-badge" id="profile-role">user</span>
             </div>
+          </div>
+          <div class="avatar-actions">
+            <button type="button" class="action-btn" id="remove-avatar-btn">Remove photo</button>
+            <span class="form-hint">PNG, JPG, or WebP up to 2 MB.</span>
           </div>
         </div>
       </div>

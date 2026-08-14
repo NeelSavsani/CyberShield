@@ -8,6 +8,8 @@ Responsibilities:
 - Merge analyzer results
 - Return a standard response
 """
+import asyncio
+
 from app.analyzers.javascript import JavaScriptAnalyzer
 from app.analyzers.html import HTMLAnalyzer
 from app.analyzers.forms import FormAnalyzer
@@ -119,43 +121,24 @@ async def analyze_url(url: str) -> AnalysisResponse:
                 data={"http": http_result},
             )
 
-        # ==================================================
-        # DNS Analyzer
-        # ==================================================
+        # DNS, WHOIS, TLS and reputation are independent checks.  DNS/WHOIS/
+        # TLS use blocking libraries internally, so run those collectors in
+        # worker threads and overlap all four checks.  This preserves every
+        # signal while avoiding their timeouts adding up sequentially.
+        async def threaded_check(analyzer):
+            return await asyncio.to_thread(
+                lambda: asyncio.run(analyzer.analyze(normalized_url))
+            )
 
-        dns = DNSAnalyzer()
-
-        dns_result = await dns.analyze(
-            normalized_url
+        dns_result, domain_result, ssl_result, reputation_result = await asyncio.gather(
+            threaded_check(DNSAnalyzer()),
+            threaded_check(DomainAnalyzer()),
+            threaded_check(SSLAnalyzer()),
+            ReputationAnalyzer().analyze(normalized_url),
         )
-
         analysis_data["dns"] = dns_result
-
-        # ==================================================
-        # Domain Analyzer
-        # ==================================================
-
-        domain = DomainAnalyzer()
-
-        domain_result = await domain.analyze(
-            normalized_url
-        )
-
         analysis_data["domain"] = domain_result
-
-        # ==================================================
-        # SSL Analyzer
-        # ==================================================
-
-        ssl = SSLAnalyzer()
-
-        ssl_result = await ssl.analyze(
-            normalized_url
-        )
-
         analysis_data["ssl"] = ssl_result
-
-        reputation_result = await ReputationAnalyzer().analyze(normalized_url)
         analysis_data["reputation"] = reputation_result
 
         # =========================================

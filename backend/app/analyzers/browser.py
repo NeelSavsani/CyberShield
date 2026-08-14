@@ -60,7 +60,10 @@ class BrowserAnalyzer:
                 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
                 const root = document.documentElement;
                 const step = Math.max(Math.floor(window.innerHeight * 0.75), 400);
-                const maxSteps = 60;
+                // Cover long pages without spending 8+ seconds on an
+                // arbitrary scroll delay. The rendered DOM and all security
+                // listeners remain active during this pass.
+                const maxSteps = 40;
 
                 // Avoid a site-defined smooth-scroll animation masking the
                 // actual scroll events needed by lazy loaders and observers.
@@ -70,7 +73,7 @@ class BrowserAnalyzer:
                 for (let index = 0; index < maxSteps; index += 1) {
                     const before = Math.max(root.scrollHeight, document.body.scrollHeight);
                     window.scrollBy(0, step);
-                    await pause(140);
+                    await pause(100);
                     const after = Math.max(root.scrollHeight, document.body.scrollHeight);
                     const atBottom = window.scrollY + window.innerHeight >= after - 2;
                     if (atBottom && after <= before) break;
@@ -80,7 +83,7 @@ class BrowserAnalyzer:
                 // position: some animation libraries reverse elements when
                 // returning to the top, which would make a full-page capture
                 // blank again.
-                await pause(350);
+                await pause(250);
                 root.style.scrollBehavior = originalBehavior;
             }"""
         )
@@ -364,7 +367,9 @@ class BrowserAnalyzer:
             try:
                 await page.wait_for_load_state(
                     "networkidle",
-                    timeout=15000,
+                    # Do not wait 15 seconds for perpetual analytics
+                    # connections after the DOM is already available.
+                    timeout=5000,
                 )
             except Exception:
                 pass

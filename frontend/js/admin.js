@@ -59,14 +59,14 @@
   let analysisPage = 1;
   const analysisPageSize = 10;
 
-  window.switchTab = name => {
+  window.switchTab = async name => {
     const tabs = ['overview', 'users', 'analyses', 'flagged', 'logs'];
     document.querySelectorAll('.admin-tab').forEach((tab, index) => tab.classList.toggle('active', tabs[index] === name));
     document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.toggle('active', pane.id === `tab-${name}`));
-    if (name === 'users') window.loadUsers();
-    if (name === 'analyses') window.loadAnalyses();
-    if (name === 'flagged') window.loadFlagged();
-    if (name === 'logs') window.loadLogs();
+    if (name === 'users') await window.loadUsers();
+    if (name === 'analyses') await window.loadAnalyses();
+    if (name === 'flagged') await window.loadFlagged();
+    if (name === 'logs') await window.loadLogs();
   };
 
   window.loadOverview = async () => {
@@ -118,7 +118,7 @@
     }).join('') : '<tr><td colspan="8" class="empty-state">No users found.</td></tr>';
     document.getElementById('user-pagination').innerHTML = `<span>Showing ${pageUsers.length ? start + 1 : 0}–${Math.min(start + pageUsers.length, users.length)} of ${users.length}</span><button ${userPage <= 1 ? 'disabled' : ''} onclick="userPageChange(${userPage - 1})">Previous</button><span>Page ${userPage} of ${totalPages}</span><button ${userPage >= totalPages ? 'disabled' : ''} onclick="userPageChange(${userPage + 1})">Next</button>`;
     tbody.querySelectorAll('[data-role-user]').forEach(button => button.addEventListener('click', () => updateRole(button.dataset.roleUser, button.dataset.role === 'admin' ? 'user' : 'admin')));
-    tbody.querySelectorAll('[data-view-user]').forEach(button => button.addEventListener('click', () => { const account = users.find(item => item.id === button.dataset.viewUser); document.getElementById('analysis-search').value = account?.email || account?.displayName || button.dataset.viewUser; window.switchTab('analyses'); window.filterAnalyses(); }));
+    tbody.querySelectorAll('[data-view-user]').forEach(button => button.addEventListener('click', async () => { const account = users.find(item => item.id === button.dataset.viewUser); document.getElementById('analysis-search').value = account?.email || account?.displayName || button.dataset.viewUser; await window.switchTab('analyses'); window.filterAnalyses(); }));
     tbody.querySelectorAll('[data-copy-email]').forEach(button => button.addEventListener('click', async () => { try { await navigator.clipboard.writeText(button.dataset.copyEmail); showToast('Email copied.', 'success'); } catch { showToast('Could not copy the email.', 'warning'); } }));
   };
   window.userPageChange = page => { userPage = page; window.filterUsers(false); };
@@ -145,16 +145,26 @@
     pager.innerHTML = `<span>Showing ${pageRows.length ? start + 1 : 0}–${Math.min(start + pageRows.length, analyses.length)} of ${analyses.length}</span><button ${analysisPage <= 1 ? 'disabled' : ''} onclick="analysisPageChange(${analysisPage - 1})">Previous</button><span>Page ${analysisPage} of ${totalPages}</span><button ${analysisPage >= totalPages ? 'disabled' : ''} onclick="analysisPageChange(${analysisPage + 1})">Next</button>`;
   };
   window.analysisPageChange = page => { analysisPage = page; window.filterAnalyses(false); };
+  window.clearAnalysisSearch = () => {
+    ['analysis-search', 'date-filter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    ['type-filter', 'verdict-filter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    window.filterAnalyses();
+  };
   window.filterAnalyses = (resetPage = true) => {
     if (resetPage) analysisPage = 1;
     const query = document.getElementById('analysis-search').value.toLowerCase();
     const verdict = document.getElementById('verdict-filter').value;
     const type = document.getElementById('type-filter').value;
     const date = document.getElementById('date-filter').value;
+    const clearButton = document.getElementById('analysis-clear-search');
+    if (clearButton) clearButton.disabled = !query && !verdict && !type && !date;
     window.renderAnalyses(allAnalyses.filter(scan => {
       const scanType = String(scan.inputType || '').toLowerCase();
       const scanDate = scan.createdAt ? new Date(timestampMs(scan.createdAt)).toISOString().slice(0, 10) : '';
-      return (!verdict || String(scan.verdict).toLowerCase() === verdict) && (!type || scanType === type) && (!date || scanDate === date) && `${scan.content || ''} ${scan.userId || ''} ${scan.userEmail || ''} ${scan.userName || ''} ${userName(scan, allUsers || [])}`.toLowerCase().includes(query);
+      const account = (allUsers || []).find(entry => entry.id === scan.userId || entry.docId === scan.userId || entry.legacyId === scan.userId);
+      const scanEmail = String(scan.userEmail || account?.email || '').toLowerCase();
+      const searchable = `${scan.content || ''} ${scan.userId || ''} ${scanEmail} ${scan.userName || ''} ${userName(scan, allUsers || [])}`.toLowerCase();
+      return (!verdict || String(scan.verdict).toLowerCase() === verdict) && (!type || scanType === type) && (!date || scanDate === date) && (!query || searchable.includes(query));
     }));
   };
   window.loadFlagged = async () => {

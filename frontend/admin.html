@@ -42,6 +42,20 @@
     .badge-security{background:rgba(124,58,237,0.1);color:#7C3AED;}
     .action-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--gray);cursor:pointer;transition:all .15s;}
     .action-btn:hover{border-color:var(--danger);color:var(--danger);}
+    .user-actions{display:flex;align-items:center;justify-content:center;gap:6px;min-width:240px;}
+    .user-actions .action-btn{height:30px;min-width:88px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;}
+    .user-actions .action-btn[data-copy-email]{min-width:30px;width:30px;padding:0;}
+    #users-table td:last-child{text-align:center;white-space:nowrap;}
+    #users-table td:last-child .action-btn{height:30px;min-width:88px;padding:0 10px;vertical-align:middle;}
+    #users-table td:last-child .action-btn + .action-btn{margin-left:6px;}
+    #users-table td:last-child .action-btn[data-copy-email]{min-width:30px;width:30px;padding:0;}
+    #tab-users thead th:last-child{text-align:center;}
+    #tab-users tbody td:last-child{text-align:center;}
+    #tab-users table th,
+    #tab-users table td{text-align:center;}
+    #tab-users tbody td:last-child button[data-role-user]{width:104px;min-width:104px;}
+    #tab-users tbody td:last-child button[data-view-user]{width:88px;min-width:88px;}
+    #tab-users tbody td:last-child button[data-copy-email]{width:32px;min-width:32px;}
     .flag-form{display:flex;gap:10px;flex-wrap:wrap;padding:20px 22px;}
     .flag-form input,.flag-form select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--slate);background:var(--off-white);outline:none;font-family:var(--font-body);}
     .flag-form input:focus,.flag-form select:focus{border-color:var(--cyan-dim);background:var(--white);}
@@ -51,6 +65,7 @@
     .search-bar{display:flex;gap:10px;padding:16px 22px;border-bottom:1px solid var(--border);}
      .search-bar input{flex:1;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:var(--font-body);}
      .search-bar input:focus{border-color:var(--cyan-dim);}
+     .search-bar .action-btn{white-space:nowrap;}
      .user-filters{display:flex;gap:10px;align-items:center;padding:0 22px 16px;border-bottom:1px solid var(--border);}
      .user-filters select{min-width:170px;padding:9px 34px 9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--off-white);color:var(--slate);font:500 13px var(--font-body);outline:none;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s;}
      .user-filters select:hover{border-color:var(--cyan-dim);}
@@ -170,7 +185,7 @@
           <span id="analyses-count" style="font-size:12px;color:var(--gray)">0 records</span>
         </div>
         <div class="search-bar">
-          <input type="text" id="analysis-search" placeholder="Search by content or user…" oninput="filterAnalyses()" />
+          <input type="text" id="analysis-search" placeholder="Search by content or keyword…" oninput="filterAnalyses()" />
           <select id="type-filter" onchange="filterAnalyses()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;"><option value="">All types</option><option value="url">URL</option><option value="qr">QR</option><option value="email">Email / Text</option></select>
           <select id="verdict-filter" onchange="filterAnalyses()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;">
             <option value="">All verdicts</option>
@@ -179,6 +194,7 @@
             <option value="safe">Safe</option>
           </select>
           <input type="date" id="date-filter" onchange="filterAnalyses()" title="Filter by date" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;" />
+          <button type="button" id="analysis-clear-search" class="action-btn" onclick="clearAnalysisSearch()" disabled><i class="fa-solid fa-xmark"></i> Cancel search</button>
         </div>
         <div class="pagination" id="analysis-pagination" aria-label="Analysis pagination"></div>
         <table>

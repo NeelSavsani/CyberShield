@@ -37,8 +37,12 @@
     },
     async listAnalyses() {
       const { fb, user } = await currentUser();
-      const snapshot = await fb.getDocs(fb.query(analyses(fb, user.uid), fb.orderBy('createdAt', 'desc')));
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Sort locally so older records without `createdAt` and deployments
+      // without a composite Firestore index still appear in Recent Analyses.
+      const snapshot = await fb.getDocs(analyses(fb, user.uid));
+      return snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => new Date(b.createdAt || b.analyzedAt || 0) - new Date(a.createdAt || a.analyzedAt || 0));
     },
     async deleteAnalysis(id) {
       const { fb, user } = await currentUser();

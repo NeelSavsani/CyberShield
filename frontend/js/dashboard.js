@@ -27,10 +27,12 @@ async function runBackgroundJob(path, options, metadata) {
   const response = await fetch(`${ANALYZER_API}${path}`, { ...options, keepalive: true });
   const start = await response.json();
   if (!response.ok || !start.job_id) throw new Error(start.detail || 'Could not start analysis.');
-  localStorage.setItem('cs_active_job', JSON.stringify({ jobId: start.job_id, ...metadata }));
-  while (true) {
+  localStorage.setItem('cs_active_job', JSON.stringify({ jobId: start.job_id, startedAt: Date.now(), ...metadata }));
+  const deadline = Date.now() + 15 * 60 * 1000;
+  while (Date.now() < deadline) {
     const statusResponse = await fetch(`${ANALYZER_API}/analyze/jobs/${start.job_id}`);
     const status = await statusResponse.json();
+    if (!statusResponse.ok) throw new Error(status.detail || 'The analysis job is no longer available.');
     if (status.status === 'complete') {
       localStorage.removeItem('cs_active_job');
       return status.result;
@@ -41,20 +43,48 @@ async function runBackgroundJob(path, options, metadata) {
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
+  localStorage.removeItem('cs_active_job');
+  throw new Error('Analysis timed out. Please try again.');
 }
 
 async function resumeActiveJob() {
   const raw = localStorage.getItem('cs_active_job');
   if (!raw) return;
   const active = JSON.parse(raw);
+  if (active.inputType === 'url' && byId('url-input')) byId('url-input').value = active.content || '';
+  if (active.inputType === 'email' && byId('email-input')) byId('email-input').value = active.content || '';
+  const progressPanel = byId('analysis-progress');
+  if (active.inputType === 'url' && byId('url-analyze-btn')) {
+    placeProgressBelow('url');
+    setLoading(true);
+    const elapsedStages = Math.floor((Date.now() - (active.startedAt || Date.now())) / 3500);
+    startProgress(Math.max(active.progressIndex || 0, elapsedStages));
+  } else if (active.inputType === 'qr' && byId('image-analyze-btn')) {
+    placeProgressBelow('image');
+    setQrLoading(true);
+    const elapsedStages = Math.floor((Date.now() - (active.startedAt || Date.now())) / 3500);
+    startProgress(Math.max(active.progressIndex || 0, elapsedStages));
+  } else if (active.inputType === 'email' && progressPanel) {
+    placeProgressBelow('email');
+    progressPanel.classList.add('text-progress', 'show');
+    progressPanel.classList.remove('error');
+    byId('analysis-progress-list').hidden = true;
+    byId('analysis-progress-title').textContent = 'Analyzing email or message text…';
+  }
   try {
+    // Load existing history immediately; do not leave the table showing an
+    // empty state while the background job is still running.
+    try { await refreshHistory(); } catch (error) { console.warn('Could not refresh history while resuming:', error); }
     showToast('An analysis is still running in the background.', 'info');
     let status;
+    const deadline = Date.now() + 15 * 60 * 1000;
     do {
       const response = await fetch(`${ANALYZER_API}/analyze/jobs/${active.jobId}`);
       status = await response.json();
+      if (!response.ok) throw new Error(status.detail || 'The previous analysis job is no longer available.');
       if (status.status === 'queued' || status.status === 'running') await new Promise(resolve => setTimeout(resolve, 1000));
-    } while (status.status === 'queued' || status.status === 'running');
+    } while ((status.status === 'queued' || status.status === 'running') && Date.now() < deadline);
+    if (Date.now() >= deadline) throw new Error('Analysis timed out. Please try again.');
     if (status.status !== 'complete') throw new Error(status.error || 'Analysis failed.');
     const body = status.result;
     const content = active.inputType === 'qr' ? (body.data?.browser?.final_url || body.normalized_url || body.data?.qr?.decoded_value || active.content) : active.content;
@@ -65,10 +95,19 @@ async function resumeActiveJob() {
     sessionStorage.setItem('cs_result_source', 'dashboard');
     localStorage.removeItem('cs_active_job');
     await refreshHistory();
+    stopProgress('complete');
     showToast('Background analysis completed.', 'success');
+    // When the user returned to the dashboard while the job was running,
+    // finish the same flow as an uninterrupted analysis and open the result.
+    window.setTimeout(() => { window.location.href = 'result.html'; }, 400);
   } catch (error) {
     localStorage.removeItem('cs_active_job');
+    stopProgress('failed', error.message || 'Background analysis failed.');
     showToast(error.message || 'Background analysis failed.', 'error');
+  } finally {
+    setLoading(false);
+    setQrLoading(false);
+    progressPanel?.classList.remove('text-progress');
   }
 }
 
@@ -139,18 +178,25 @@ function renderProgress(activeIndex, state = 'running') {
   byId('analysis-progress-title').textContent = state === 'complete' ? 'Analysis complete — preparing your result' : state === 'failed' ? 'Analysis could not be completed' : analysisStages[activeIndex];
 }
 
-function startProgress() {
+function startProgress(initialIndex = 0) {
   const panel = byId('analysis-progress');
   if (panel.classList.contains('text-progress')) return;
   panel.classList.remove('error');
   byId('analysis-progress-list').hidden = false;
   panel.classList.add('show');
-  let index = 0;
+  let index = Math.max(0, Math.min(initialIndex, analysisStages.length - 1));
   renderProgress(index);
   clearInterval(progressTimer);
   progressTimer = setInterval(() => {
     index = Math.min(index + 1, analysisStages.length - 1);
     renderProgress(index);
+    try {
+      const activeJob = JSON.parse(localStorage.getItem('cs_active_job') || 'null');
+      if (activeJob) {
+        activeJob.progressIndex = index;
+        localStorage.setItem('cs_active_job', JSON.stringify(activeJob));
+      }
+    } catch (_) { /* Ignore storage access failures. */ }
   }, 3500);
 }
 
@@ -196,7 +242,15 @@ function renderHistory() {
 }
 
 async function refreshHistory() {
-  history = isGuest() ? JSON.parse(sessionStorage.getItem(guestHistoryKey) || '[]') : await window.csFirebase.listAnalyses();
+  try {
+    history = isGuest() ? JSON.parse(sessionStorage.getItem(guestHistoryKey) || '[]') : await window.csFirebase.listAnalyses();
+    if (!isGuest()) localStorage.setItem('cs_history_cache', JSON.stringify(history));
+  } catch (error) {
+    // Keep the last visible list during auth/network transitions when a page
+    // is reopened while a background analysis is running.
+    history = isGuest() ? JSON.parse(sessionStorage.getItem(guestHistoryKey) || '[]') : JSON.parse(localStorage.getItem('cs_history_cache') || '[]');
+    if (!history.length) throw error;
+  }
   const weekAgo = Date.now() - 7 * 86400000;
   byId('stat-total').textContent = history.length;
   byId('stat-threats').textContent = history.filter(item => item.riskScore >= 70).length;

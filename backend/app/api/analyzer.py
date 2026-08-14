@@ -18,12 +18,13 @@ router = APIRouter(
 # Jobs live in the API process while a scan is running. The result is returned
 # by polling, so leaving dashboard.html no longer cancels the browser work.
 _jobs: dict[str, dict] = {}
+JOB_TIMEOUT_SECONDS = 15 * 60
 
 
 async def _run_job(job_id: str, worker, *args):
     _jobs[job_id]["status"] = "running"
     try:
-        result = await worker(*args)
+        result = await asyncio.wait_for(worker(*args), timeout=JOB_TIMEOUT_SECONDS)
         _jobs[job_id].update(status="complete", result=result.model_dump(mode="json") if hasattr(result, "model_dump") else result)
     except Exception as error:
         _jobs[job_id].update(status="failed", error=str(error))

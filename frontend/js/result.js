@@ -42,6 +42,43 @@ function openFeatureInfo(key, value) {
 
 function closeFeatureInfo() { document.getElementById('feature-info-modal').hidden = true; }
 
+// Short, non-verbal result notification. Web Audio keeps this lightweight
+// and avoids shipping an additional audio asset; browsers may still suppress
+// it when the result page was opened without a user gesture.
+function playResultNotification(result) {
+  if (result.verdict !== 'safe' && result.verdict !== 'phishing') return;
+  const key = `cs_result_sound:${result.analysis_id || result.analyzed_at || result.content || 'current'}`;
+  if (sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, '1');
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = new AudioContextClass();
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.connect(context.destination);
+    const now = context.currentTime;
+    const safe = result.verdict === 'safe';
+    const notes = safe ? [660, 880, 1047] : [240, 180, 120];
+    notes.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      oscillator.type = safe ? 'sine' : 'sawtooth';
+      oscillator.frequency.setValueAtTime(frequency, now + index * (safe ? 0.13 : 0.16));
+      const start = now + index * (safe ? 0.13 : 0.16);
+      const end = start + (safe ? 0.22 : 0.14);
+      oscillator.connect(gain);
+      oscillator.start(start);
+      oscillator.stop(end);
+    });
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + (safe ? 0.62 : 0.58));
+    window.setTimeout(() => context.close().catch(() => {}), 900);
+  } catch (_) {
+    // Audio is optional; never let a browser autoplay restriction affect the
+    // displayed analysis result.
+  }
+}
+
 function renderResult(result) {
   const score      = result.risk_score   ?? 0;
   const verdict    = result.verdict      ?? 'safe';
@@ -313,10 +350,12 @@ if (resultSource === 'history') {
 }
 
 if (resultRaw) {
-  renderResult(JSON.parse(resultRaw));
+  const result = JSON.parse(resultRaw);
+  renderResult(result);
+  playResultNotification(result);
 } else {
   // Demo result shown if page is opened directly
-  renderResult({
+  const demoResult = {
     risk_score:  82,
     verdict:     'phishing',
     input_type:  'url',
@@ -333,5 +372,7 @@ if (resultRaw) {
       has_https: 0, uses_ip_address: 0, brand_keyword_count: 2,
       suspicious_tld: 1, url_entropy: 3.94, subdomain_count: 0,
     }
-  });
+  };
+  renderResult(demoResult);
+  playResultNotification(demoResult);
 }

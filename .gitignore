@@ -5,6 +5,7 @@ backend/*service-account*.json
 backend/secrets/
 
 # Python/runtime files
+backend/venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/

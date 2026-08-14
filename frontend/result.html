@@ -48,7 +48,7 @@
       </div>
       <div class="topbar-right">
         <button class="topbar-btn btn-navy" onclick="downloadReport(event)"><i class="fa-solid fa-download"></i> Download report</button>
-        <button class="topbar-btn btn-flag" onclick="flagItem()"><i class="fa-solid fa-flag"></i> Report as phishing</button>
+        <button class="topbar-btn btn-flag" onclick="openReportModal()"><i class="fa-solid fa-flag"></i> Report</button>
       </div>
     </header>
 
@@ -152,6 +152,27 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <div class="report-modal" id="report-modal" hidden>
+    <div class="report-backdrop" data-close-report></div>
+    <div class="report-dialog" role="dialog" aria-modal="true" aria-labelledby="report-title">
+      <button class="report-close" type="button" data-close-report aria-label="Close report dialog"><i class="fa-solid fa-xmark"></i></button>
+      <p class="report-kicker">Help improve CyberShield</p>
+      <h2 id="report-title">Report this analysis</h2>
+      <p class="report-description">Tell us whether you believe this result is wrong and include any evidence that supports your report.</p>
+      <fieldset class="report-options">
+        <legend>Your assessment</legend>
+        <label><input type="radio" name="report-type" value="phishing" checked /> <span>Phishing</span></label>
+        <label><input type="radio" name="report-type" value="safe" /> <span>Safe</span></label>
+      </fieldset>
+      <label class="report-reason-label" for="report-reason">Reason for your report</label>
+      <textarea id="report-reason" rows="5" maxlength="2000" placeholder="Explain what we got wrong and share any proof or links..."></textarea>
+      <div class="report-actions">
+        <button type="button" class="topbar-btn btn-outline" data-close-report>Cancel</button>
+        <button type="button" class="topbar-btn btn-navy" id="submit-report-btn" onclick="submitReport()"><i class="fa-solid fa-paper-plane"></i> Submit report</button>
+      </div>
     </div>
   </div>
 

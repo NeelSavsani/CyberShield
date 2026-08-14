@@ -317,21 +317,49 @@ function downloadReport(event) {
 }
 
 // ── Flag as phishing ─────────────────────────────────────────
-async function flagItem() {
-  const result  = JSON.parse(sessionStorage.getItem('cs_result') || '{}');
-  const content = result.content || '';
-  const type    = result.input_type === 'url' ? 'url' : 'keyword';
+function openReportModal() {
+  const modal = document.getElementById('report-modal');
+  if (!modal) return;
+  modal.hidden = false;
+  document.getElementById('report-reason')?.focus();
+}
+
+function closeReportModal() {
+  const modal = document.getElementById('report-modal');
+  if (modal) modal.hidden = true;
+}
+
+async function submitReport() {
+  const result = JSON.parse(sessionStorage.getItem('cs_result') || '{}');
+  const content = String(result.content || '').trim();
+  const reason = document.getElementById('report-reason')?.value.trim() || '';
+  const reportType = document.querySelector('input[name="report-type"]:checked')?.value || 'phishing';
+  if (!reason) return showToast('Please provide a reason or supporting proof.', 'warning');
+  const button = document.getElementById('submit-report-btn');
+  if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
   try {
-    const res  = await fetch(`${API}/admin/flag`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ item_type: type, value: content, reason: 'Flagged by user', admin_id: 1 })
+    const fb = await window.firebaseReady;
+    const user = fb.auth.currentUser;
+    if (!user) throw new Error('Please sign in before submitting a report.');
+    await fb.addDoc(fb.collection(fb.db, 'flaggedItems'), {
+      type: result.input_type === 'url' || result.input_type === 'qr' ? result.input_type : 'text',
+      value: content,
+      reason,
+      reportType,
+      source: 'user_report',
+      detectedVerdict: result.verdict || null,
+      analysisId: result.analysis_id || null,
+      addedBy: user.uid,
+      reporterEmail: user.email || null,
+      createdAt: fb.serverTimestamp()
     });
-    const data = await res.json();
-    if (data.success) showToast('Flagged successfully! Added to phishing database.', 'success');
-    else showToast('Could not flag item.', 'error');
-  } catch(e) {
-    showToast('Could not connect to server. Is Flask running?', 'error');
+    closeReportModal();
+    document.getElementById('report-reason').value = '';
+    showToast('Report submitted to the CyberShield team.', 'success');
+  } catch (error) {
+    showToast(error.message || 'Could not submit report.', 'error');
+  } finally {
+    if (button) { button.disabled = false; button.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit report'; }
   }
 }
 
@@ -343,6 +371,7 @@ const resultSource = sessionStorage.getItem('cs_result_source');
 const historyBackButton = document.getElementById('history-back-btn');
 
 document.querySelectorAll('[data-close-feature-info]').forEach(button => button.addEventListener('click', closeFeatureInfo));
+document.querySelectorAll('[data-close-report]').forEach(button => button.addEventListener('click', closeReportModal));
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeFeatureInfo(); });
 
 if (resultSource === 'history') {

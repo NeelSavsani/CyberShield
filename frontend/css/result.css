@@ -97,6 +97,24 @@
 .content-screenshot { display:block; width:100%; max-height:520px; object-fit:contain; object-position:top; border:1px solid var(--border); border-radius:9px; background:var(--off-white); }
 .content-overview-note { margin:10px 0 0; color:var(--gray); font-size:12px; }
 
+.report-modal[hidden] { display:none; }
+.report-modal { position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:20px; }
+.report-backdrop { position:absolute; inset:0; background:rgba(15,23,42,.58); }
+.report-dialog { position:relative; z-index:1; width:min(560px,100%); background:var(--white); color:var(--slate); border-radius:16px; padding:28px; box-shadow:0 24px 70px rgba(15,23,42,.3); }
+.report-close { position:absolute; top:12px; right:14px; border:0; background:transparent; color:var(--gray); cursor:pointer; font-size:18px; padding:6px 8px; }
+.report-kicker { margin:0 0 4px; color:var(--cyan-dim); text-transform:uppercase; letter-spacing:.08em; font-size:10px; font-weight:700; }
+.report-dialog h2 { margin:0 0 8px; color:var(--navy); font-family:var(--font-head); font-size:22px; }
+.report-description { margin:0 0 20px; color:var(--gray); line-height:1.5; font-size:13px; }
+.report-options { border:0; padding:0; margin:0 0 18px; display:flex; gap:22px; }
+.report-options legend { width:100%; margin-bottom:10px; color:var(--navy); font-size:13px; font-weight:600; }
+.report-options label { display:flex; align-items:center; gap:8px; color:var(--slate); font-size:14px; cursor:pointer; }
+.report-options input { accent-color:var(--cyan); }
+.report-reason-label { display:block; margin-bottom:7px; color:var(--navy); font-size:13px; font-weight:600; }
+.report-dialog textarea { width:100%; min-height:120px; resize:vertical; border:1px solid var(--border); border-radius:9px; padding:11px 12px; color:var(--slate); background:var(--white); font:inherit; font-size:13px; box-sizing:border-box; }
+.report-dialog textarea:focus { outline:2px solid rgba(8,145,178,.2); border-color:var(--cyan); }
+.report-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+.report-actions button:disabled { opacity:.65; cursor:wait; }
+
 @media(max-width:660px) {
   .verdict-banner { padding: 22px; }
   .verdict-meta   { padding: 14px 22px; gap: 20px; }

@@ -14,7 +14,14 @@ service cloud.firestore {
         allow read, write: if signedIn() && request.auth.uid == userId;
       }
     }
-    match /flaggedItems/{itemId} { allow read, write: if admin(); }
+    match /flaggedItems/{itemId} {
+      // Authenticated users may submit feedback reports, but only admins can
+      // read, edit, or delete the moderation queue.
+      allow create: if admin() || (signedIn()
+        && request.resource.data.source == 'user_report'
+        && request.resource.data.addedBy == request.auth.uid);
+      allow read, update, delete: if admin();
+    }
     match /systemLogs/{logId} { allow read, write: if admin(); }
     match /flagRequests/{requestId} {
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid;

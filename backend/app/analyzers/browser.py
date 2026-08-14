@@ -39,6 +39,7 @@ from pathlib import Path
 
 from app.models.browser_session import BrowserSession
 from app.services.browser_manager import BrowserManager
+from app.services.screenshot_storage import upload_screenshot
 
 
 class BrowserAnalyzer:
@@ -422,10 +423,11 @@ class BrowserAnalyzer:
             # Screenshot Directory
             # --------------------------------------------------
 
-            screenshot_dir = (
-                Path("reports")
-                / "screenshots"
-            )
+            # Resolve from the backend package, not the process CWD. Uvicorn's
+            # reload worker may start with a different working directory,
+            # which otherwise makes the returned screenshot URL a 404.
+            backend_root = Path(__file__).resolve().parents[2]
+            screenshot_dir = backend_root / "reports" / "screenshots"
 
             screenshot_dir.mkdir(
                 parents=True,
@@ -455,12 +457,21 @@ class BrowserAnalyzer:
             # actually shown in the screenshot.
             session.final_url = page.url
 
-            with screenshot_file.open("wb") as f:
-                f.write(session.screenshot_bytes)
+            # Always materialize the capture first. This is the development
+            # fallback when Firebase Storage is unavailable (for example on
+            # Firebase's Spark plan), and is removed after a successful upload.
+            screenshot_file.write_bytes(session.screenshot_bytes)
 
-            # This is relative to the /reports static-files mount, rather
-            # than an OS-specific path that the browser cannot display.
-            session.screenshot_path = f"screenshots/{screenshot_name}"
+            # Keep permanent captures out of the application checkout. When
+            # Firebase Storage is configured, upload first and remove the
+            # local temporary file only after a successful upload.
+            stored = upload_screenshot(session.screenshot_bytes, screenshot_name)
+            if stored:
+                session.screenshot_path, session.screenshot_storage_path = stored
+                screenshot_file.unlink(missing_ok=True)
+            else:
+                # Local development fallback, relative to the /reports mount.
+                session.screenshot_path = f"screenshots/{screenshot_name}"
 
         except Exception as error:
             # Return a partial session so the rest of the pipeline can report

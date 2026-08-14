@@ -23,6 +23,7 @@ class Settings:
     # explainable live-evidence baseline. Enable only after model validation.
     use_trained_model: bool = os.getenv("CYBERSHIELD_USE_TRAINED_MODEL", "false").lower() == "true"
     firebase_service_account: Path | None = Path(os.getenv("FIREBASE_SERVICE_ACCOUNT")) if os.getenv("FIREBASE_SERVICE_ACCOUNT") else None
+    firebase_storage_bucket: str | None = os.getenv("FIREBASE_STORAGE_BUCKET", "cybershield-5494d.firebasestorage.app")
 
 
 settings = Settings()

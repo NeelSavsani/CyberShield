@@ -29,6 +29,7 @@
         indicators: result.indicators || [],
         features: result.features || {},
         screenshotUrl: result.screenshot_url || null,
+        screenshotStoragePath: result.screenshot_storage_path || null,
         analyzedAt: result.analyzed_at || new Date().toISOString(),
         createdAt: new Date().toISOString()
       });
@@ -41,7 +42,14 @@
     },
     async deleteAnalysis(id) {
       const { fb, user } = await currentUser();
-      await fb.deleteDoc(fb.doc(fb.db, 'users', user.uid, 'analyses', id));
+      const ref = fb.doc(fb.db, 'users', user.uid, 'analyses', id);
+      const snapshot = await fb.getDoc(ref);
+      const data = snapshot.exists() ? snapshot.data() : {};
+      if (data.screenshotStoragePath) {
+        try { await fb.deleteObject(fb.ref(fb.storage, data.screenshotStoragePath)); }
+        catch (error) { console.warn('Screenshot cleanup failed:', error); }
+      }
+      await fb.deleteDoc(ref);
     },
     async settings() {
       const { fb, user } = await currentUser();

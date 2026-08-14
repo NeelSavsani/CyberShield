@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from uuid import uuid4
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
@@ -13,6 +14,60 @@ router = APIRouter(
     prefix="/analyze",
     tags=["URL Analyzer"]
 )
+
+# Jobs live in the API process while a scan is running. The result is returned
+# by polling, so leaving dashboard.html no longer cancels the browser work.
+_jobs: dict[str, dict] = {}
+
+
+async def _run_job(job_id: str, worker, *args):
+    _jobs[job_id]["status"] = "running"
+    try:
+        result = await worker(*args)
+        _jobs[job_id].update(status="complete", result=result.model_dump(mode="json") if hasattr(result, "model_dump") else result)
+    except Exception as error:
+        _jobs[job_id].update(status="failed", error=str(error))
+
+
+def _new_job(worker, *args) -> str:
+    job_id = str(uuid4())
+    _jobs[job_id] = {"status": "queued", "result": None, "error": None}
+    asyncio.create_task(_run_job(job_id, worker, *args))
+    return job_id
+
+
+async def _url_worker(url: str):
+    return await asyncio.to_thread(_analyze_on_worker_loop, url)
+
+
+async def _text_worker(text: str):
+    # Reuse the same text pipeline as the synchronous endpoint.
+    text_result = TextAnalyzer().analyze(text)
+    if not text_result["success"]:
+        raise ValueError(text_result["error"])
+    urls = text_result.get("urls_found", [])[:3]
+    results = await asyncio.gather(*(_url_worker(url) for url in urls), return_exceptions=True)
+    url_analyses = {}
+    max_probability = text_result["phishing_probability"]
+    final_risk = text_result["risk"]
+    for url, result in zip(urls, results):
+        if isinstance(result, Exception):
+            url_analyses[url] = {"success": False, "risk": "Unknown", "message": str(result)}
+            continue
+        data = result.model_dump(mode="json")
+        url_analyses[url] = data
+        probability = data.get("phishing_probability") or 0
+        if probability > max_probability:
+            max_probability, final_risk = probability, data.get("risk", final_risk)
+    text_result["phishing_probability"] = max_probability
+    text_result["risk"] = final_risk
+    return TextAnalysisResponse(success=True, text=text, phishing_probability=max_probability, risk=final_risk, data={"indicators": text_result["indicators"], "features": text_result["features"], "urls_found": text_result["urls_found"], "url_analyses": url_analyses, "classification": {"model_version": "text-heuristics-v1", "contributors": text_result["indicators"]}})
+
+
+async def _qr_worker(url: str, filename: str | None):
+    result = await _url_worker(url)
+    result.data["qr"] = {"decoded_value": url, "filename": filename}
+    return result
 
 
 def _analyze_on_worker_loop(url: str) -> AnalysisResponse:
@@ -131,3 +186,38 @@ async def analyze_text(request: TextAnalysisRequest):
         raise
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"Text analysis failed: {error}") from error
+
+
+@router.post("/jobs/url", status_code=202)
+async def start_url_job(request: URLRequest):
+    job_id = _new_job(_url_worker, request.url)
+    return {"job_id": job_id, "status": "queued"}
+
+
+@router.post("/jobs/text", status_code=202)
+async def start_text_job(request: TextAnalysisRequest):
+    job_id = _new_job(_text_worker, request.text)
+    return {"job_id": job_id, "status": "queued"}
+
+
+@router.post("/jobs/qr", status_code=202)
+async def start_qr_job(image: UploadFile = File(...)):
+    if image.content_type not in {"image/png", "image/jpeg", "image/webp"}:
+        raise HTTPException(status_code=415, detail="Upload a PNG, JPEG, or WebP QR code image.")
+    try:
+        decoded_url = decode_qr_image(await image.read())
+        filename = image.filename
+    except QRDecodeError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    finally:
+        await image.close()
+    job_id = _new_job(_qr_worker, decoded_url, filename)
+    return {"job_id": job_id, "status": "queued"}
+
+
+@router.get("/jobs/{job_id}")
+async def get_job(job_id: str):
+    job = _jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Analysis job not found.")
+    return {"job_id": job_id, **job}

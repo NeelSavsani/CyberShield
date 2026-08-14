@@ -23,6 +23,55 @@ const screenshotUrl = path => {
   return `${ANALYZER_API}/${cleanPath.startsWith('reports/') ? cleanPath : `reports/${cleanPath}`}`;
 };
 
+async function runBackgroundJob(path, options, metadata) {
+  const response = await fetch(`${ANALYZER_API}${path}`, { ...options, keepalive: true });
+  const start = await response.json();
+  if (!response.ok || !start.job_id) throw new Error(start.detail || 'Could not start analysis.');
+  localStorage.setItem('cs_active_job', JSON.stringify({ jobId: start.job_id, ...metadata }));
+  while (true) {
+    const statusResponse = await fetch(`${ANALYZER_API}/analyze/jobs/${start.job_id}`);
+    const status = await statusResponse.json();
+    if (status.status === 'complete') {
+      localStorage.removeItem('cs_active_job');
+      return status.result;
+    }
+    if (status.status === 'failed') {
+      localStorage.removeItem('cs_active_job');
+      throw new Error(status.error || 'Analysis failed.');
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+
+async function resumeActiveJob() {
+  const raw = localStorage.getItem('cs_active_job');
+  if (!raw) return;
+  const active = JSON.parse(raw);
+  try {
+    showToast('An analysis is still running in the background.', 'info');
+    let status;
+    do {
+      const response = await fetch(`${ANALYZER_API}/analyze/jobs/${active.jobId}`);
+      status = await response.json();
+      if (status.status === 'queued' || status.status === 'running') await new Promise(resolve => setTimeout(resolve, 1000));
+    } while (status.status === 'queued' || status.status === 'running');
+    if (status.status !== 'complete') throw new Error(status.error || 'Analysis failed.');
+    const body = status.result;
+    const content = active.inputType === 'qr' ? (body.data?.browser?.final_url || body.normalized_url || body.data?.qr?.decoded_value || active.content) : active.content;
+    const result = active.inputType === 'email' ? normalizeTextResult(body, content) : normalizeResult(body, content);
+    result.input_type = active.inputType;
+    result.analysis_id = await saveAnalysis(result, content);
+    sessionStorage.setItem('cs_result', JSON.stringify(result));
+    sessionStorage.setItem('cs_result_source', 'dashboard');
+    localStorage.removeItem('cs_active_job');
+    await refreshHistory();
+    showToast('Background analysis completed.', 'success');
+  } catch (error) {
+    localStorage.removeItem('cs_active_job');
+    showToast(error.message || 'Background analysis failed.', 'error');
+  }
+}
+
 function normalizeResult(response, content) {
   const score = Math.round(response.phishing_probability || 0);
   const verdict = score >= 70 ? 'phishing' : score >= 40 ? 'suspicious' : 'safe';
@@ -34,6 +83,7 @@ function normalizeResult(response, content) {
     content,
     analyzed_at: new Date().toISOString(),
     screenshot_url: screenshotUrl(response.data?.browser?.screenshot),
+    screenshot_storage_path: response.data?.browser?.screenshot_storage_path || null,
     indicators: contributors.map(item => ({
       text: item.reason || 'Risk signal detected',
       level: item.impact === 'high' ? 'red' : item.impact === 'medium' ? 'amber' : 'green'
@@ -51,6 +101,7 @@ function normalizeTextResult(response, content) {
     content,
     analyzed_at: new Date().toISOString(),
     screenshot_url: null,
+    screenshot_storage_path: null,
     indicators: (response.data?.indicators || []).map(item => ({
       text: item.reason || 'Risk signal detected',
       level: item.impact === 'high' ? 'red' : item.impact === 'medium' ? 'amber' : 'green'
@@ -165,6 +216,7 @@ async function saveAnalysis(result, content) {
     indicators: result.indicators || [],
     features: result.features || {},
     screenshotUrl: result.screenshot_url || null,
+    screenshotStoragePath: result.screenshot_storage_path || null,
     analyzedAt: result.analyzed_at,
     createdAt: new Date().toISOString()
   };
@@ -177,7 +229,7 @@ async function saveAnalysis(result, content) {
 function viewResult(id) {
   const item = history.find(entry => entry.id === id);
   if (!item) return;
-  sessionStorage.setItem('cs_result', JSON.stringify({ risk_score: item.riskScore, verdict: item.verdict, indicators: item.indicators, input_type: item.inputType, content: item.content, analyzed_at: item.analyzedAt, features: item.features || {}, screenshot_url: item.screenshotUrl || null, analysis_id: item.id }));
+  sessionStorage.setItem('cs_result', JSON.stringify({ risk_score: item.riskScore, verdict: item.verdict, indicators: item.indicators, input_type: item.inputType, content: item.content, analyzed_at: item.analyzedAt, features: item.features || {}, screenshot_url: item.screenshotUrl || null, screenshot_storage_path: item.screenshotStoragePath || null, analysis_id: item.id }));
   sessionStorage.setItem('cs_result_source', 'dashboard');
   location.href = 'result.html';
 }
@@ -189,9 +241,8 @@ async function analyzeUrl() {
   setLoading(true);
   startProgress();
   try {
-    const response = await fetch(`${ANALYZER_API}/analyze`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: content }) });
-    const body = await response.json();
-    if (!response.ok || !body.success || body.exists === false) {
+    const body = await runBackgroundJob('/analyze/jobs/url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: content }) }, { inputType: 'url', content });
+    if (!body.success || body.exists === false) {
       throw new Error(body.exists === false ? 'URL not found.' : body.detail || body.message || 'Analysis failed.');
     }
     const result = normalizeResult(body, content);
@@ -220,11 +271,8 @@ async function analyzeQr() {
   try {
     const formData = new FormData();
     formData.append('image', file);
-    const response = await fetch(`${ANALYZER_API}/analyze/qr`, { method: 'POST', body: formData });
-    const body = await response.json();
-    if (!response.ok || !body.success || body.exists === false) {
-      throw new Error(body.detail || body.message || 'QR code analysis failed.');
-    }
+    const body = await runBackgroundJob('/analyze/jobs/qr', { method: 'POST', body: formData }, { inputType: 'qr', content: file.name });
+    if (!body.success || body.exists === false) throw new Error(body.message || 'QR code analysis failed.');
     const decodedUrl = body.data?.qr?.decoded_value;
     if (!decodedUrl) throw new Error('The QR code was decoded, but no website URL was returned.');
     // A QR often points at a short-link service. Show and save the final page
@@ -263,9 +311,7 @@ async function analyzeEmail() {
   byId('email-btn-label').textContent = 'Analyzing…';
   startProgress();
   try {
-    const response = await fetch(`${ANALYZER_API}/analyze/text`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: content }) });
-    const body = await response.json();
-    if (!response.ok || !body.success) throw new Error(body.detail || body.message || 'Text analysis failed.');
+    const body = await runBackgroundJob('/analyze/jobs/text', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: content }) }, { inputType: 'email', content });
     const result = normalizeTextResult(body, content);
     result.analysis_id = await saveAnalysis(result, content);
     sessionStorage.setItem('cs_result', JSON.stringify(result));
@@ -362,4 +408,4 @@ byId('clear-history-btn')?.addEventListener('click', async () => {
   else await Promise.all(history.map(item => window.csFirebase.deleteAnalysis(item.id)));
   await refreshHistory();
 });
-refreshHistory().catch(error => showToast(error.message, 'error'));
+resumeActiveJob().finally(() => refreshHistory().catch(error => showToast(error.message, 'error')));

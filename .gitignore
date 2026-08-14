@@ -1,0 +1,13 @@
+# Local secrets and environment configuration
+.env
+backend/.env
+backend/*service-account*.json
+backend/secrets/
+
+# Python/runtime files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local analysis output
+backend/reports/screenshots/

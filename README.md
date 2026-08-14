@@ -96,3 +96,48 @@ The response includes raw evidence under `data`, model-ready values under
 Add opt-in reputation providers (Google Safe Browsing, VirusTotal, OpenPhish,
 and URLhaus), store labelled feature rows, train a versioned model, and measure
 precision/recall before enabling automated blocking.
+
+## Screenshot storage
+
+Browser captures are uploaded to Firebase Cloud Storage when the backend has
+both Firebase Admin credentials and a bucket configured. Set these variables
+before starting uvicorn:
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT = "secrets/cybershield-service-account.json"
+$env:FIREBASE_STORAGE_BUCKET = "your-project.firebasestorage.app"
+```
+
+Successful uploads remove the temporary file from `backend/reports/screenshots`
+and save the Storage URL/path with the analysis. If an analysis is deleted,
+the associated Storage object is deleted as well. Without these variables the
+local reports directory remains an intentional development fallback.
+
+## Team Firebase setup
+
+`backend/.env` and `backend/secrets/` are intentionally local and are not
+committed. Never commit a service-account JSON file to Git. Each developer
+should place their own Firebase service-account file at:
+
+```text
+backend/secrets/cybershield-service-account.json
+```
+
+The existing local configuration already points there:
+
+```env
+FIREBASE_SERVICE_ACCOUNT=secrets/cybershield-service-account.json
+FIREBASE_STORAGE_BUCKET=cybershield-5494d.firebasestorage.app
+```
+
+Then start the backend from the `backend` directory:
+
+```powershell
+uvicorn app.main:app --reload
+```
+
+For deployment, configure these as encrypted environment/secrets in the host
+(for example, a JSON secret value or mounted secret file). Admin operations
+such as changing roles require the backend to have Firebase Admin credentials;
+ordinary URL analysis and frontend Firestore use do not require teammates to
+share your credential.

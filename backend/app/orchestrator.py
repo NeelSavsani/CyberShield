@@ -182,6 +182,7 @@ async def analyze_url(url: str) -> AnalysisResponse:
                 "network_request_count": len(browser_session.network_requests),
                 "network_response_count": len(browser_session.network_responses),
                 "screenshot": browser_session.screenshot_path,
+                "screenshot_storage_path": browser_session.screenshot_storage_path,
                 "browser_error": browser_session.error,
             }
 

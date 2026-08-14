@@ -117,12 +117,23 @@ function renderResult(result) {
 
   const overview = document.getElementById('content-overview');
   const screenshotEl = document.getElementById('content-screenshot');
+  const overviewNote = overview.querySelector('.content-overview-note');
   if (screenshot) {
     screenshotEl.src = screenshot;
-    screenshotEl.onerror = () => { overview.hidden = true; };
+    screenshotEl.onerror = () => {
+      // Keep the evidence section visible when a remote/local image expires
+      // or is blocked by a storage rule. Hiding the whole panel made a valid
+      // analysis look as if it contained no page evidence.
+      screenshotEl.hidden = true;
+      if (overviewNote) overviewNote.textContent = 'The analysis completed, but the page preview is currently unavailable.';
+    };
+    screenshotEl.hidden = false;
+    if (overviewNote) overviewNote.textContent = 'This preview is captured in CyberShield’s isolated browser session.';
     overview.hidden = false;
   } else {
-    overview.hidden = true;
+    screenshotEl.hidden = true;
+    if (overviewNote) overviewNote.textContent = 'The browser did not return a screenshot for this analysis.';
+    overview.hidden = false;
   }
 
   // ── Recommendation ──────────────────────────────────────────

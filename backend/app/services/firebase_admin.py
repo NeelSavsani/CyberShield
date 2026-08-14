@@ -10,4 +10,7 @@ def get_firebase_app():
         return firebase_admin.get_app()
     if not settings.firebase_service_account:
         raise RuntimeError("FIREBASE_SERVICE_ACCOUNT is not configured on the backend.")
-    return firebase_admin.initialize_app(credentials.Certificate(str(settings.firebase_service_account)))
+    options = {}
+    if settings.firebase_storage_bucket:
+        options["storageBucket"] = settings.firebase_storage_bucket
+    return firebase_admin.initialize_app(credentials.Certificate(str(settings.firebase_service_account)), options or None)

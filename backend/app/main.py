@@ -1,6 +1,7 @@
 import asyncio
 import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(
@@ -68,7 +69,9 @@ app.add_middleware(
 app.include_router(analyzer_router)
 app.include_router(platform_router)
 app.include_router(admin_router)
-app.mount("/reports", StaticFiles(directory="reports"), name="reports")
+REPORTS_DIR = Path(__file__).resolve().parents[1] / "reports"
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/reports", StaticFiles(directory=str(REPORTS_DIR)), name="reports")
 
 
 @app.get("/", tags=["System"])

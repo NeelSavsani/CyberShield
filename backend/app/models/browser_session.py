@@ -50,6 +50,7 @@ class BrowserSession:
     # ----------------------------------------------------
 
     screenshot_path: str | None = None
+    screenshot_storage_path: str | None = None
     screenshot_bytes: bytes | None = None
 
     # ----------------------------------------------------

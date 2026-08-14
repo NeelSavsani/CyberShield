@@ -18,6 +18,7 @@ router = APIRouter(
 # Jobs live in the API process while a scan is running. The result is returned
 # by polling, so leaving dashboard.html no longer cancels the browser work.
 _jobs: dict[str, dict] = {}
+_job_tasks: dict[str, asyncio.Task] = {}
 JOB_TIMEOUT_SECONDS = 15 * 60
 
 
@@ -28,12 +29,14 @@ async def _run_job(job_id: str, worker, *args):
         _jobs[job_id].update(status="complete", result=result.model_dump(mode="json") if hasattr(result, "model_dump") else result)
     except Exception as error:
         _jobs[job_id].update(status="failed", error=str(error))
+    finally:
+        _job_tasks.pop(job_id, None)
 
 
 def _new_job(worker, *args) -> str:
     job_id = str(uuid4())
     _jobs[job_id] = {"status": "queued", "result": None, "error": None}
-    asyncio.create_task(_run_job(job_id, worker, *args))
+    _job_tasks[job_id] = asyncio.create_task(_run_job(job_id, worker, *args))
     return job_id
 
 
@@ -222,3 +225,15 @@ async def get_job(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail="Analysis job not found.")
     return {"job_id": job_id, **job}
+
+
+@router.post("/jobs/{job_id}/cancel")
+async def cancel_job(job_id: str):
+    job = _jobs.get(job_id)
+    if not job:
+        return {"job_id": job_id, "status": "cancelled"}
+    task = _job_tasks.get(job_id)
+    if task and not task.done():
+        task.cancel()
+    job.update(status="cancelled", error="Analysis cancelled by the user.")
+    return {"job_id": job_id, "status": "cancelled"}

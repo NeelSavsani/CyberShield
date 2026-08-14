@@ -1,5 +1,6 @@
 /* Dashboard UI backed by the supplied Firebase project and this URL analyzer. */
 const ANALYZER_API = 'http://127.0.0.1:8000';
+window.CYBERSHIELD_ANALYZER_API = ANALYZER_API;
 let history = [];
 const isGuest = () => localStorage.getItem('cs_guest') === 'true';
 const guestHistoryKey = 'cs_guest_analyses';
@@ -10,6 +11,46 @@ const analysisStages = [
   'Rendering page in a secure browser', 'Inspecting page content, scripts and forms', 'Calculating risk score'
 ];
 let progressTimer;
+
+// Cancel a server-side job during a real page unload. sendBeacon is used so
+// the request can still reach FastAPI while the browser is refreshing or
+// closing the page.
+function cancelActiveJob() {
+  const raw = localStorage.getItem('cs_active_job');
+  if (!raw) return;
+  try {
+    const active = JSON.parse(raw);
+    if (active.jobId) {
+      // text/plain keeps this a simple CORS request (no unload-time
+      // preflight), while the endpoint does not require a request body.
+      const payload = new Blob(['{}'], { type: 'text/plain;charset=UTF-8' });
+      navigator.sendBeacon?.(`${ANALYZER_API}/analyze/jobs/${encodeURIComponent(active.jobId)}/cancel`, payload);
+    }
+  } catch (_) {
+    // Ignore malformed/stale local state during unload.
+  }
+  localStorage.removeItem('cs_active_job');
+}
+window.csCancelActiveJob = cancelActiveJob;
+
+// Internal links should preserve a running analysis. A reload/refresh has no
+// navigation intent, so it cancels the job instead.
+sessionStorage.removeItem('cs_navigation_intent');
+document.addEventListener('click', event => {
+  const link = event.target.closest?.('a[href]');
+  if (!link || link.hasAttribute('data-logout') || link.target === '_blank') return;
+  try {
+    const url = new URL(link.href, window.location.href);
+    if (url.origin === window.location.origin) sessionStorage.setItem('cs_navigation_intent', 'true');
+  } catch (_) {}
+});
+window.addEventListener('beforeunload', () => {
+  if (sessionStorage.getItem('cs_navigation_intent') === 'true') {
+    sessionStorage.removeItem('cs_navigation_intent');
+    return;
+  }
+  cancelActiveJob();
+});
 
 const byId = id => document.getElementById(id);
 const escapeHtml = value => { const el = document.createElement('div'); el.textContent = value ?? ''; return el.innerHTML; };

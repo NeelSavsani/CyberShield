@@ -187,6 +187,22 @@ function updateAdminNavigation(isAdmin, page) {
 // ── Set user info in sidebar ─────────────────────────────────
 document.querySelectorAll('[data-logout]').forEach(link => link.addEventListener('click', async event => {
   event.preventDefault();
+  // If an analysis is running on another page, cancel it before signing out.
+  if (typeof window.csCancelActiveJob === 'function') {
+    window.csCancelActiveJob();
+  } else {
+    // main.js is shared by every page, including pages that do not load
+    // dashboard.js. Keep this unload-safe and avoid a normal fetch here.
+    try {
+      const raw = localStorage.getItem('cs_active_job');
+      const active = raw && JSON.parse(raw);
+      if (active?.jobId) {
+        const payload = new Blob(['{}'], { type: 'text/plain;charset=UTF-8' });
+        navigator.sendBeacon?.(`http://127.0.0.1:8000/analyze/jobs/${encodeURIComponent(active.jobId)}/cancel`, payload);
+      }
+    } catch (_) {}
+    localStorage.removeItem('cs_active_job');
+  }
   localStorage.removeItem('cs_guest');
   const fb = await window.firebaseReady;
   await fb.signOut(fb.auth);

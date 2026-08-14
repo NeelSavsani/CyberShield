@@ -43,7 +43,21 @@ async def ensure_safe_analysis_target(url: str) -> list[str]:
     if parsed.scheme not in {"http", "https"} or not hostname:
         raise UnsafeTargetError("Only complete HTTP and HTTPS URLs can be analyzed.")
 
-    if hostname.lower() == "localhost" or hostname.lower().endswith(".localhost"):
+    # Credentials in a scan URL can leak secrets to logs, redirects, or the
+    # browser session.  They are not needed for public-site analysis.
+    if parsed.username is not None or parsed.password is not None:
+        raise UnsafeTargetError("URLs containing embedded credentials cannot be analyzed.")
+
+    # Reject malformed/unsafe ports before any network client sees the URL.
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise UnsafeTargetError("The URL contains an invalid port.") from exc
+    if port is not None and not (1 <= port <= 65535):
+        raise UnsafeTargetError("The URL contains an invalid port.")
+
+    hostname = hostname.rstrip(".").lower()
+    if hostname == "localhost" or hostname.endswith(".localhost") or hostname.endswith(".local"):
         raise UnsafeTargetError("CyberShield does not analyze localhost targets.")
 
     try:

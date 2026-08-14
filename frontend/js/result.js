@@ -118,7 +118,12 @@ function renderResult(result) {
   const overview = document.getElementById('content-overview');
   const screenshotEl = document.getElementById('content-screenshot');
   const overviewNote = overview.querySelector('.content-overview-note');
-  if (screenshot) {
+  // Website screenshots are evidence for URL and QR scans only. Text/email
+  // analyses do not open a browser, so do not show an empty screenshot card.
+  const supportsScreenshot = inputType === 'url' || inputType === 'qr';
+  if (!supportsScreenshot) {
+    overview.hidden = true;
+  } else if (screenshot) {
     screenshotEl.src = screenshot;
     screenshotEl.onerror = () => {
       // Keep the evidence section visible when a remote/local image expires

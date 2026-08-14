@@ -135,6 +135,18 @@
     </div>
   </div>
 
+  <div class="crop-modal" id="crop-modal" hidden>
+    <div class="crop-backdrop" data-close-crop></div>
+    <div class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+      <button class="crop-close" type="button" data-close-crop aria-label="Close crop editor"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="crop-title">Adjust profile photo</h2>
+      <p>Drag the image to position it and use the slider to zoom.</p>
+      <canvas id="crop-canvas" width="320" height="320"></canvas>
+      <label class="zoom-control" for="crop-zoom"><i class="fa-solid fa-magnifying-glass-minus"></i><input id="crop-zoom" type="range" min="1" max="3" step="0.01" value="1"><i class="fa-solid fa-magnifying-glass-plus"></i></label>
+      <div class="crop-actions"><button type="button" class="action-btn" data-close-crop>Cancel</button><button type="button" class="action-btn crop-save-btn" id="crop-save-btn">Use photo</button></div>
+    </div>
+  </div>
+
   <script src="js/firebase.js"></script>
   <script src="js/firebase-data.js"></script>
   <script src="js/main.js"></script>

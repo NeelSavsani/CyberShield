@@ -120,6 +120,21 @@
 .avatar-upload-btn { position:absolute; right:-5px; bottom:-4px; width:25px; height:25px; border-radius:50%; display:grid; place-items:center; background:var(--cyan); color:white; border:3px solid var(--white); cursor:pointer; font-size:11px; }
 .avatar-upload-btn:hover { filter:brightness(1.08); }
 .avatar-actions { display:flex; align-items:center; gap:12px; margin-top:14px; }
+.avatar-actions .action-btn, .crop-actions .action-btn { border:1px solid var(--border); border-radius:7px; padding:7px 12px; background:var(--white); color:var(--navy); cursor:pointer; font:600 12px var(--font-body); }
+.avatar-actions .action-btn:hover, .crop-actions .action-btn:hover { border-color:var(--cyan); color:var(--cyan-dim); }
+.crop-save-btn { background:var(--navy) !important; color:white !important; border-color:var(--navy) !important; }
+.crop-modal[hidden] { display:none; }
+.crop-modal { position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:20px; }
+.crop-backdrop { position:absolute; inset:0; background:rgba(15,23,42,.6); }
+.crop-dialog { position:relative; z-index:1; width:min(400px,100%); background:var(--white); color:var(--slate); border-radius:16px; padding:24px; box-shadow:0 24px 70px rgba(15,23,42,.3); text-align:center; }
+.crop-close { position:absolute; top:10px; right:12px; border:0; background:transparent; color:var(--gray); cursor:pointer; font-size:18px; }
+.crop-dialog h2 { margin:0 0 6px; color:var(--navy); font-family:var(--font-head); font-size:20px; }
+.crop-dialog p { margin:0 0 16px; color:var(--gray); font-size:13px; }
+#crop-canvas { width:320px; height:320px; max-width:100%; border-radius:50%; background:#e8eef3; cursor:grab; touch-action:none; }
+#crop-canvas:active { cursor:grabbing; }
+.zoom-control { display:flex; align-items:center; gap:10px; margin:18px 4px 12px; color:var(--gray); }
+.zoom-control input { flex:1; accent-color:var(--cyan); }
+.crop-actions { display:flex; justify-content:flex-end; gap:10px; }
 .profile-name { font-family: var(--font-head); font-size: 19px; font-weight: 700; color: var(--navy); }
 .profile-email { font-size: 13px; color: var(--gray); }
 .profile-role-badge { margin-top: 4px; }

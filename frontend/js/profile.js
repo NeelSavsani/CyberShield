@@ -3,6 +3,12 @@ const alertOk = document.getElementById('alert-success');
 const alertErr = document.getElementById('alert-error');
 function showAlert(el, message) { [alertOk, alertErr].forEach(item => item.classList.remove('show')); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 4000); }
 let profilePhotoData = null;
+let cropImage = null;
+let cropScale = 1;
+let cropOffsetX = 0;
+let cropOffsetY = 0;
+let cropDragging = false;
+let cropDragStart = null;
 function paintAvatar(element, photo, fallback) {
   if (!element) return;
   element.replaceChildren();
@@ -38,22 +44,41 @@ document.getElementById('avatar-input')?.addEventListener('change', event => {
     return showAlert(alertErr, 'Choose a PNG, JPG, or WebP image smaller than 2 MB.');
   }
   const reader = new FileReader();
-  reader.onload = () => {
-    const image = new Image();
-    image.onload = () => {
-      const size = 256;
-      const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size;
-      const context = canvas.getContext('2d');
-      const scale = Math.max(size / image.width, size / image.height);
-      const width = image.width * scale; const height = image.height * scale;
-      context.drawImage(image, (size - width) / 2, (size - height) / 2, width, height);
-      profilePhotoData = canvas.toDataURL('image/jpeg', 0.82);
-      paintAvatar(document.getElementById('profile-avatar'), profilePhotoData, 'U');
-      showAlert(alertOk, 'Photo selected. Save your profile to apply it.');
-    };
-    image.src = reader.result;
-  };
+  reader.onload = () => { cropImage = new Image(); cropImage.onload = openCropEditor; cropImage.src = reader.result; };
   reader.readAsDataURL(file);
+});
+
+function drawCropPreview() {
+  const canvas = document.getElementById('crop-canvas'); if (!canvas || !cropImage) return;
+  const context = canvas.getContext('2d'); const size = canvas.width;
+  context.clearRect(0, 0, size, size); context.fillStyle = '#e8eef3'; context.fillRect(0, 0, size, size);
+  const base = Math.max(size / cropImage.width, size / cropImage.height);
+  const width = cropImage.width * base * cropScale; const height = cropImage.height * base * cropScale;
+  context.drawImage(cropImage, (size - width) / 2 + cropOffsetX, (size - height) / 2 + cropOffsetY, width, height);
+}
+function openCropEditor() {
+  cropScale = 1; cropOffsetX = 0; cropOffsetY = 0;
+  document.getElementById('crop-zoom').value = '1'; document.getElementById('crop-modal').hidden = false; drawCropPreview();
+}
+function closeCropEditor() { document.getElementById('crop-modal').hidden = true; cropImage = null; document.getElementById('avatar-input').value = ''; }
+document.getElementById('crop-zoom')?.addEventListener('input', event => { cropScale = Number(event.target.value); drawCropPreview(); });
+document.getElementById('crop-canvas')?.addEventListener('pointerdown', event => { cropDragging = true; cropDragStart = { x:event.clientX, y:event.clientY, ox:cropOffsetX, oy:cropOffsetY }; event.currentTarget.setPointerCapture(event.pointerId); });
+document.getElementById('crop-canvas')?.addEventListener('pointermove', event => {
+  if (!cropDragging || !cropImage) return;
+  const size = 320; const base = Math.max(size / cropImage.width, size / cropImage.height);
+  const width = cropImage.width * base * cropScale; const height = cropImage.height * base * cropScale;
+  const maxX = Math.max(0, (width - size) / 2); const maxY = Math.max(0, (height - size) / 2);
+  cropOffsetX = Math.max(-maxX, Math.min(maxX, cropDragStart.ox + event.clientX - cropDragStart.x));
+  cropOffsetY = Math.max(-maxY, Math.min(maxY, cropDragStart.oy + event.clientY - cropDragStart.y));
+  drawCropPreview();
+});
+document.getElementById('crop-canvas')?.addEventListener('pointerup', () => { cropDragging = false; });
+document.querySelectorAll('[data-close-crop]').forEach(button => button.addEventListener('click', closeCropEditor));
+document.getElementById('crop-save-btn')?.addEventListener('click', () => {
+  const canvas = document.getElementById('crop-canvas');
+  profilePhotoData = canvas.toDataURL('image/jpeg', 0.82);
+  paintAvatar(document.getElementById('profile-avatar'), profilePhotoData, 'U');
+  closeCropEditor(); showAlert(alertOk, 'Photo selected. Save your profile to apply it.');
 });
 
 document.getElementById('remove-avatar-btn')?.addEventListener('click', () => {

@@ -115,6 +115,32 @@
 .report-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
 .report-actions button:disabled { opacity:.65; cursor:wait; }
 
+html[data-theme="dark"] .recommendation.safe .rec-content h3 { color:#6EE7B7; }
+html[data-theme="dark"] .recommendation.warning .rec-content h3 { color:#FCD34D; }
+html[data-theme="dark"] .recommendation.danger .rec-content h3 { color:#FCA5A5; }
+html[data-theme="dark"] .recommendation.safe .rec-content p { color:#A7F3D0; }
+html[data-theme="dark"] .recommendation.warning .rec-content p { color:#FDE68A; }
+html[data-theme="dark"] .recommendation.danger .rec-content p { color:#FECACA; }
+html[data-theme="dark"] .red .indicator-text { color:#FCA5A5; }
+html[data-theme="dark"] .amber .indicator-text { color:#FCD34D; }
+html[data-theme="dark"] .green .indicator-text { color:#6EE7B7; }
+html[data-theme="dark"] .red .indicator-desc { color:#FCA5A5; }
+html[data-theme="dark"] .amber .indicator-desc { color:#FCD34D; }
+html[data-theme="dark"] .green .indicator-desc { color:#A7F3D0; }
+html[data-theme="dark"] .content-screenshot { background:#091629; }
+html[data-theme="dark"] .feature-info-dialog h2,
+html[data-theme="dark"] .report-dialog h2,
+html[data-theme="dark"] .report-options legend,
+html[data-theme="dark"] .report-reason-label { color:#F8FAFC; }
+html[data-theme="dark"] .verdict-banner.danger { background:linear-gradient(135deg,#641B24,#A82D35) !important; }
+html[data-theme="dark"] .verdict-banner.warning { background:linear-gradient(135deg,#684116,#A96E1C) !important; }
+html[data-theme="dark"] .verdict-banner.safe { background:linear-gradient(135deg,#064638,#087A57) !important; }
+html[data-theme="dark"] .verdict-text h1,
+html[data-theme="dark"] .verdict-text p,
+html[data-theme="dark"] .score-number,
+html[data-theme="dark"] .score-label { color:#F8FAFC !important; }
+html[data-theme="dark"] .score-circle { background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.35); }
+
 @media(max-width:660px) {
   .verdict-banner { padding: 22px; }
   .verdict-meta   { padding: 14px 22px; gap: 20px; }

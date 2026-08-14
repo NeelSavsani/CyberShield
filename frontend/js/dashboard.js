@@ -325,7 +325,7 @@ function viewResult(id) {
   const item = history.find(entry => entry.id === id);
   if (!item) return;
   sessionStorage.setItem('cs_result', JSON.stringify({ risk_score: item.riskScore, verdict: item.verdict, indicators: item.indicators, input_type: item.inputType, content: item.content, analyzed_at: item.analyzedAt, features: item.features || {}, screenshot_url: item.screenshotUrl || null, screenshot_storage_path: item.screenshotStoragePath || null, analysis_id: item.id }));
-  sessionStorage.setItem('cs_result_source', 'dashboard');
+  sessionStorage.setItem('cs_result_source', 'history');
   location.href = 'result.html';
 }
 

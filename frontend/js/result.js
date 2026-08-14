@@ -42,15 +42,23 @@ function openFeatureInfo(key, value) {
 
 function closeFeatureInfo() { document.getElementById('feature-info-modal').hidden = true; }
 
-// Short, non-verbal result notification. Web Audio keeps this lightweight
-// and avoids shipping an additional audio asset; browsers may still suppress
-// it when the result page was opened without a user gesture.
-function playResultNotification(result) {
+// Play a notification only for a freshly completed analysis.  Existing
+// history/dashboard rows set their source to "history" and must stay silent.
+function playResultNotification(result, source) {
+  if (source !== 'dashboard') return;
   if (result.verdict !== 'safe' && result.verdict !== 'phishing') return;
   const key = `cs_result_sound:${result.analysis_id || result.analyzed_at || result.content || 'current'}`;
   if (sessionStorage.getItem(key)) return;
   sessionStorage.setItem(key, '1');
   try {
+    if (result.verdict === 'safe') {
+      const audio = new Audio('assets/mabinogi_success.mp3');
+      audio.volume = 0.65;
+      audio.play().catch(() => {});
+      return;
+    }
+
+    // Keep the non-verbal danger tone for phishing results.
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
     const context = new AudioContextClass();
@@ -111,7 +119,7 @@ function renderResult(result) {
     emoji.innerHTML   = '<i class="fa-solid fa-bell"></i>';
     title.textContent   = 'Phishing Detected';
     subtitle.textContent= 'This content shows strong signs of being a phishing attempt.';
-    bar.style.background= '#DC2626';
+    bar.style.background= document.documentElement.dataset.theme === 'dark' ? '#B83B43' : '#DC2626';
   } else if (verdict === 'suspicious') {
     banner.className = 'verdict-banner warning';
     emoji.innerHTML   = '<i class="fa-solid fa-triangle-exclamation"></i>';
@@ -381,7 +389,7 @@ if (resultSource === 'history') {
 if (resultRaw) {
   const result = JSON.parse(resultRaw);
   renderResult(result);
-  playResultNotification(result);
+  playResultNotification(result, resultSource);
 } else {
   // Demo result shown if page is opened directly
   const demoResult = {
@@ -403,5 +411,5 @@ if (resultRaw) {
     }
   };
   renderResult(demoResult);
-  playResultNotification(demoResult);
+  // Directly opening result.html is not an analysis completion, so remain silent.
 }

@@ -48,6 +48,9 @@ class BrowserManager:
                 "--disable-blink-features=AutomationControlled",
                 "--disable-dev-shm-usage",
                 "--no-sandbox",
+                "--disable-gpu",
+                "--disable-extensions",
+                "--disable-background-networking",
             ],
         )
 

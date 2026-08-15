@@ -20,6 +20,10 @@ router = APIRouter(
 _jobs: dict[str, dict] = {}
 _job_tasks: dict[str, asyncio.Task] = {}
 JOB_TIMEOUT_SECONDS = 15 * 60
+# Playwright/Chromium is memory intensive on small hosting instances. Keep
+# browser-backed scans serial so one request cannot start several Chromium
+# processes and exhaust the service's memory.
+_browser_scan_limit = asyncio.Semaphore(1)
 
 
 async def _run_job(job_id: str, worker, *args):
@@ -41,7 +45,8 @@ def _new_job(worker, *args) -> str:
 
 
 async def _url_worker(url: str):
-    return await asyncio.to_thread(_analyze_on_worker_loop, url)
+    async with _browser_scan_limit:
+        return await asyncio.to_thread(_analyze_on_worker_loop, url)
 
 
 async def _text_worker(text: str):

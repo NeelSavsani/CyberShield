@@ -90,3 +90,12 @@ tbody tr:hover td { background: var(--off-white); }
 .empty-state p { font-size: 14px; }
 
 @media(max-width:900px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+@media(max-width:660px) {
+  .result-header { align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .result-body { padding:14px; }
+  .file-drop { padding:24px 14px; }
+  .scan-row { flex-direction:column; }
+  .scan-row .action-btn-lg, .analyze-btn { width:100%; }
+  table { display:block; overflow-x:auto; white-space:nowrap; }
+}

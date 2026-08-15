@@ -145,4 +145,12 @@ html[data-theme="dark"] .score-circle { background:rgba(255,255,255,.10); border
   .verdict-banner { padding: 22px; }
   .verdict-meta   { padding: 14px 22px; gap: 20px; }
   .score-bar-section { padding: 12px 22px 4px; }
+  .verdict-banner { flex-direction:column; align-items:flex-start; gap:16px; }
+  .verdict-text h1 { font-size:24px; }
+  .verdict-text p { font-size:13px; }
+  .verdict-score { align-self:flex-end; }
+  .verdict-meta { display:grid; grid-template-columns:1fr; gap:12px; }
+  .content-screenshot { max-height:420px; }
+  .feature-table { display:block; overflow-x:auto; white-space:nowrap; }
+  .feature-table th, .feature-table td { white-space:nowrap; }
 }

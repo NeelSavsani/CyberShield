@@ -223,3 +223,21 @@ html.sidebar-collapsed .sidebar-toggle i { transform:rotate(180deg); }
   html.sidebar-mobile-open .sidebar { display:flex; width:min(280px,82vw); box-shadow:18px 0 42px rgba(2,8,23,.38); }
   html.sidebar-mobile-open .sidebar-backdrop { display:block; position:fixed; inset:0; z-index:49; background:rgba(2,8,23,.48); }
 }
+
+@media (max-width: 660px) {
+  .topbar { height:56px; padding:0 14px; }
+  .topbar-title { font-size:16px; }
+  .topbar-right { gap:6px; }
+  .topbar-btn { padding:7px 9px; }
+  .topbar-btn .btn-label, .topbar-right .greeting { display:none; }
+  .content { padding:14px; width:100%; min-width:0; }
+  .panel { border-radius:11px; margin-bottom:14px; }
+  .panel-header, .panel-body { padding-left:14px; padding-right:14px; }
+  .panel-header { gap:10px; flex-wrap:wrap; }
+  .tabs { padding:12px 14px 0; overflow-x:auto; white-space:nowrap; }
+  .tab { flex:0 0 auto; padding:8px 12px; }
+  .data-table, .feature-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .data-table th, .data-table td, .feature-table th, .feature-table td { white-space:nowrap; }
+  .actions-row { gap:8px; }
+  .action-btn-lg { min-height:42px; justify-content:center; }
+}

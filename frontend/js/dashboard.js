@@ -1,5 +1,5 @@
 /* Dashboard UI backed by the supplied Firebase project and this URL analyzer. */
-const ANALYZER_API = 'http://127.0.0.1:8000';
+const ANALYZER_API = localStorage.getItem('cybershield_api') || 'https://cybershield-api-pkqa.onrender.com';
 window.CYBERSHIELD_ANALYZER_API = ANALYZER_API;
 let history = [];
 const isGuest = () => localStorage.getItem('cs_guest') === 'true';

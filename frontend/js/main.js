@@ -218,7 +218,7 @@ document.querySelectorAll('[data-logout]').forEach(link => link.addEventListener
       const active = raw && JSON.parse(raw);
       if (active?.jobId) {
         const payload = new Blob(['{}'], { type: 'text/plain;charset=UTF-8' });
-        navigator.sendBeacon?.(`http://127.0.0.1:8000/analyze/jobs/${encodeURIComponent(active.jobId)}/cancel`, payload);
+        navigator.sendBeacon?.(`${localStorage.getItem('cybershield_api') || 'https://cybershield-api-pkqa.onrender.com'}/analyze/jobs/${encodeURIComponent(active.jobId)}/cancel`, payload);
       }
     } catch (_) {}
     localStorage.removeItem('cs_active_job');

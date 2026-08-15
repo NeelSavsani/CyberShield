@@ -103,7 +103,7 @@
   };
   let userPage = 1;
   const userPageSize = 10;
-  const ADMIN_API = 'http://127.0.0.1:8000';
+  const ADMIN_API = localStorage.getItem('cybershield_api') || 'https://cybershield-api-pkqa.onrender.com';
   window.renderUsers = users => {
     const totalPages = Math.max(1, Math.ceil(users.length / userPageSize));
     userPage = Math.min(userPage, totalPages);

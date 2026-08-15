@@ -28,7 +28,11 @@ async function loadProfile() {
     document.getElementById('profile-name').textContent = `${firstName} ${lastName}`.trim() || user.email;
     document.getElementById('profile-email').textContent = user.email;
     document.getElementById('profile-role').textContent = 'User';
-    profilePhotoData = data.photoDataUrl || null;
+    // Use the Firestore value as the source of truth, while falling back to
+    // the session cache so a tab switch never makes a recently saved avatar
+    // appear empty during a delayed read.
+    profilePhotoData = data.photoDataUrl || sessionStorage.getItem('cs_avatar') || null;
+    if (profilePhotoData) sessionStorage.setItem('cs_avatar', profilePhotoData);
     paintAvatar(document.getElementById('profile-avatar'), profilePhotoData, (firstName || user.email)[0].toUpperCase());
     document.getElementById('first_name').value = firstName;
     document.getElementById('last_name').value = lastName;

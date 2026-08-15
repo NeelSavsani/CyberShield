@@ -4,7 +4,14 @@
  * Handles: session check, user info in sidebar, greeting, theme toggle.
  */
 
-const API = 'http://localhost:5000';
+// Use the local FastAPI server during development and the deployed API when
+// the static frontend is hosted in production. A localStorage override is
+// useful for testing another backend without changing source files.
+const LOCAL_API = 'http://127.0.0.1:8000';
+const PRODUCTION_API = 'https://cybershield-api-docker.onrender.com';
+const API = window.CYBERSHIELD_API || localStorage.getItem('cybershield_api') ||
+  (['localhost', '127.0.0.1'].includes(window.location.hostname) ? LOCAL_API : PRODUCTION_API);
+window.CYBERSHIELD_API = API;
 
 function applySidebarAvatar(element, photo, fallback) {
   if (!element) return;
@@ -218,7 +225,7 @@ document.querySelectorAll('[data-logout]').forEach(link => link.addEventListener
       const active = raw && JSON.parse(raw);
       if (active?.jobId) {
         const payload = new Blob(['{}'], { type: 'text/plain;charset=UTF-8' });
-        navigator.sendBeacon?.(`${localStorage.getItem('cybershield_api') || 'https://cybershield-api-pkqa.onrender.com'}/analyze/jobs/${encodeURIComponent(active.jobId)}/cancel`, payload);
+        navigator.sendBeacon?.(`${API}/analyze/jobs/${encodeURIComponent(active.jobId)}/cancel`, payload);
       }
     } catch (_) {}
     localStorage.removeItem('cs_active_job');

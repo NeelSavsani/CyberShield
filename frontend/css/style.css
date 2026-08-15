@@ -6,10 +6,8 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Keep tabular data visually consistent across every page. */
-table tr > th,
-table tr > td { text-align: center !important; }
-table tr > th { text-align: center !important; }
+/* Tables use their page-specific alignment. Result content is intentionally
+   left aligned for readable URLs, text, and feature values. */
 
 :root {
   --navy:      #0B1E3D;

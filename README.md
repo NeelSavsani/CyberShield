@@ -27,13 +27,19 @@ CyberShield uses the explainable `evidence-baseline-v1` classifier by default.
 A trained model is opt-in only: set `CYBERSHIELD_USE_TRAINED_MODEL=true` after
 it has been validated on representative labelled phishing and benign data.
 
-## Run locally first time
+## Fresh zip quick start (Windows)
 
-```powershell
+These are the only commands a teammate needs after downloading the project.
+Use **Command Prompt** for the backend terminal because `rmdir /s /q` and
+`call` are Command Prompt syntax.
+
+### Terminal 1 — backend
+
+```bat
 cd backend
 rmdir /s /q venv
 py -3.12 -m venv venv
-.\venv\Scripts\activate
+call venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 pip install playwright
@@ -41,23 +47,27 @@ playwright install chromium
 uvicorn app.main:app --reload
 ```
 
-## Run locally after first time
-```powershell
-cd backend
-.\venv\Scripts\activate 
-uvicorn app.main:app --reload
-```
+Leave this terminal running. Then open a second terminal at the project root
+(`CyberShield`) for the frontend:
 
-In another terminal
 ```powershell
 python -m http.server 5173 --directory frontend
 ```
 
-Open browser and go to `http://localhost:5173/`
+Open `http://localhost:5173/` in the browser.
 
+If using PowerShell for Terminal 1, replace only the virtual-environment
+commands with:
 
-Then submit a URL to `POST /analyze` or use the interactive API at
-`http://127.0.0.1:8000/docs`.
+```powershell
+if (Test-Path venv) { Remove-Item -Recurse -Force venv }
+py -3.12 -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+Then run the remaining backend commands unchanged.
+
+You can also use the interactive API at `http://127.0.0.1:8000/docs`.
 
 ## QR code URL analysis
 
@@ -69,13 +79,7 @@ admission checks; support for non-web QR payloads is planned separately.
 
 The API endpoint is `POST /analyze/qr` with multipart form field `image`.
 
-In a second terminal, serve the multi-page dashboard:
-
-```powershell
-python -m http.server 5173 --directory frontend
-```
-
-Open `http://127.0.0.1:5173`. To enable VirusTotal or Google Safe Browsing,
+Use the frontend terminal from the quick-start section above. To enable VirusTotal or Google Safe Browsing,
 copy `backend/.env.example` to `backend/.env` and provide your own API keys.
 
 For a containerized local deployment, run `docker compose up --build` and open

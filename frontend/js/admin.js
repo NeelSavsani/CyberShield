@@ -19,15 +19,23 @@
     return Number.isNaN(ms) ? 0 : ms;
   };
   const escapeHtml = value => { const div = document.createElement('div'); div.textContent = value ?? ''; return div.innerHTML; };
-  const getUsers = async () => (await fb.getDocs(fb.collection(fb.db, 'users'))).docs.map(doc => ({
-    ...doc.data(),
-    docId: doc.id,
-    id: doc.id,
-    legacyId: doc.data().legacyId || doc.data().legacy_id || doc.data().id || null,
-    // Firebase Web exposes metadata for the currently signed-in account.
-    // Use it as a fallback until that user's next login writes lastLogin.
-    lastLogin: doc.id === user.uid ? (doc.data().lastLogin || user.metadata?.lastSignInTime || null) : doc.data().lastLogin
-  }));
+  const ADMIN_API = window.CYBERSHIELD_API || localStorage.getItem('cybershield_api') ||
+    (['localhost', '127.0.0.1'].includes(window.location.hostname)
+      ? 'http://127.0.0.1:8000'
+      : 'https://cybershield-api-docker.onrender.com');
+  const getUsers = async () => {
+    const currentUser = fb.auth.currentUser;
+    if (!currentUser) return [];
+    const authToken = await currentUser.getIdToken(true);
+    const response = await fetch(`${ADMIN_API}/admin/users`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(detail || `Unable to load users (${response.status})`);
+    }
+    return await response.json();
+  };
   const getAnalyses = async () => (await fb.getDocs(fb.query(fb.collectionGroup(fb.db, 'analyses'), fb.limit(200)))).docs.map(doc => {
     const data = doc.data();
     const owner = doc.ref.parent?.parent;
@@ -103,10 +111,6 @@
   };
   let userPage = 1;
   const userPageSize = 10;
-  const ADMIN_API = window.CYBERSHIELD_API || localStorage.getItem('cybershield_api') ||
-    (['localhost', '127.0.0.1'].includes(window.location.hostname)
-      ? 'http://127.0.0.1:8000'
-      : 'https://cybershield-api-docker.onrender.com');
   window.renderUsers = users => {
     const totalPages = Math.max(1, Math.ceil(users.length / userPageSize));
     userPage = Math.min(userPage, totalPages);
@@ -114,9 +118,8 @@
     const pageUsers = users.slice(start, start + userPageSize);
     const tbody = document.getElementById('users-table');
     tbody.innerHTML = pageUsers.length ? pageUsers.map((entry, index) => {
-      const isCurrentAdmin = entry.id === user.uid && token?.claims.admin === true;
       const label = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
-      const role = entry.role || (isCurrentAdmin ? 'admin' : 'user');
+      const role = entry.role === 'admin' ? 'admin' : 'user';
       return `<tr><td>${start + index + 1}</td><td><strong>${escapeHtml(label)}</strong></td><td>${escapeHtml(entry.email || '—')}</td><td><span class="badge ${role === 'admin' ? 'badge-purple' : 'badge-info'}">${role}</span></td><td><span class="badge badge-success">Active</span></td><td>${formatDate(entry.createdAt)}</td><td>${formatDate(entry.lastLogin || entry.last_login)}</td><td><button class="action-btn" data-role-user="${escapeHtml(entry.id)}" data-role="${role}">${role === 'admin' ? 'Remove admin' : 'Make admin'}</button> <button class="action-btn" data-view-user="${escapeHtml(entry.id)}">View scans</button> <button class="action-btn" data-copy-email="${escapeHtml(entry.email || '')}"><i class="fa-solid fa-copy"></i></button></td></tr>`;
     }).join('') : '<tr><td colspan="8" class="empty-state">No users found.</td></tr>';
     document.getElementById('user-pagination').innerHTML = `<span>Showing ${pageUsers.length ? start + 1 : 0}–${Math.min(start + pageUsers.length, users.length)} of ${users.length}</span><button ${userPage <= 1 ? 'disabled' : ''} onclick="userPageChange(${userPage - 1})">Previous</button><span>Page ${userPage} of ${totalPages}</span><button ${userPage >= totalPages ? 'disabled' : ''} onclick="userPageChange(${userPage + 1})">Next</button>`;
@@ -130,13 +133,13 @@
     const query = document.getElementById('user-search').value.toLowerCase();
     const roleFilter = document.getElementById('user-role-filter')?.value || '';
     const sort = document.getElementById('user-sort')?.value || 'registered_desc';
-    const list = allUsers.filter(entry => { const role = entry.role || (entry.id === user.uid && token?.claims.admin === true ? 'admin' : 'user'); return (!roleFilter || role === roleFilter) && `${entry.displayName || ''} ${entry.email || ''}`.toLowerCase().includes(query); });
+    const list = allUsers.filter(entry => { const role = entry.role === 'admin' ? 'admin' : 'user'; return (!roleFilter || role === roleFilter) && `${entry.displayName || ''} ${entry.email || ''}`.toLowerCase().includes(query); });
     list.sort((a, b) => { if (sort === 'role') return String(a.role || 'user').localeCompare(String(b.role || 'user')); const av = timestampMs(sort.startsWith('login') ? a.lastLogin : a.createdAt); const bv = timestampMs(sort.startsWith('login') ? b.lastLogin : b.createdAt); return sort.endsWith('asc') ? av - bv : bv - av; });
     window.renderUsers(list);
   };
   async function updateRole(uid, role) {
     if (uid === user.uid && role === 'user') return showToast('You cannot remove your own admin role.', 'warning');
-    try { const idToken = await user.getIdToken(); const response = await fetch(`${ADMIN_API}/admin/users/${encodeURIComponent(uid)}/role?role=${role}`, { method: 'PATCH', headers: { Authorization: `Bearer ${idToken}` } }); const body = await response.json(); if (!response.ok) throw new Error(body.detail || 'Role update failed.'); showToast(`User role changed to ${role}. Sign out and in again for the user to receive it.`, 'success'); await window.loadUsers(); } catch (error) { showToast(error.message, 'error'); }
+    try { const idToken = await user.getIdToken(true); const response = await fetch(`${ADMIN_API}/admin/users/${encodeURIComponent(uid)}/role?role=${role}`, { method: 'PATCH', headers: { Authorization: `Bearer ${idToken}` } }); const body = await response.json(); if (!response.ok) throw new Error(body.detail || 'Role update failed.'); showToast(`User role changed to ${role}. Sign out and in again for the user to receive it.`, 'success'); await window.loadUsers(); } catch (error) { showToast(error.message, 'error'); }
   }
   window.renderAnalyses = analyses => {
     const totalPages = Math.max(1, Math.ceil(analyses.length / analysisPageSize));

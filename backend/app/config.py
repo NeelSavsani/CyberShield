@@ -10,6 +10,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _firebase_service_account_path() -> Path | None:
+    """Resolve Firebase credentials from the environment or local secret path.
+
+    The environment variable remains the deployment override. For local
+    development, an ignored credentials file at ``backend/secrets`` is picked
+    up automatically so the server can start without an extra PowerShell
+    command.
+    """
+    configured = os.getenv("FIREBASE_SERVICE_ACCOUNT")
+    if configured:
+        return Path(configured)
+
+    candidate = Path(__file__).resolve().parents[1] / "secrets" / "cybershield-service-account.json"
+    return candidate if candidate.is_file() else None
+
+
 @dataclass(frozen=True)
 class Settings:
     database_path: Path = Path(os.getenv("CYBERSHIELD_DATABASE", "data/cybershield.db"))
@@ -22,7 +38,7 @@ class Settings:
     # The bundled model is synthetic and must never silently replace the
     # explainable live-evidence baseline. Enable only after model validation.
     use_trained_model: bool = os.getenv("CYBERSHIELD_USE_TRAINED_MODEL", "false").lower() == "true"
-    firebase_service_account: Path | None = Path(os.getenv("FIREBASE_SERVICE_ACCOUNT")) if os.getenv("FIREBASE_SERVICE_ACCOUNT") else None
+    firebase_service_account: Path | None = _firebase_service_account_path()
     firebase_storage_bucket: str | None = os.getenv("FIREBASE_STORAGE_BUCKET", "cybershield-5494d.firebasestorage.app")
 
 

@@ -29,11 +29,11 @@ it has been validated on representative labelled phishing and benign data.
 
 ## Fresh zip quick start (Windows)
 
-These are the only commands a teammate needs after downloading the project.
-Use **Command Prompt** for the backend terminal because `rmdir /s /q` and
-`call` are Command Prompt syntax.
+After downloading the zip, a teammate can run the project locally with the
+following two terminals. The first block is **Command Prompt** syntax (the
+`rmdir /s /q` command is not PowerShell syntax).
 
-### Terminal 1 — backend
+### Terminal 1 — backend (Command Prompt)
 
 ```bat
 cd backend
@@ -47,25 +47,29 @@ playwright install chromium
 uvicorn app.main:app --reload
 ```
 
-Leave this terminal running. Then open a second terminal at the project root
-(`CyberShield`) for the frontend:
+### Terminal 2 — frontend (from the project root)
 
-```powershell
+```bat
 python -m http.server 5173 --directory frontend
 ```
 
-Open `http://localhost:5173/` in the browser.
+Open `http://localhost:5173/` in the browser. The installation is needed only
+when setting up a new machine; both servers must be started whenever the app
+is used.
 
-If using PowerShell for Terminal 1, replace only the virtual-environment
-commands with:
+If using **PowerShell**, use this equivalent backend setup instead:
 
 ```powershell
+cd backend
 if (Test-Path venv) { Remove-Item -Recurse -Force venv }
 py -3.12 -m venv venv
 .\venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install playwright
+playwright install chromium
+uvicorn app.main:app --reload
 ```
-
-Then run the remaining backend commands unchanged.
 
 You can also use the interactive API at `http://127.0.0.1:8000/docs`.
 
@@ -118,6 +122,18 @@ the associated Storage object is deleted as well. Without these variables the
 local reports directory remains an intentional development fallback.
 
 ## Team Firebase setup
+
+Normal URL, text, and QR analysis works without Firebase credentials. Firebase
+credentials are required only for admin changes, profile/avatar storage, and
+cloud screenshot storage. Never commit or send the service-account JSON through
+GitHub or a public zip.
+
+For a local developer who is authorized to use the Firebase project, place a
+copy named `cybershield-service-account.json` in the ignored directory
+`backend/secrets/`. The backend detects that file automatically; no Firebase
+environment-variable command is needed. Each teammate must receive their own
+securely provisioned credential (or use a separate Firebase project). Render
+and other deployments should continue to use secret environment variables.
 
 `backend/.env` and `backend/secrets/` are intentionally local and are not
 committed. Never commit a service-account JSON file to Git. Each developer

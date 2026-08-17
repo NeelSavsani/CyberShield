@@ -146,6 +146,10 @@
     analysisPage = Math.min(analysisPage, totalPages);
     const start = (analysisPage - 1) * analysisPageSize;
     const pageRows = analyses.slice(start, start + analysisPageSize);
+    const countEl = document.getElementById('analyses-count');
+    if (countEl) {
+      countEl.textContent = `${analyses.length} record${analyses.length === 1 ? '' : 's'}`;
+    }
     document.getElementById('analyses-table').innerHTML = pageRows.length ? pageRows.map((scan, index) => `<tr><td>${start + index + 1}</td><td>${escapeHtml(userName(scan, allUsers || []))}</td><td>${escapeHtml(scan.inputType)}</td><td>${escapeHtml(scan.content)}</td><td>${scan.riskScore ?? '—'}</td><td><span class="badge ${badge(scan.verdict)}">${escapeHtml(scan.verdict || 'unknown')}</span></td><td>${formatDate(scan.createdAt)}</td><td>—</td></tr>`).join('') : '<tr><td colspan="8" class="empty-state">No analyses found.</td></tr>';
     const pager = document.getElementById('analysis-pagination');
     pager.innerHTML = `<span>Showing ${pageRows.length ? start + 1 : 0}–${Math.min(start + pageRows.length, analyses.length)} of ${analyses.length}</span><button ${analysisPage <= 1 ? 'disabled' : ''} onclick="analysisPageChange(${analysisPage - 1})">Previous</button><span>Page ${analysisPage} of ${totalPages}</span><button ${analysisPage >= totalPages ? 'disabled' : ''} onclick="analysisPageChange(${analysisPage + 1})">Next</button>`;

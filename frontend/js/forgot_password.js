@@ -78,7 +78,7 @@
       }
 
       // Show clear message on UI explicitly naming user email
-      showAlert(alertOk, `STATUS: SUCCESS. Styled password reset email has been sent to ${email}. Please check your inbox.`);
+      showAlert(alertOk, `STATUS: SUCCESS. Password reset email has been sent to ${email}. Please check your inbox. If you do not see the email, check your spam/junk folder. If you still do not receive the email, please contact support.`);
       form.reset();
     } catch (error) {
       clearTimeout(timeoutId);

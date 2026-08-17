@@ -104,7 +104,21 @@
       document.getElementById('users-table').innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`;
     }
   };
-  window.loadAnalyses = async () => { try { if (!window.allUsers) window.allUsers = await getUsers(); window.allAnalyses = await getAnalyses(); document.getElementById('analyses-count').textContent = `${allAnalyses.length} records`; window.renderAnalyses?.(allAnalyses); } catch (error) { document.getElementById('analyses-table').innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`; } };
+  window.loadAnalyses = async () => {
+    try {
+      if (!window.allUsers) window.allUsers = await getUsers();
+      window.allAnalyses = await getAnalyses();
+      if (typeof window.filterAnalyses === 'function') {
+        window.filterAnalyses(true);
+      } else {
+        window.currentFilteredAnalyses = window.allAnalyses;
+        document.getElementById('analyses-count').textContent = `${allAnalyses.length} record${allAnalyses.length === 1 ? '' : 's'}`;
+        window.renderAnalyses?.(allAnalyses);
+      }
+    } catch (error) {
+      document.getElementById('analyses-table').innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`;
+    }
+  };
   let userPage = 1;
   const userPageSize = 10;
   window.renderUsers = users => {
@@ -288,20 +302,111 @@
   };
   window.filterAnalyses = (resetPage = true) => {
     if (resetPage) analysisPage = 1;
-    const query = document.getElementById('analysis-search').value.toLowerCase();
-    const verdict = document.getElementById('verdict-filter').value;
-    const type = document.getElementById('type-filter').value;
-    const date = document.getElementById('date-filter').value;
+    const query = (document.getElementById('analysis-search')?.value || '').toLowerCase().trim();
+    const verdict = document.getElementById('verdict-filter')?.value || '';
+    const type = document.getElementById('type-filter')?.value || '';
+    const date = document.getElementById('date-filter')?.value || '';
     const clearButton = document.getElementById('analysis-clear-search');
     if (clearButton) clearButton.disabled = !query && !verdict && !type && !date;
-    window.renderAnalyses(allAnalyses.filter(scan => {
+
+    const list = (window.allAnalyses || []).filter(scan => {
       const scanType = String(scan.inputType || '').toLowerCase();
       const scanDate = scan.createdAt ? new Date(timestampMs(scan.createdAt)).toISOString().slice(0, 10) : '';
       const account = (allUsers || []).find(entry => entry.id === scan.userId || entry.docId === scan.userId || entry.legacyId === scan.userId);
       const scanEmail = String(scan.userEmail || account?.email || '').toLowerCase();
       const searchable = `${scan.content || ''} ${scan.userId || ''} ${scanEmail} ${scan.userName || ''} ${userName(scan, allUsers || [])}`.toLowerCase();
       return (!verdict || String(scan.verdict).toLowerCase() === verdict) && (!type || scanType === type) && (!date || scanDate === date) && (!query || searchable.includes(query));
-    }));
+    });
+
+    window.currentFilteredAnalyses = list;
+    window.renderAnalyses(list);
+  };
+
+  window.closeExportAnalysesModal = () => {
+    const modal = document.getElementById('export-analyses-modal');
+    if (modal) modal.hidden = true;
+  };
+
+  window.exportAnalyses = () => {
+    const list = window.currentFilteredAnalyses || window.allAnalyses || [];
+    if (!list.length) {
+      if (typeof showToast === 'function') showToast('No analysis records match your current filter.', 'warning');
+      return;
+    }
+    const summaryCount = document.getElementById('export-analyses-summary-count');
+    if (summaryCount) {
+      summaryCount.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Ready to export ${list.length} analysis record${list.length === 1 ? '' : 's'}`;
+    }
+    const modal = document.getElementById('export-analyses-modal');
+    if (modal) modal.hidden = false;
+  };
+
+  window.confirmExportAnalyses = () => {
+    const list = window.currentFilteredAnalyses || window.allAnalyses || [];
+    if (!list.length) {
+      if (typeof showToast === 'function') showToast('No analysis records available to export.', 'warning');
+      window.closeExportAnalysesModal();
+      return;
+    }
+    const selectedFormat = document.querySelector('input[name="export-analysis-format"]:checked')?.value || 'csv';
+    const isFiltered = (window.allAnalyses && list.length !== window.allAnalyses.length);
+    const suffix = `${isFiltered ? 'filtered_' : ''}${new Date().toISOString().slice(0, 10)}`;
+
+    if (selectedFormat === 'csv') {
+      const headers = ['Sr. No.', 'User', 'Type', 'Content', 'Risk Score', 'Verdict', 'Date'];
+      const rows = list.map((scan, index) => [
+        index + 1,
+        `"${String(userName(scan, allUsers || [])).replace(/"/g, '""')}"`,
+        `"${String(scan.inputType || '').replace(/"/g, '""')}"`,
+        `"${String(scan.content || '').replace(/"/g, '""')}"`,
+        scan.riskScore ?? '—',
+        `"${String(scan.verdict || 'unknown').replace(/"/g, '""')}"`,
+        `"${String(formatDate(scan.createdAt)).replace(/"/g, '""')}"`
+      ].join(','));
+      downloadBlob('\uFEFF' + [headers.join(','), ...rows].join('\r\n'), `cybershield_analyses_${suffix}.csv`, 'text/csv;charset=utf-8;');
+    } else if (selectedFormat === 'xlsx' || selectedFormat === 'xls') {
+      const rowsHtml = list.map((scan, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(userName(scan, allUsers || []))}</td><td>${escapeHtml(scan.inputType || '')}</td><td>${escapeHtml(scan.content || '')}</td><td>${scan.riskScore ?? '—'}</td><td>${escapeHtml(scan.verdict || 'unknown')}</td><td>${formatDate(scan.createdAt)}</td></tr>`).join('');
+      const excelHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"/><style>table{border-collapse:collapse;width:100%;}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left;}th{background-color:#0f172a;color:#ffffff;font-weight:bold;}</style></head><body><h2>CyberShield Analysis Security Report</h2><p>Export Date: ${new Date().toLocaleString('en-IN')}</p><table><thead><tr><th>Sr. No.</th><th>User</th><th>Type</th><th>Content</th><th>Risk Score</th><th>Verdict</th><th>Date</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`;
+      downloadBlob(excelHtml, `cybershield_analyses_${suffix}.${selectedFormat}`, 'application/vnd.ms-excel;charset=utf-8;');
+    } else if (selectedFormat === 'json') {
+      const jsonData = list.map((scan, index) => ({
+        srNo: index + 1,
+        user: userName(scan, allUsers || []),
+        type: scan.inputType || '',
+        content: scan.content || '',
+        riskScore: scan.riskScore ?? null,
+        verdict: scan.verdict || 'unknown',
+        date: formatDate(scan.createdAt)
+      }));
+      downloadBlob(JSON.stringify(jsonData, null, 2), `cybershield_analyses_${suffix}.json`, 'application/json;charset=utf-8;');
+    } else if (selectedFormat === 'txt') {
+      const headers = ['Sr. No.', 'User', 'Type', 'Content', 'Risk Score', 'Verdict', 'Date'];
+      const rows = list.map((scan, index) => [
+        index + 1,
+        userName(scan, allUsers || []),
+        scan.inputType || '',
+        scan.content || '',
+        scan.riskScore ?? '—',
+        scan.verdict || 'unknown',
+        formatDate(scan.createdAt)
+      ].join('\t'));
+      downloadBlob([headers.join('\t'), ...rows].join('\r\n'), `cybershield_analyses_${suffix}.txt`, 'text/plain;charset=utf-8;');
+    } else if (selectedFormat === 'pdf') {
+      const rowsHtml = list.map((scan, index) => {
+        const userLabel = escapeHtml(userName(scan, allUsers || []));
+        const v = scan.verdict || 'unknown';
+        const vClass = v === 'phishing' ? 'badge-danger' : v === 'suspicious' ? 'badge-warning' : 'badge-safe';
+        return `<tr><td style="text-align:center;">${index + 1}</td><td><strong>${userLabel}</strong></td><td>${escapeHtml(scan.inputType || '')}</td><td style="word-break:break-all;max-width:260px;">${escapeHtml(scan.content || '')}</td><td style="text-align:center;">${scan.riskScore ?? '—'}</td><td><span class="badge ${vClass}">${v}</span></td><td>${formatDate(scan.createdAt)}</td></tr>`;
+      }).join('');
+      const pdfWin = window.open('', '_blank');
+      if (pdfWin) {
+        pdfWin.document.write(`<!DOCTYPE html><html><head><title>CyberShield Analysis Report</title><style>body{font-family:system-ui,-apple-system,sans-serif;padding:30px;color:#0f172a;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #3b82f6;padding-bottom:15px;margin-bottom:20px;}.logo{font-size:22px;font-weight:700;color:#0f172a;}.logo span{color:#3b82f6;}.meta{font-size:12px;color:#64748b;text-align:right;}table{width:100%;border-collapse:collapse;margin-top:15px;font-size:13px;}th{background:#0f172a;color:#ffffff;padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;}td{padding:10px 12px;border-bottom:1px solid #e2e8f0;}tr:nth-child(even){background:#f8fafc;}.badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;}.badge-danger{background:#fee2e2;color:#991b1b;}.badge-warning{background:#fef3c7;color:#92400e;}.badge-safe{background:#d1fae5;color:#065f46;}@media print{body{padding:0;}}</style></head><body><div class="header"><div class="logo">Cyber<span>Shield</span> — Analysis Report</div><div class="meta"><div>Generated: ${new Date().toLocaleString('en-IN')}</div><div>Total Records: ${list.length}</div></div></div><table><thead><tr><th>#</th><th>User</th><th>Type</th><th>Content</th><th>Risk</th><th>Verdict</th><th>Date</th></tr></thead><tbody>${rowsHtml}</tbody></table><script>window.onload=()=>{window.print();};<\/script></body></html>`);
+        pdfWin.document.close();
+      }
+    }
+
+    window.closeExportAnalysesModal();
+    if (typeof showToast === 'function') showToast(`Exported ${list.length} record${list.length === 1 ? '' : 's'} as ${selectedFormat.toUpperCase()} successfully.`, 'success');
   };
   window.loadFlagged = async () => {
     const flags = await getFlags(); document.getElementById('flagged-count').textContent = `${flags.length} items`;

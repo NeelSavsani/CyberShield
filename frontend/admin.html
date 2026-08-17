@@ -237,8 +237,13 @@
     <div class="tab-pane" id="tab-analyses">
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">All Analyses</span>
-          <span id="analyses-count" style="font-size:12px;color:var(--gray)">0 records</span>
+          <div>
+            <span class="panel-title">All Analyses</span>
+            <span id="analyses-count" style="font-size:12px;color:var(--gray);margin-left:8px;">0 records</span>
+          </div>
+          <button type="button" class="topbar-btn btn-navy" id="export-analyses-btn" onclick="exportAnalyses()" title="Export analysis report" style="padding:6px 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+            <i class="fa-solid fa-file-export"></i> Export Analyses
+          </button>
         </div>
         <div class="search-bar">
           <input type="text" id="analysis-search" placeholder="Search by content or keyword…" oninput="filterAnalyses()" />
@@ -603,6 +608,84 @@
       <div class="export-actions">
         <button type="button" class="action-btn" onclick="closeExportModal()">Cancel</button>
         <button type="button" class="topbar-btn btn-navy" onclick="confirmExportUsers()" style="padding:8px 18px;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+          <i class="fa-solid fa-download"></i> Download Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Analyses Modal Popup -->
+  <div class="export-modal" id="export-analyses-modal" hidden>
+    <div class="export-backdrop" onclick="closeExportAnalysesModal()"></div>
+    <div class="export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-analyses-modal-title">
+      <button type="button" class="export-close" onclick="closeExportAnalysesModal()" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+      <p class="export-kicker"><i class="fa-solid fa-shield-halved"></i> CyberShield Admin</p>
+      <h2 id="export-analyses-modal-title">Download Analysis Report</h2>
+      <p class="export-description">Select your preferred format to download the security scan analysis records matching your active search and filter criteria.</p>
+
+      <div class="export-format-grid">
+        <label class="format-card">
+          <input type="radio" name="export-analysis-format" value="csv" checked />
+          <div class="format-icon csv-icon"><i class="fa-solid fa-file-csv"></i></div>
+          <div class="format-info">
+            <span class="format-title">CSV</span>
+            <span class="format-sub">Comma Separated (.csv)</span>
+          </div>
+        </label>
+
+        <label class="format-card">
+          <input type="radio" name="export-analysis-format" value="xlsx" />
+          <div class="format-icon xlsx-icon"><i class="fa-solid fa-file-excel"></i></div>
+          <div class="format-info">
+            <span class="format-title">Excel (XLSX)</span>
+            <span class="format-sub">Excel Workbook (.xlsx)</span>
+          </div>
+        </label>
+
+        <label class="format-card">
+          <input type="radio" name="export-analysis-format" value="xls" />
+          <div class="format-icon xls-icon"><i class="fa-solid fa-file-excel"></i></div>
+          <div class="format-info">
+            <span class="format-title">Excel (XLS)</span>
+            <span class="format-sub">Legacy Spreadsheet (.xls)</span>
+          </div>
+        </label>
+
+        <label class="format-card">
+          <input type="radio" name="export-analysis-format" value="pdf" />
+          <div class="format-icon pdf-icon"><i class="fa-solid fa-file-pdf"></i></div>
+          <div class="format-info">
+            <span class="format-title">PDF Document</span>
+            <span class="format-sub">Printable Report (.pdf)</span>
+          </div>
+        </label>
+
+        <label class="format-card">
+          <input type="radio" name="export-analysis-format" value="json" />
+          <div class="format-icon json-icon"><i class="fa-solid fa-file-code"></i></div>
+          <div class="format-info">
+            <span class="format-title">JSON Data</span>
+            <span class="format-sub">Raw Data Object (.json)</span>
+          </div>
+        </label>
+
+        <label class="format-card">
+          <input type="radio" name="export-analysis-format" value="txt" />
+          <div class="format-icon txt-icon"><i class="fa-solid fa-file-lines"></i></div>
+          <div class="format-info">
+            <span class="format-title">Text File</span>
+            <span class="format-sub">Plain Text Table (.txt)</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="export-summary-box">
+        <span id="export-analyses-summary-count"><i class="fa-solid fa-magnifying-glass"></i> Ready to export 0 analysis records</span>
+      </div>
+
+      <div class="export-actions">
+        <button type="button" class="action-btn" onclick="closeExportAnalysesModal()">Cancel</button>
+        <button type="button" class="topbar-btn btn-navy" onclick="confirmExportAnalyses()" style="padding:8px 18px;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
           <i class="fa-solid fa-download"></i> Download Report
         </button>
       </div>

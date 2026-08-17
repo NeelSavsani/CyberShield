@@ -21,17 +21,133 @@ logger = logging.getLogger("cybershield.email")
 # Locate the HTML email template
 TEMPLATE_PATH = Path(__file__).resolve().parents[2] / "templates" / "password_reset_email.html"
 
+DEFAULT_EMAIL_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Your CyberShield Password</title>
+  <style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #080c14; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .reset-btn:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #0369a1 100%) !important;
+      box-shadow: 0 6px 24px rgba(37, 99, 235, 0.6) !important;
+    }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; padding: 10px !important; }
+      .content-cell { padding: 24px 18px !important; }
+      .reset-btn { width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #080c14;">
+
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #080c14; table-layout: fixed;">
+    <tr>
+      <td align="center" style="padding: 40px 12px;">
+
+        <table border="0" cellpadding="0" cellspacing="0" width="600" class="email-container" style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65);">
+          
+          <!-- Top Neon Accent Gradient Bar -->
+          <tr>
+            <td style="background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%); height: 5px; font-size: 0; line-height: 0;">&nbsp;</td>
+          </tr>
+
+          <!-- Logo & Brand Header -->
+          <tr>
+            <td align="center" style="padding: 36px 32px 16px 32px;">
+              <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding-top: 14px; font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px;">
+                    Cyber<span style="color: #3b82f6;">Shield</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-size: 11px; font-weight: 600; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; padding-top: 4px;">
+                    Threat Intelligence & Security Platform
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content Body -->
+          <tr>
+            <td class="content-cell" style="padding: 10px 40px 32px 40px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                
+                <tr>
+                  <td align="center" style="font-size: 22px; font-weight: 700; color: #f8fafc; padding-bottom: 12px;">
+                    Password Reset Request
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="font-size: 15px; line-height: 1.6; color: #94a3b8; text-align: center; padding-bottom: 28px;">
+                    We received a request to reset the password for your <strong style="color: #f1f5f9;">CyberShield</strong> account. Click the secure button below to choose a new password.
+                  </td>
+                </tr>
+
+                <!-- Styled Action Button -->
+                <tr>
+                  <td align="center" style="padding-bottom: 32px;">
+                    <table border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #2563eb 0%, #0284c7 100%); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45); padding: 0;">
+                          <a href="{{RESET_LINK}}" target="_blank" class="reset-btn" style="display: inline-block; padding: 15px 32px; font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.25); letter-spacing: 0.3px;">
+                            🔒 Reset Password Now &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Security Box -->
+                <tr>
+                  <td style="background-color: rgba(30, 41, 59, 0.7); border: 1px solid #334155; border-left: 4px solid #38bdf8; border-radius: 10px; padding: 16px 18px; margin-bottom: 24px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                          <strong style="color: #38bdf8;">🛡️ Security Information:</strong><br>
+                          • This password reset link will expire in <strong>1 hour</strong>.<br>
+                          • If you did not request this change, your account remains secure and no action is required.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #0b0f19; padding: 22px 32px; text-align: center; border-top: 1px solid #1e293b; font-size: 12px; color: #64748b; line-height: 1.5;">
+              <p style="margin: 0 0 6px 0;">If you need assistance, please contact CyberShield Support.</p>
+              <p style="margin: 0; color: #475569;">&copy; CyberShield Security Platform. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>"""
+
 
 def load_email_template(reset_link: str) -> str:
     """Load the password reset email template and inject the reset link."""
     if TEMPLATE_PATH.is_file():
         template = TEMPLATE_PATH.read_text(encoding="utf-8")
     else:
-        template = """
-        <h2>Reset Your CyberShield Password</h2>
-        <p>Click the link below to choose a new password:</p>
-        <p><a href="{{RESET_LINK}}">Reset Password</a></p>
-        """
+        template = DEFAULT_EMAIL_TEMPLATE
     return template.replace("{{RESET_LINK}}", reset_link)
 
 

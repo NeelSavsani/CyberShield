@@ -62,10 +62,14 @@
     .flag-form input{flex:1;min-width:200px;}
     .flag-submit{padding:9px 20px;background:var(--navy);color:var(--white);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
     .flag-submit:hover{background:#1A3A6E;}
-    .search-bar{display:flex;gap:10px;padding:16px 22px;border-bottom:1px solid var(--border);}
+     .search-bar{display:flex;gap:10px;padding:16px 22px;border-bottom:1px solid var(--border);align-items:center;}
      .search-bar input{flex:1;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:var(--font-body);}
      .search-bar input:focus{border-color:var(--cyan-dim);}
-     .search-bar .action-btn{white-space:nowrap;}
+     .search-bar select{min-width:150px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--off-white);color:var(--slate);font:500 13px var(--font-body);outline:none;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s;}
+     .search-bar select:hover{border-color:var(--cyan-dim);}
+     .search-bar select:focus{border-color:var(--cyan-dim);background:var(--white);box-shadow:0 0 0 3px rgba(0,200,255,.12);}
+     .search-bar .action-btn{white-space:nowrap;height:36px;padding:8px 14px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:500;border-radius:8px;}
+     .action-btn:disabled{opacity:0.45;cursor:not-allowed;pointer-events:none;background:var(--off-white);color:var(--gray);border-color:var(--border);}
      .user-filters{display:flex;gap:10px;align-items:center;padding:0 22px 16px;border-bottom:1px solid var(--border);}
      .user-filters select{min-width:170px;padding:9px 34px 9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--off-white);color:var(--slate);font:500 13px var(--font-body);outline:none;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s;}
      .user-filters select:hover{border-color:var(--cyan-dim);}
@@ -172,8 +176,20 @@
         </div>
         <div class="search-bar">
           <input type="text" id="user-search" placeholder="Search by name or email…" oninput="filterUsers()" />
+          <select id="user-sort" onchange="filterUsers()">
+            <option value="registered_desc">Registered: newest</option>
+            <option value="registered_asc">Registered: oldest</option>
+            <option value="login_desc">Last login: newest</option>
+            <option value="login_asc">Last login: oldest</option>
+            <option value="role">Role</option>
+          </select>
+          <select id="user-role-filter" onchange="filterUsers()">
+            <option value="">All roles</option>
+            <option value="admin">Admins</option>
+            <option value="user">Users</option>
+          </select>
+          <button type="button" id="user-clear-search" class="action-btn" onclick="clearUserSearch()" disabled><i class="fa-solid fa-xmark"></i> Clear</button>
         </div>
-        <div class="user-filters"><select id="user-sort" onchange="filterUsers()"><option value="registered_desc">Registered: newest</option><option value="registered_asc">Registered: oldest</option><option value="login_desc">Last login: newest</option><option value="login_asc">Last login: oldest</option><option value="role">Role</option></select><select id="user-role-filter" onchange="filterUsers()"><option value="">All roles</option><option value="admin">Admins</option><option value="user">Users</option></select></div>
         <div class="pagination" id="user-pagination" aria-label="User pagination"></div>
         <table>
           <thead><tr><th>Sr. No.</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Last Login</th><th>Action</th></tr></thead>

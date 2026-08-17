@@ -124,11 +124,19 @@
     tbody.querySelectorAll('[data-copy-email]').forEach(button => button.addEventListener('click', async () => { try { await navigator.clipboard.writeText(button.dataset.copyEmail); showToast('Email copied.', 'success'); } catch { showToast('Could not copy the email.', 'warning'); } }));
   };
   window.userPageChange = page => { userPage = page; window.filterUsers(false); };
+  window.clearUserSearch = () => {
+    ['user-search', 'user-role-filter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const sortEl = document.getElementById('user-sort');
+    if (sortEl) sortEl.value = 'registered_desc';
+    window.filterUsers();
+  };
   window.filterUsers = (resetPage = true) => {
     if (resetPage) userPage = 1;
     const query = (document.getElementById('user-search')?.value || '').toLowerCase().trim();
     const roleFilter = document.getElementById('user-role-filter')?.value || '';
     const sort = document.getElementById('user-sort')?.value || 'registered_desc';
+    const clearButton = document.getElementById('user-clear-search');
+    if (clearButton) clearButton.disabled = !query && !roleFilter && sort === 'registered_desc';
     const list = (window.allUsers || []).filter(entry => {
       const role = entry.role === 'admin' ? 'admin' : 'user';
       const name = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || '';

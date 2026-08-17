@@ -196,13 +196,15 @@ function updateAdminNavigation(isAdmin, page) {
     sessionStorage.setItem('cs_user', JSON.stringify({ id: user.uid, name, email: user.email, role }));
     const avatarEl = document.getElementById('user-avatar');
     const nameEl = document.getElementById('user-name');
-    const cachedAvatar = sessionStorage.getItem('cs_avatar') || '';
+    const avatarKey = user?.uid ? `cs_avatar_${user.uid}` : '';
+    const cachedAvatar = avatarKey ? sessionStorage.getItem(avatarKey) || '' : '';
+    sessionStorage.removeItem('cs_avatar');
     applySidebarAvatar(avatarEl, cachedAvatar, name[0].toUpperCase());
     // Load the saved photo for a fresh tab/page, while keeping the sidebar
     // usable immediately from the session cache.
     fb.getDoc(fb.doc(fb.db, 'users', user.uid)).then(snapshot => {
       const photo = snapshot.exists() ? snapshot.data().photoDataUrl : null;
-      if (photo) sessionStorage.setItem('cs_avatar', photo);
+      if (photo && avatarKey) sessionStorage.setItem(avatarKey, photo);
       applySidebarAvatar(avatarEl, photo || cachedAvatar, name[0].toUpperCase());
     }).catch(() => {});
     if (nameEl) nameEl.textContent = name;

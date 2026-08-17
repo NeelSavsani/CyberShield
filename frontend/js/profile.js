@@ -31,8 +31,10 @@ async function loadProfile() {
     // Use the Firestore value as the source of truth, while falling back to
     // the session cache so a tab switch never makes a recently saved avatar
     // appear empty during a delayed read.
-    profilePhotoData = data.photoDataUrl || sessionStorage.getItem('cs_avatar') || null;
-    if (profilePhotoData) sessionStorage.setItem('cs_avatar', profilePhotoData);
+    const avatarKey = user?.uid ? `cs_avatar_${user.uid}` : '';
+    profilePhotoData = data.photoDataUrl || (avatarKey ? sessionStorage.getItem(avatarKey) : null) || null;
+    sessionStorage.removeItem('cs_avatar');
+    if (profilePhotoData && avatarKey) sessionStorage.setItem(avatarKey, profilePhotoData);
     paintAvatar(document.getElementById('profile-avatar'), profilePhotoData, (firstName || user.email)[0].toUpperCase());
     document.getElementById('first_name').value = firstName;
     document.getElementById('last_name').value = lastName;
@@ -105,7 +107,12 @@ document.getElementById('profile-form').addEventListener('submit', async event =
     sessionStorage.setItem('cs_user', JSON.stringify({ id: user.uid, name: displayName, email: user.email }));
     document.getElementById('profile-name').textContent = displayName;
     document.getElementById('user-name').textContent = displayName;
-    sessionStorage.setItem('cs_avatar', profilePhotoData || '');
+    const avatarKey = user?.uid ? `cs_avatar_${user.uid}` : '';
+    if (avatarKey) {
+      if (profilePhotoData) sessionStorage.setItem(avatarKey, profilePhotoData);
+      else sessionStorage.removeItem(avatarKey);
+    }
+    sessionStorage.removeItem('cs_avatar');
     paintAvatar(document.getElementById('user-avatar'), profilePhotoData, (displayName || user.email)[0].toUpperCase());
     showAlert(alertOk, 'Profile updated successfully.');
   } catch (error) { showAlert(alertErr, error.message || 'Could not update profile.'); }

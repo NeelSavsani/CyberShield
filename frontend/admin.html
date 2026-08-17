@@ -77,11 +77,38 @@
      [data-theme="dark"] .user-filters select{background:var(--off-white);color:var(--slate);}
      @media(max-width:700px){.user-filters{flex-wrap:wrap;}.user-filters select{flex:1;min-width:140px;}}
     .empty-state{padding:40px;text-align:center;color:var(--gray);}
-    .pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--border);font-size:13px;color:var(--gray);}
-    .pagination button,.pagination select{border:1px solid var(--border);background:var(--white);border-radius:6px;padding:6px 10px;color:var(--slate);cursor:pointer;}
-    .pagination button:disabled{opacity:.45;cursor:not-allowed;}
     .empty-icon{font-size:36px;margin-bottom:12px;}
     @media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+
+    /* Export Modal Styles */
+    .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-card { background: var(--card-bg, #ffffff); color: var(--slate); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); overflow: hidden; display: flex; flex-direction: column; animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes slideUp { from { transform: translateY(16px) scale(0.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; }
+    .modal-title { font-size: 17px; font-weight: 700; color: var(--navy); margin: 0 0 4px 0; display: flex; align-items: center; }
+    [data-theme="dark"] .modal-title { color: var(--slate); }
+    .modal-subtitle { font-size: 13px; color: var(--gray); margin: 0; }
+    .modal-close { background: transparent; border: none; font-size: 18px; color: var(--gray); cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.15s; }
+    .modal-close:hover { background: var(--off-white); color: var(--slate); }
+    .modal-body { padding: 20px 24px; }
+    .export-format-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+    .format-option { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; background: var(--off-white); transition: all 0.15s ease; position: relative; }
+    .format-option input[type="radio"] { display: none; }
+    .format-option:hover { border-color: var(--cyan-dim); background: var(--white); }
+    .format-option.active { border-color: var(--cyan-dim); background: var(--white); box-shadow: 0 0 0 3px rgba(0, 200, 255, 0.12); }
+    .format-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .format-csv { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+    .format-xlsx { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+    .format-xls { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+    .format-pdf { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+    .format-json { background: rgba(168, 85, 247, 0.12); color: #a855f7; }
+    .format-txt { background: rgba(100, 116, 139, 0.12); color: #64748b; }
+    .format-info { display: flex; flex-direction: column; }
+    .format-name { font-size: 13px; font-weight: 600; color: var(--slate); }
+    .format-desc { font-size: 11px; color: var(--gray); }
+    .export-summary-box { background: rgba(0, 200, 255, 0.08); border: 1px solid rgba(0, 200, 255, 0.25); border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: var(--slate); display: flex; align-items: center; gap: 10px; }
+    .modal-footer { padding: 16px 24px; background: var(--off-white); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
   </style>
 </head>
 <body>
@@ -491,11 +518,102 @@
     }
     function refreshAll() { loadOverview(); }
 
+      loadAnalyses();
+    }
+    async function deleteUser(id) {
+      if (!confirm('Remove this user? This will also delete all their analyses.')) return;
+      alert('User removal endpoint not yet wired — add DELETE /admin/users/<id> in app.py');
+    }
+    function refreshAll() { loadOverview(); }
+
     // ── Init ───────────────────────────────────────────────
     loadOverview();
     document.getElementById('total-flagged').textContent = 3;
     }
   </script>
+  <!-- Export Users Modal Popup -->
+  <div id="export-users-modal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)closeExportModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title"><i class="fa-solid fa-file-export" style="color:var(--cyan-dim);margin-right:8px;"></i> Export User Data</h3>
+          <p class="modal-subtitle">Choose a file format to export the active user list.</p>
+        </div>
+        <button type="button" class="modal-close" onclick="closeExportModal()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="export-format-grid">
+          <label class="format-option active" onclick="selectExportFormat('csv', this)">
+            <input type="radio" name="export-format" value="csv" checked />
+            <div class="format-icon format-csv"><i class="fa-solid fa-file-csv"></i></div>
+            <div class="format-info">
+              <span class="format-name">CSV</span>
+              <span class="format-desc">Comma-Separated (.csv)</span>
+            </div>
+          </label>
+
+          <label class="format-option" onclick="selectExportFormat('xlsx', this)">
+            <input type="radio" name="export-format" value="xlsx" />
+            <div class="format-icon format-xlsx"><i class="fa-solid fa-file-excel"></i></div>
+            <div class="format-info">
+              <span class="format-name">Excel (XLSX)</span>
+              <span class="format-desc">MS Excel OpenXML</span>
+            </div>
+          </label>
+
+          <label class="format-option" onclick="selectExportFormat('xls', this)">
+            <input type="radio" name="export-format" value="xls" />
+            <div class="format-icon format-xls"><i class="fa-solid fa-file-excel"></i></div>
+            <div class="format-info">
+              <span class="format-name">Excel (XLS)</span>
+              <span class="format-desc">Excel 97-2003 (.xls)</span>
+            </div>
+          </label>
+
+          <label class="format-option" onclick="selectExportFormat('pdf', this)">
+            <input type="radio" name="export-format" value="pdf" />
+            <div class="format-icon format-pdf"><i class="fa-solid fa-file-pdf"></i></div>
+            <div class="format-info">
+              <span class="format-name">PDF Document</span>
+              <span class="format-desc">Printable PDF (.pdf)</span>
+            </div>
+          </label>
+
+          <label class="format-option" onclick="selectExportFormat('json', this)">
+            <input type="radio" name="export-format" value="json" />
+            <div class="format-icon format-json"><i class="fa-solid fa-file-code"></i></div>
+            <div class="format-info">
+              <span class="format-name">JSON</span>
+              <span class="format-desc">Structured Data (.json)</span>
+            </div>
+          </label>
+
+          <label class="format-option" onclick="selectExportFormat('txt', this)">
+            <input type="radio" name="export-format" value="txt" />
+            <div class="format-icon format-txt"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="format-info">
+              <span class="format-name">Text (TXT)</span>
+              <span class="format-desc">Tab-Delimited (.txt)</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="export-summary-box">
+          <i class="fa-solid fa-circle-info" style="color:var(--cyan-dim);"></i>
+          <span id="export-summary-text">Ready to export user records.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="action-btn" onclick="closeExportModal()" style="height:36px;padding:8px 16px;">Cancel</button>
+        <button type="button" class="topbar-btn btn-navy" onclick="confirmExportUsers()" style="height:36px;padding:8px 18px;font-size:13px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+          <i class="fa-solid fa-download"></i> Download Export
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/admin.js"></script>
 </body>
 </html>

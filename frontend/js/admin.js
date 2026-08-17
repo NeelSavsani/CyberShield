@@ -156,39 +156,202 @@
     }
     window.renderUsers(list);
   };
+  let selectedExportFormat = 'csv';
   window.exportUsers = () => {
     const list = window.currentFilteredUsers || window.allUsers || [];
     if (!list.length) {
       if (typeof showToast === 'function') showToast('No user records match your current filter.', 'warning');
       return;
     }
+    const modal = document.getElementById('export-users-modal');
+    const summaryText = document.getElementById('export-summary-text');
+    if (summaryText) {
+      const isFiltered = (window.allUsers && list.length !== window.allUsers.length);
+      summaryText.textContent = `Ready to export ${list.length} user record${list.length === 1 ? '' : 's'}${isFiltered ? ' (matching active filter)' : ''}.`;
+    }
+    if (modal) modal.style.display = 'flex';
+  };
+
+  window.closeExportModal = () => {
+    const modal = document.getElementById('export-users-modal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.selectExportFormat = (fmt, labelEl) => {
+    selectedExportFormat = fmt;
+    document.querySelectorAll('.format-option').forEach(el => el.classList.remove('active'));
+    if (labelEl) labelEl.classList.add('active');
+    const radio = labelEl?.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+  };
+
+  function downloadBlob(content, filename, contentType) {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  window.confirmExportUsers = () => {
+    const list = window.currentFilteredUsers || window.allUsers || [];
+    if (!list.length) {
+      if (typeof showToast === 'function') showToast('No user records available to export.', 'warning');
+      window.closeExportModal();
+      return;
+    }
+
+    const format = selectedExportFormat || 'csv';
+    const isFiltered = (window.allUsers && list.length !== window.allUsers.length);
+    const filenamePrefix = `cybershield_users_${isFiltered ? 'filtered_' : ''}${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'pdf') {
+      const printWin = window.open('', '_blank');
+      if (!printWin) {
+        if (typeof showToast === 'function') showToast('Pop-up blocked. Allow pop-ups to print/export PDF.', 'warning');
+        return;
+      }
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>CyberShield User Export (${list.length} Records)</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; padding: 24px; }
+            .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; padding-bottom: 12px; margin-bottom: 20px; }
+            .brand { font-size: 20px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+            .meta { font-size: 12px; color: #64748b; margin-top: 4px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
+            th { background: #0f172a; color: #ffffff; text-align: left; padding: 9px 12px; font-weight: 600; }
+            td { padding: 9px 12px; border-bottom: 1px solid #e2e8f0; }
+            tr:nth-child(even) { background: #f8fafc; }
+            .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+            .badge-admin { background: #f3e8ff; color: #7e22ce; }
+            .badge-user { background: #e0f2fe; color: #0369a1; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="brand">🛡️ CyberShield — Registered Users Report</div>
+              <div class="meta">Exported on ${new Date().toLocaleString('en-IN')} • Filtered Records: ${list.length}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Sr. No.</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined Date</th>
+                <th>Last Login Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map((u, i) => {
+                const name = u.displayName || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email || 'Unknown';
+                const role = u.role === 'admin' ? 'admin' : 'user';
+                return `<tr><td>${i + 1}</td><td><strong>${escapeHtml(name)}</strong></td><td>${escapeHtml(u.email || '—')}</td><td><span class="badge badge-${role}">${role}</span></td><td>${formatDate(u.createdAt)}</td><td>${formatDate(u.lastLogin || u.last_login)}</td></tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+      if (typeof showToast === 'function') showToast(`PDF report ready for ${list.length} user records.`, 'success');
+      window.closeExportModal();
+      return;
+    }
+
+    if (format === 'json') {
+      const data = list.map((u, i) => ({
+        srNo: i + 1,
+        name: u.displayName || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email || 'Unknown',
+        email: u.email || '',
+        role: u.role === 'admin' ? 'admin' : 'user',
+        joined: formatDate(u.createdAt),
+        lastLogin: formatDate(u.lastLogin || u.last_login)
+      }));
+      downloadBlob(JSON.stringify(data, null, 2), `${filenamePrefix}.json`, 'application/json');
+      if (typeof showToast === 'function') showToast(`Exported ${list.length} users to JSON.`, 'success');
+      window.closeExportModal();
+      return;
+    }
+
+    if (format === 'txt') {
+      const headers = ['Sr. No.', 'Name', 'Email', 'Role', 'Joined', 'Last Login'];
+      const rows = list.map((entry, index) => {
+        const name = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
+        const role = entry.role === 'admin' ? 'admin' : 'user';
+        return [
+          index + 1,
+          name,
+          entry.email || '—',
+          role,
+          formatDate(entry.createdAt),
+          formatDate(entry.lastLogin || entry.last_login)
+        ].join('\t');
+      });
+      downloadBlob([headers.join('\t'), ...rows].join('\r\n'), `${filenamePrefix}.txt`, 'text/plain;charset=utf-8;');
+      if (typeof showToast === 'function') showToast(`Exported ${list.length} users to TXT.`, 'success');
+      window.closeExportModal();
+      return;
+    }
+
+    if (format === 'xlsx' || format === 'xls') {
+      const headers = ['Sr. No.', 'Name', 'Email', 'Role', 'Joined', 'Last Login'];
+      const rows = list.map((entry, index) => {
+        const name = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
+        const role = entry.role === 'admin' ? 'admin' : 'user';
+        return [
+          `<td>${index + 1}</td>`,
+          `<td><b>${escapeHtml(name)}</b></td>`,
+          `<td>${escapeHtml(entry.email || '')}</td>`,
+          `<td>${role}</td>`,
+          `<td>${formatDate(entry.createdAt)}</td>`,
+          `<td>${formatDate(entry.lastLogin || entry.last_login)}</td>`
+        ].join('');
+      });
+      const xlsXml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Users</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<body><table border="1"><thead><tr style="background:#0f172a;color:#ffffff;">${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r}</tr>`).join('')}</tbody></table></body></html>`;
+      
+      const ext = format === 'xlsx' ? 'xlsx' : 'xls';
+      const mime = format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/vnd.ms-excel';
+      downloadBlob(xlsXml, `${filenamePrefix}.${ext}`, `${mime};charset=utf-8;`);
+      if (typeof showToast === 'function') showToast(`Exported ${list.length} users to Excel (${ext.toUpperCase()}).`, 'success');
+      window.closeExportModal();
+      return;
+    }
+
+    // Default CSV
     const headers = ['Sr. No.', 'Name', 'Email', 'Role', 'Joined', 'Last Login'];
     const rows = list.map((entry, index) => {
       const name = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
       const role = entry.role === 'admin' ? 'admin' : 'user';
-      const joined = formatDate(entry.createdAt);
-      const lastLogin = formatDate(entry.lastLogin || entry.last_login);
       return [
         index + 1,
         `"${String(name).replace(/"/g, '""')}"`,
         `"${String(entry.email || '').replace(/"/g, '""')}"`,
         `"${role}"`,
-        `"${String(joined).replace(/"/g, '""')}"`,
-        `"${String(lastLogin).replace(/"/g, '""')}"`
+        `"${String(formatDate(entry.createdAt)).replace(/"/g, '""')}"`,
+        `"${String(formatDate(entry.lastLogin || entry.last_login)).replace(/"/g, '""')}"`
       ].join(',');
     });
     const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const isFiltered = (window.allUsers && list.length !== window.allUsers.length);
-    a.download = `cybershield_users_${isFiltered ? 'filtered_' : ''}${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    if (typeof showToast === 'function') showToast(`Exported ${list.length} filtered user record${list.length === 1 ? '' : 's'} to CSV.`, 'success');
+    downloadBlob(csvContent, `${filenamePrefix}.csv`, 'text/csv;charset=utf-8;');
+    if (typeof showToast === 'function') showToast(`Exported ${list.length} users to CSV.`, 'success');
+    window.closeExportModal();
   };
   async function updateRole(uid, role) {
     if (uid === user.uid && role === 'user') return showToast('You cannot remove your own admin role.', 'warning');

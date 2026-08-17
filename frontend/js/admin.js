@@ -90,25 +90,21 @@
       document.getElementById('overview-table').innerHTML = `<tr><td colspan="7" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`;
     }
   };
-  window.loadUsers = async () => { window.allUsers = await getUsers(); document.getElementById('user-count').textContent = `${allUsers.length} users`; window.renderUsers?.(allUsers); };
-  window.loadAnalyses = async () => { try { if (!window.allUsers) window.allUsers = await getUsers(); window.allAnalyses = await getAnalyses(); document.getElementById('analyses-count').textContent = `${allAnalyses.length} records`; window.renderAnalyses?.(allAnalyses); } catch (error) { document.getElementById('analyses-table').innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`; } };
-  window.renderUsers = users => {
-    const tbody = document.getElementById('users-table');
-    tbody.innerHTML = users.length ? users.map(entry => {
-      const isCurrentAdmin = entry.id === user.uid && token?.claims.admin === true;
-      const label = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
-      return `<tr><td><strong>${escapeHtml(label)}</strong></td><td>${escapeHtml(entry.email || '—')}</td><td><span class="badge ${isCurrentAdmin ? 'badge-purple' : 'badge-info'}">${isCurrentAdmin ? 'admin' : 'user'}</span></td><td><span class="badge badge-success">Active</span></td><td>${formatDate(entry.createdAt)}</td><td>${formatDate(entry.lastLogin || entry.last_login)}</td><td><button class="action-btn" data-view-user="${escapeHtml(entry.id)}" title="View this user's analyses">View scans</button> <button class="action-btn" data-copy-email="${escapeHtml(entry.email || '')}" title="Copy email"><i class="fa-solid fa-copy"></i></button></td></tr>`;
-    }).join('') : '<tr><td colspan="7" class="empty-state">No users found.</td></tr>';
-    tbody.querySelectorAll('[data-view-user]').forEach(button => button.addEventListener('click', () => {
-      const account = users.find(item => item.id === button.dataset.viewUser);
-      document.getElementById('analysis-search').value = account?.email || account?.displayName || button.dataset.viewUser;
-      window.switchTab('analyses');
-      window.filterAnalyses();
-    }));
-    tbody.querySelectorAll('[data-copy-email]').forEach(button => button.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(button.dataset.copyEmail); showToast('Email copied.', 'success'); } catch { showToast('Could not copy the email.', 'warning'); }
-    }));
+  window.loadUsers = async () => {
+    try {
+      window.allUsers = await getUsers();
+      if (typeof window.filterUsers === 'function') {
+        window.filterUsers(true);
+      } else {
+        window.currentFilteredUsers = window.allUsers;
+        document.getElementById('user-count').textContent = `${allUsers.length} user${allUsers.length === 1 ? '' : 's'}`;
+        window.renderUsers?.(allUsers);
+      }
+    } catch (error) {
+      document.getElementById('users-table').innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`;
+    }
   };
+  window.loadAnalyses = async () => { try { if (!window.allUsers) window.allUsers = await getUsers(); window.allAnalyses = await getAnalyses(); document.getElementById('analyses-count').textContent = `${allAnalyses.length} records`; window.renderAnalyses?.(allAnalyses); } catch (error) { document.getElementById('analyses-table').innerHTML = `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">${escapeHtml(error.message)}</td></tr>`; } };
   let userPage = 1;
   const userPageSize = 10;
   window.renderUsers = users => {
@@ -130,12 +126,61 @@
   window.userPageChange = page => { userPage = page; window.filterUsers(false); };
   window.filterUsers = (resetPage = true) => {
     if (resetPage) userPage = 1;
-    const query = document.getElementById('user-search').value.toLowerCase();
+    const query = (document.getElementById('user-search')?.value || '').toLowerCase().trim();
     const roleFilter = document.getElementById('user-role-filter')?.value || '';
     const sort = document.getElementById('user-sort')?.value || 'registered_desc';
-    const list = allUsers.filter(entry => { const role = entry.role === 'admin' ? 'admin' : 'user'; return (!roleFilter || role === roleFilter) && `${entry.displayName || ''} ${entry.email || ''}`.toLowerCase().includes(query); });
-    list.sort((a, b) => { if (sort === 'role') return String(a.role || 'user').localeCompare(String(b.role || 'user')); const av = timestampMs(sort.startsWith('login') ? a.lastLogin : a.createdAt); const bv = timestampMs(sort.startsWith('login') ? b.lastLogin : b.createdAt); return sort.endsWith('asc') ? av - bv : bv - av; });
+    const list = (window.allUsers || []).filter(entry => {
+      const role = entry.role === 'admin' ? 'admin' : 'user';
+      const name = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || '';
+      const email = entry.email || '';
+      return (!roleFilter || role === roleFilter) && (!query || `${name} ${email}`.toLowerCase().includes(query));
+    });
+    list.sort((a, b) => {
+      if (sort === 'role') return String(a.role || 'user').localeCompare(String(b.role || 'user'));
+      const av = timestampMs(sort.startsWith('login') ? (a.lastLogin || a.last_login) : a.createdAt);
+      const bv = timestampMs(sort.startsWith('login') ? (b.lastLogin || b.last_login) : b.createdAt);
+      return sort.endsWith('asc') ? av - bv : bv - av;
+    });
+    window.currentFilteredUsers = list;
+    const countEl = document.getElementById('user-count');
+    if (countEl) {
+      countEl.textContent = `${list.length} user${list.length === 1 ? '' : 's'}`;
+    }
     window.renderUsers(list);
+  };
+  window.exportUsers = () => {
+    const list = window.currentFilteredUsers || window.allUsers || [];
+    if (!list.length) {
+      if (typeof showToast === 'function') showToast('No user records match your current filter.', 'warning');
+      return;
+    }
+    const headers = ['Sr. No.', 'Name', 'Email', 'Role', 'Joined', 'Last Login'];
+    const rows = list.map((entry, index) => {
+      const name = entry.displayName || [entry.firstName, entry.lastName].filter(Boolean).join(' ') || entry.email || 'Unknown';
+      const role = entry.role === 'admin' ? 'admin' : 'user';
+      const joined = formatDate(entry.createdAt);
+      const lastLogin = formatDate(entry.lastLogin || entry.last_login);
+      return [
+        index + 1,
+        `"${String(name).replace(/"/g, '""')}"`,
+        `"${String(entry.email || '').replace(/"/g, '""')}"`,
+        `"${role}"`,
+        `"${String(joined).replace(/"/g, '""')}"`,
+        `"${String(lastLogin).replace(/"/g, '""')}"`
+      ].join(',');
+    });
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const isFiltered = (window.allUsers && list.length !== window.allUsers.length);
+    a.download = `cybershield_users_${isFiltered ? 'filtered_' : ''}${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (typeof showToast === 'function') showToast(`Exported ${list.length} filtered user record${list.length === 1 ? '' : 's'} to CSV.`, 'success');
   };
   async function updateRole(uid, role) {
     if (uid === user.uid && role === 'user') return showToast('You cannot remove your own admin role.', 'warning');

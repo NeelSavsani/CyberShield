@@ -162,8 +162,13 @@
     <div class="tab-pane" id="tab-users">
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">Registered Users</span>
-          <span id="user-count" style="font-size:12px;color:var(--gray)">0 users</span>
+          <div>
+            <span class="panel-title">Registered Users</span>
+            <span id="user-count" style="font-size:12px;color:var(--gray);margin-left:8px;">0 users</span>
+          </div>
+          <button type="button" class="topbar-btn btn-navy" id="export-users-btn" onclick="exportUsers()" title="Export users to CSV" style="padding:6px 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+            <i class="fa-solid fa-file-csv"></i> Export Users
+          </button>
         </div>
         <div class="search-bar">
           <input type="text" id="user-search" placeholder="Search by name or email…" oninput="filterUsers()" />

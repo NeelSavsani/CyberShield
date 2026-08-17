@@ -9,6 +9,11 @@ if sys.platform == "win32":
         asyncio.WindowsProactorEventLoopPolicy()
     )
 
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(
+        asyncio.WindowsProactorEventLoopPolicy()
+    )
+
     
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.analyzer import router as analyzer_router
 from app.api.platform import router as platform_router
 from app.api.admin import router as admin_router
+from app.api.auth import router as auth_router
 from app.services.database import initialize_database
 
 
@@ -60,9 +66,14 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:8080",
         "http://127.0.0.1:8080",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
         # Production frontend deployed on Vercel.
         "https://cybershield-woad.vercel.app",
     ] + ([os.environ["FRONTEND_ORIGIN"].rstrip("/")] if os.environ.get("FRONTEND_ORIGIN") else []),
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,12 +83,10 @@ app.add_middleware(
 app.include_router(analyzer_router)
 app.include_router(platform_router)
 app.include_router(admin_router)
+app.include_router(auth_router)
 REPORTS_DIR = Path(__file__).resolve().parents[1] / "reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/reports", StaticFiles(directory=str(REPORTS_DIR)), name="reports")
-
-
-@app.get("/", tags=["System"])
 async def root():
     """
     Root endpoint.

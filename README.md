@@ -161,3 +161,14 @@ For deployment, configure these as encrypted environment/secrets in the host
 such as changing roles require the backend to have Firebase Admin credentials;
 ordinary URL analysis and frontend Firestore use do not require teammates to
 share your credential.
+
+## Forgot-password setup
+
+Forgot password is handled by Firebase Authentication in the browser. To enable it:
+
+1. In Firebase Console, open **Authentication → Sign-in method** and enable **Email/Password**.
+2. In **Authentication → Settings → Authorized domains**, add `localhost`, `127.0.0.1`, and your deployed frontend domain (for example, `cybershield-woad.vercel.app`).
+3. Firebase sends reset emails automatically. Update the email branding or sender in **Authentication → Templates** if needed.
+4. Open `forgot_password.html`, enter the account email, and choose **Send reset link**. The email link opens `reset_password.html`, where the user sets a new password.
+
+No Firebase service-account file or backend command is required for this browser-only flow.

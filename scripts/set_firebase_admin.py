@@ -10,7 +10,7 @@ import argparse
 from pathlib import Path
 
 import firebase_admin
-from firebase_admin import auth, credentials
+from firebase_admin import auth, credentials, firestore
 
 
 def main() -> None:
@@ -27,7 +27,14 @@ def main() -> None:
     claims = dict(user.custom_claims or {})
     claims["admin"] = True
     auth.set_custom_user_claims(user.uid, claims)
+    # Keep the Firestore profile in sync with the Authentication claim. The
+    # admin UI reads this field when listing all users, so every admin is
+    # displayed consistently regardless of who is currently signed in.
+    firestore.client().collection("users").document(user.uid).set(
+        {"role": "admin"}, merge=True
+    )
     print(f"Admin claim granted to {user.email} ({user.uid}).")
+    print("Firestore role mirror updated to admin.")
     print("Sign out and sign in again so the browser receives the new claim.")
 
 

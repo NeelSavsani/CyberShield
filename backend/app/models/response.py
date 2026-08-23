@@ -58,3 +58,13 @@ class TextAnalysisResponse(BaseModel):
     risk: str = "Unknown"
     message: str = "Analysis completed successfully."
     data: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ScreenshotAnalysisResponse(BaseModel):
+    """Evidence produced by safe, offline analysis of an uploaded screenshot."""
+
+    success: bool
+    phishing_probability: float = Field(ge=0, le=100)
+    risk: str
+    message: str = "Screenshot analysis completed successfully."
+    data: Dict[str, Any] = Field(default_factory=dict)

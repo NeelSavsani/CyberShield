@@ -205,6 +205,12 @@ function setQrLoading(loading) {
   byId('image-btn-label').textContent = loading ? 'Decoding and analyzing' : 'Decode and Analyze QR';
 }
 
+function setScreenshotLoading(loading) {
+  byId('screenshot-analyze-btn').disabled = loading;
+  byId('screenshot-spinner').style.display = loading ? 'block' : 'none';
+  byId('screenshot-btn-label').textContent = loading ? 'Analyzing screenshot…' : 'Analyze Screenshot';
+}
+
 function placeProgressBelow(tabName) {
   const panel = byId('analysis-progress');
   const tab = byId(`tab-${tabName}`);
@@ -275,7 +281,7 @@ function renderHistory() {
   // archive remains on the History page. Guest sessions keep every entry here.
   const displayedHistory = isGuest() ? history : history.slice(0, dashboardHistoryLimit);
   tbody.innerHTML = displayedHistory.map(item => `<tr>
-    <td><span class="type-badge ${item.inputType === 'qr' ? 'type-image' : 'type-url'}"><i class="fa-solid ${item.inputType === 'qr' ? 'fa-qrcode' : 'fa-link'}"></i> ${item.inputType === 'qr' ? 'QR code' : 'URL'}</span></td>
+    <td><span class="type-badge ${['qr','image'].includes(item.inputType) ? 'type-image' : 'type-url'}"><i class="fa-solid ${item.inputType === 'qr' ? 'fa-qrcode' : item.inputType === 'image' ? 'fa-image' : item.inputType === 'email' ? 'fa-envelope' : 'fa-link'}"></i> ${item.inputType === 'qr' ? 'QR code' : item.inputType === 'image' ? 'Screenshot' : item.inputType === 'email' ? 'Email / Text' : 'URL'}</span></td>
     <td title="${escapeHtml(item.content)}" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(item.content)}</td>
     <td><span class="risk-pill ${item.riskScore >= 70 ? 'risk-high' : item.riskScore >= 40 ? 'risk-medium' : 'risk-low'}">${item.riskScore}</span></td>
     <td>${escapeHtml(item.verdict)}</td><td style="color:var(--gray);font-size:12px">${formatDate(item.createdAt || item.analyzedAt)}</td>
@@ -429,6 +435,67 @@ async function analyzeEmail() {
   }
 }
 
+function normalizeScreenshotResult(response, file) {
+  const score = Math.round(response.phishing_probability || 0);
+  const contributors = response.data?.classification?.contributors || [];
+  const visual = response.data?.visual || {};
+  return {
+    risk_score: score,
+    verdict: score >= 70 ? 'phishing' : score >= 40 ? 'suspicious' : 'safe',
+    input_type: 'image',
+    content: file.name,
+    analyzed_at: new Date().toISOString(),
+    screenshot_url: screenshotUrl(response.data?.asset?.preview_path),
+    indicators: contributors.map(item => ({
+      text: `${item.reason}${item.source ? ` (${item.source.replace('_', ' ')})` : ''}`,
+      level: item.impact === 'high' ? 'red' : item.impact === 'medium' ? 'amber' : 'green'
+    })),
+    features: {
+      ocr_confidence: response.data?.ocr?.confidence ?? 'Not available',
+      ocr_available: response.data?.ocr?.available ?? false,
+      ocr_status: response.data?.ocr?.error || 'Ready',
+      qr_code_count: response.data?.qr_codes?.length || 0,
+      ...visual
+    }
+  };
+}
+
+async function analyzeScreenshot() {
+  const file = byId('screenshot-file-input')?.files?.[0];
+  if (!file) return showToast('Choose a screenshot first.', 'warning');
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return showToast('Use a PNG, JPEG, or WebP image.', 'warning');
+  if (file.size > 5 * 1024 * 1024) return showToast('Screenshots must be 5 MB or smaller.', 'warning');
+
+  placeProgressBelow('screenshot');
+  const progressPanel = byId('analysis-progress');
+  progressPanel.classList.add('text-progress', 'show');
+  progressPanel.classList.remove('error');
+  byId('analysis-progress-list').hidden = true;
+  byId('analysis-progress-title').textContent = 'Reading screenshot text and visual phishing signals…';
+  setScreenshotLoading(true);
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await fetch(`${ANALYZER_API}/analyze/screenshot`, { method: 'POST', body: formData });
+    const body = await response.json();
+    if (!response.ok || !body.success) throw new Error(body.detail || body.message || 'Screenshot analysis failed.');
+    const result = normalizeScreenshotResult(body, file);
+    result.analysis_id = await saveAnalysis(result, file.name);
+    sessionStorage.setItem('cs_result', JSON.stringify(result));
+    sessionStorage.setItem('cs_result_source', 'dashboard');
+    await refreshHistory();
+    stopProgress('complete');
+    progressPanel.classList.remove('text-progress');
+    window.setTimeout(() => { window.location.href = 'result.html'; }, 250);
+  } catch (error) {
+    stopProgress('failed', error.message || 'Screenshot analysis failed.');
+    progressPanel.classList.remove('text-progress');
+    showToast(error.message || 'Screenshot analysis failed.', 'error');
+  } finally {
+    setScreenshotLoading(false);
+  }
+}
+
 document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(item => item.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(item => item.classList.remove('active'));
@@ -499,6 +566,25 @@ byId('file-drop')?.addEventListener('drop', event => {
   const file = event.dataTransfer.files?.[0];
   if (file) setQrFile(file);
   byId('file-drop').classList.remove('drag-over');
+});
+byId('screenshot-analyze-btn')?.addEventListener('click', analyzeScreenshot);
+byId('screenshot-file-drop')?.addEventListener('click', () => byId('screenshot-file-input')?.click());
+function setScreenshotFile(file) {
+  if (file) {
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    byId('screenshot-file-input').files = transfer.files;
+  }
+  byId('screenshot-file-name').textContent = file ? file.name : '';
+  byId('screenshot-file-name').style.display = file ? 'block' : 'none';
+}
+byId('screenshot-file-input')?.addEventListener('change', event => setScreenshotFile(event.target.files?.[0]));
+byId('screenshot-file-drop')?.addEventListener('dragover', event => { event.preventDefault(); byId('screenshot-file-drop').classList.add('drag-over'); });
+byId('screenshot-file-drop')?.addEventListener('dragleave', () => byId('screenshot-file-drop').classList.remove('drag-over'));
+byId('screenshot-file-drop')?.addEventListener('drop', event => {
+  event.preventDefault();
+  setScreenshotFile(event.dataTransfer.files?.[0]);
+  byId('screenshot-file-drop').classList.remove('drag-over');
 });
 byId('clear-history-btn')?.addEventListener('click', async () => {
   if (!history.length || !confirm('Clear all saved analyses?')) return;

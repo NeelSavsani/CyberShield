@@ -62,5 +62,10 @@ joblib==1.5.1
 opencv-python-headless==4.12.0.88
 zxing-cpp==3.1.0
 
+# Screenshot decoding and OCR (the Tesseract executable is also required;
+# see the backend setup notes in README.md)
+Pillow==11.3.0
+pytesseract==0.3.13
+
 # Testing
 pytest==7.4.2

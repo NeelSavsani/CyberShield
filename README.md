@@ -39,12 +39,10 @@ Prompt and PowerShell.
 cd backend
 py -3.12 -c "from pathlib import Path; import shutil; path = Path('venv'); shutil.rmtree(path) if path.exists() else None"
 py -3.12 -m venv venv
-call venv\Scripts\activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install playwright
-playwright install chromium
-uvicorn app.main:app --reload
+./venv/Scripts/python.exe -m pip install --upgrade pip
+./venv/Scripts/python.exe -m pip install -r requirements.txt
+./venv/Scripts/python.exe -m playwright install chromium
+./venv/Scripts/python.exe -m uvicorn app.main:app --reload --reload-exclude venv
 ```
 
 ### Terminal 2 — frontend (from the project root)
@@ -57,7 +55,7 @@ Open `http://localhost:5173/` in the browser. The installation is needed only
 when setting up a new machine; both servers must be started whenever the app
 is used.
 
-If using **PowerShell**, use this equivalent backend setup instead:
+If you prefer to activate the environment in **PowerShell** instead, use:
 
 ```powershell
 cd backend
@@ -68,7 +66,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 pip install playwright
 playwright install chromium
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --reload-exclude venv
 ```
 
 You can also use the interactive API at `http://127.0.0.1:8000/docs`.
@@ -82,6 +80,35 @@ values that are not valid website URLs are decoded but rejected by the URL
 admission checks; support for non-web QR payloads is planned separately.
 
 The API endpoint is `POST /analyze/qr` with multipart form field `image`.
+
+## Screenshot phishing analysis
+
+`POST /analyze/screenshot` accepts one PNG, JPEG, or WebP screenshot in the
+multipart form field `image`. It validates the file signature and decodes its
+pixels before analysis; files are limited to 5 MB, 6,000 pixels per side, and
+16 megapixels. The service never executes embedded content or retains source
+metadata: accepted images are re-encoded as metadata-free PNG assets.
+
+The response includes OCR text and mean confidence, visual indicators (login,
+password/OTP, payment, logo-like layout, urgency), QR values, shortened-link
+checks, and a contributor list that labels its source as `ocr`, `visual`,
+`qr`, or `linked_nlp`. Re-encoded assets are recorded with SHA-256, dimensions,
+and a 30-day retention expiry; expired assets are removed when the backend
+starts.
+
+OCR requires the [Tesseract OCR engine](https://github.com/tesseract-ocr/tesseract)
+to be installed on the host in addition to `pip install -r requirements.txt`.
+On Windows, CyberShield automatically detects the standard installation at
+`C:\Program Files\Tesseract-OCR\tesseract.exe`; alternatively, set
+`TESSERACT_CMD` to the full path of `tesseract.exe` before starting the backend.
+If it is unavailable, the API completes safely but reports that OCR was not
+available, rather than claiming that the screenshot contained no text.
+
+Example from PowerShell:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/analyze/screenshot -F "image=@C:\path\to\screenshot.png"
+```
 
 Use the frontend terminal from the quick-start section above. To enable VirusTotal or Google Safe Browsing,
 copy `backend/.env.example` to `backend/.env` and provide your own API keys.

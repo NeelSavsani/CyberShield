@@ -163,9 +163,10 @@ function renderResult(result) {
   const overview = document.getElementById('content-overview');
   const screenshotEl = document.getElementById('content-screenshot');
   const overviewNote = overview.querySelector('.content-overview-note');
-  // Website screenshots are evidence for URL and QR scans only. Text/email
-  // analyses do not open a browser, so do not show an empty screenshot card.
-  const supportsScreenshot = inputType === 'url' || inputType === 'qr';
+  const overviewMeta = document.getElementById('content-overview-meta');
+  // Screenshot uploads retain a metadata-free copy for the same brief period
+  // as their analysis record, so users can verify the exact image analyzed.
+  const supportsScreenshot = inputType === 'url' || inputType === 'qr' || inputType === 'image';
   if (!supportsScreenshot) {
     overview.hidden = true;
   } else if (screenshot) {
@@ -178,7 +179,11 @@ function renderResult(result) {
       if (overviewNote) overviewNote.textContent = 'The analysis completed, but the page preview is currently unavailable.';
     };
     screenshotEl.hidden = false;
-    if (overviewNote) overviewNote.textContent = 'This preview is captured in CyberShield’s isolated browser session.';
+    screenshotEl.alt = inputType === 'image' ? 'Uploaded screenshot analyzed by CyberShield' : 'Screenshot of the analyzed website';
+    if (overviewMeta) overviewMeta.textContent = inputType === 'image' ? 'Uploaded screenshot' : 'Captured while opening the URL';
+    if (overviewNote) overviewNote.textContent = inputType === 'image'
+      ? 'This is the metadata-free copy analyzed by CyberShield. It is automatically deleted after its retention period.'
+      : 'This preview is captured in CyberShield’s isolated browser session.';
     overview.hidden = false;
   } else {
     screenshotEl.hidden = true;

@@ -11,6 +11,11 @@ The page intentionally includes these safe-to-test signals:
 - An external form action that points to the reserved, non-routable `example.invalid` domain.
 - JavaScript that always calls `preventDefault()`, so the form cannot transmit data.
 
+`screenshot-phishing-fixture.html` is a separate, static screen designed for
+the screenshot-analysis workflow. It contains prominent, fictional urgency,
+credential/OTP, payment, and shortened-link text, but has no functional form
+or data collection.
+
 ## Deployment
 
 It can be deployed as a static Vercel project. Keep the visible training banner and `noindex, nofollow` directive. Never use it to collect real information or to impersonate an organization.

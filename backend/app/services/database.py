@@ -7,6 +7,7 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+import os
 
 from app.config import settings
 
@@ -39,7 +40,55 @@ def initialize_database() -> None:
                 error TEXT,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             );
+            CREATE TABLE IF NOT EXISTS screenshot_assets (
+                asset_id TEXT PRIMARY KEY,
+                request_id TEXT,
+                object_ref TEXT NOT NULL,
+                hash TEXT NOT NULL,
+                file_size INTEGER NOT NULL,
+                dimensions TEXT NOT NULL,
+                ocr_confidence INTEGER,
+                retention_expiry TEXT NOT NULL
+            );
         """)
+    purge_expired_screenshot_assets()
+
+
+def create_screenshot_asset(
+    asset_id: str,
+    request_id: str | None,
+    object_ref: str,
+    sha256: str,
+    file_size: int,
+    dimensions: str,
+    ocr_confidence: int | None,
+    retention_expiry: str,
+) -> None:
+    with _connection() as connection:
+        connection.execute(
+            """INSERT INTO screenshot_assets
+            (asset_id, request_id, object_ref, hash, file_size, dimensions, ocr_confidence, retention_expiry)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (asset_id, request_id, object_ref, sha256, file_size, dimensions, ocr_confidence, retention_expiry),
+        )
+
+
+def purge_expired_screenshot_assets() -> None:
+    """Delete expired re-encoded screenshot files and their database records."""
+    now = datetime.now(timezone.utc).isoformat()
+    with _connection() as connection:
+        rows = connection.execute(
+            "SELECT asset_id, object_ref FROM screenshot_assets WHERE retention_expiry <= ?", (now,)
+        ).fetchall()
+        for row in rows:
+            # object_ref is generated internally as a relative path only.
+            path = Path(row["object_ref"])
+            if path.is_file():
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+        connection.execute("DELETE FROM screenshot_assets WHERE retention_expiry <= ?", (now,))
 
 
 def create_user(user_id: str, email: str, password_hash: str) -> dict[str, Any]:

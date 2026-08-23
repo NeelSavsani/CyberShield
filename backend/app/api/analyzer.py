@@ -5,9 +5,10 @@ from uuid import uuid4
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.models.request import URLRequest, TextAnalysisRequest
-from app.models.response import AnalysisResponse, TextAnalysisResponse
+from app.models.response import AnalysisResponse, ScreenshotAnalysisResponse, TextAnalysisResponse
 from app.orchestrator import analyze_url
 from app.services.qr_decoder import QRDecodeError, decode_qr_image
+from app.services.screenshot_analyzer import ScreenshotAnalyzer, ScreenshotValidationError, ocr_status
 from app.analyzers.nlp import TextAnalyzer
 
 router = APIRouter(
@@ -195,6 +196,29 @@ async def analyze_text(request: TextAnalysisRequest):
         raise
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"Text analysis failed: {error}") from error
+
+
+@router.post("/screenshot", response_model=ScreenshotAnalysisResponse, summary="Analyze a phishing screenshot")
+async def analyze_screenshot(image: UploadFile = File(...)):
+    """Safely decode a screenshot, run OCR and visual checks, and store a metadata-free copy."""
+    declared_types = {"image/png", "image/jpeg", "image/webp"}
+    if image.content_type not in declared_types:
+        raise HTTPException(status_code=415, detail="Upload a PNG, JPEG, or WebP screenshot.")
+    try:
+        result = await asyncio.to_thread(
+            ScreenshotAnalyzer().analyze, await image.read(), image.filename, image.content_type
+        )
+        return ScreenshotAnalysisResponse(**result)
+    except ScreenshotValidationError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    finally:
+        await image.close()
+
+
+@router.get("/screenshot/ocr-status", summary="Check screenshot OCR readiness")
+async def screenshot_ocr_status():
+    """Diagnostic endpoint for local setup; does not process or expose uploads."""
+    return ocr_status()
 
 
 @router.post("/jobs/url", status_code=202)

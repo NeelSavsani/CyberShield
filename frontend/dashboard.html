@@ -599,6 +599,7 @@
           <button class="tab active" data-tab="url"><i class="fa-solid fa-link"></i> URL</button>
           <button class="tab" data-tab="email"><i class="fa-solid fa-envelope"></i> Email / Text</button>
           <button class="tab" data-tab="image"><i class="fa-solid fa-qrcode"></i> QR Code</button>
+          <button class="tab" data-tab="screenshot"><i class="fa-solid fa-image"></i> Screenshot</button>
         </div>
 
         <!-- Tab: URL -->
@@ -652,6 +653,23 @@ Example: Dear customer, your account has been suspended. Click here immediately 
           <button class="analyze-btn" id="image-analyze-btn" type="button">
             <span class="spinner-sm" id="image-spinner"></span>
             <span id="image-btn-label">Decode and Analyze QR</span>
+          </button>
+        </div>
+
+        <!-- Tab: Screenshot phishing analysis -->
+        <div class="tab-content" id="tab-screenshot">
+          <label class="form-label">Upload a suspicious screenshot</label>
+          <p class="form-desc">Upload a login page, payment request, message, or other screenshot. CyberShield checks visible text, QR codes, form-like layouts, urgency prompts, and brand-like patterns.</p>
+          <div class="file-drop" id="screenshot-file-drop">
+            <div class="file-drop-icon"><i class="fa-solid fa-image"></i></div>
+            <p>Drag and drop a screenshot here, or click to browse</p>
+            <span>PNG, JPG, JPEG, or WebP up to 5MB</span>
+            <div id="screenshot-file-name"></div>
+          </div>
+          <input type="file" id="screenshot-file-input" accept="image/png,image/jpeg,image/webp" style="display:none" />
+          <button class="analyze-btn" id="screenshot-analyze-btn" type="button">
+            <span class="spinner-sm" id="screenshot-spinner"></span>
+            <span id="screenshot-btn-label">Analyze Screenshot</span>
           </button>
         </div>
 

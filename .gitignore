@@ -12,3 +12,4 @@ __pycache__/
 
 # Local analysis output
 backend/reports/screenshots/
+backend/reports/screenshot_assets/

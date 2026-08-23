@@ -30,14 +30,14 @@ it has been validated on representative labelled phishing and benign data.
 ## Fresh zip quick start (Windows)
 
 After downloading the zip, a teammate can run the project locally with the
-following two terminals. The first block is **Command Prompt** syntax (the
-`rmdir /s /q` command is not PowerShell syntax).
+following two terminals. The cleanup command below works in both Command
+Prompt and PowerShell.
 
-### Terminal 1 — backend (Command Prompt)
+### Terminal 1 — backend (Command Prompt or PowerShell)
 
 ```bat
 cd backend
-rmdir /s /q venv
+py -3.12 -c "from pathlib import Path; import shutil; path = Path('venv'); shutil.rmtree(path) if path.exists() else None"
 py -3.12 -m venv venv
 call venv\Scripts\activate
 python -m pip install --upgrade pip

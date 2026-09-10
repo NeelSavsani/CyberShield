@@ -36,24 +36,27 @@
     }
     return await response.json();
   };
-  const getAnalyses = async () => (await fb.getDocs(fb.query(fb.collectionGroup(fb.db, 'analyses'), fb.limit(200)))).docs.map(doc => {
-    const data = doc.data();
-    const owner = doc.ref.parent?.parent;
-    const pathParts = doc.ref.path.split('/');
-    // Expected path: users/{uid}/analyses/{analysisId}. The path fallback
-    // also handles documents returned by older SDKs without parent refs.
-    const pathOwner = pathParts.length >= 4 && pathParts[0] === 'users' ? pathParts[1] : null;
-    return {
+  const getAnalyses = async () => {
+    const currentUser = fb.auth.currentUser;
+    if (!currentUser) return [];
+    const authToken = await currentUser.getIdToken(true);
+    const response = await fetch(`${ADMIN_API}/admin/analyses`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(detail || `Unable to load analyses (${response.status})`);
+    }
+    return (await response.json()).map(data => ({
       ...data,
-      id: doc.id,
-      userId: owner?.id || pathOwner || data.userId || data.user_id || data.uid || 'unknown',
+      userId: data.userId || data.user_id || data.uid || 'unknown',
       userEmail: data.userEmail || data.user_email || data.ownerEmail || data.owner_email || data.email || null,
       userName: data.userName || data.user_name || data.ownerName || data.owner_name || data.name || (typeof data.user === 'string' ? data.user : null),
       inputType: data.inputType || data.input_type || 'URL',
       riskScore: data.riskScore ?? data.risk_score ?? data.score ?? null,
       createdAt: data.createdAt || data.created_at || data.analyzedAt || data.analyzed_at || null
-    };
-  }).sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt));
+    })).sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt));
+  };
   const getFlags = async () => (await fb.getDocs(fb.collection(fb.db, 'flaggedItems'))).docs.map(doc => ({ id: doc.id, ...doc.data() }));
   const userName = (scan, users) => {
     if (scan.userId === 'guest') return 'Guest';

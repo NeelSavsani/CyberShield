@@ -30,3 +30,8 @@ $env:FIREBASE_SERVICE_ACCOUNT = 'C:\safe\service-account.json'
 
 Start the FastAPI backend after setting this variable. Role changes update the
 Firebase custom claim; the affected user must sign out and sign in again.
+
+All-users analysis data is loaded through the backend's verified-admin endpoint
+(`GET /admin/analyses`). This avoids browser collection-group query failures
+from legacy Firestore document paths while preserving the same Firebase custom
+claim check at the API boundary.

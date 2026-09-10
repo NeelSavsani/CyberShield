@@ -12,6 +12,15 @@ def _as_json_value(value):
         return value.isoformat()
     return value
 
+
+def _json_safe(value):
+    """Convert Firestore timestamps and nested values into JSON-safe data."""
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return _as_json_value(value)
+
 def _admin_request(authorization: str | None):
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Firebase authorization is required.")
@@ -106,6 +115,31 @@ def list_admin_users(authorization: str | None = Header(default=None)):
 
     users.sort(key=sort_key, reverse=True)
     return users
+
+
+@router.get("/analyses")
+def list_admin_analyses(authorization: str | None = Header(default=None)):
+    """Read all user analyses through the verified admin backend.
+
+    This deliberately avoids a browser-side Firestore collection-group query:
+    one legacy/misplaced ``analyses`` collection can make that whole query fail
+    security-rule evaluation even when the active administrator is valid.
+    """
+    _admin_request(authorization)
+    get_firebase_app()
+    try:
+        documents = firestore.client().collection_group("analyses").limit(200).stream()
+        analyses = []
+        for document in documents:
+            path = document.reference.path.split("/")
+            # Expected document path: users/{uid}/analyses/{analysisId}.
+            # Keep unexpected legacy paths visible to the administrator rather
+            # than failing the complete collection.
+            owner_uid = path[1] if len(path) >= 4 and path[0] == "users" else "unknown"
+            analyses.append({"id": document.id, "userId": owner_uid, **_json_safe(document.to_dict())})
+        return analyses
+    except Exception as error:
+        raise HTTPException(status_code=502, detail=f"Unable to load analyses: {error}") from error
 
 @router.patch("/users/{uid}/role")
 def update_user_role(uid: str, role: str, authorization: str | None = Header(default=None)):

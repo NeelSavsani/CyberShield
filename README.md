@@ -45,6 +45,14 @@ py -3.12 -m venv venv
 ./venv/Scripts/python.exe -m uvicorn app.main:app --reload --reload-exclude venv
 ```
 
+### Terminal for backend 24-09
+
+```
+cd e:\Neel\Project\CyberShield\backend
+.\venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
+```
+
 ### Terminal 2 — frontend (from the project root)
 
 ```bat
